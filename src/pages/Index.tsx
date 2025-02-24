@@ -181,54 +181,47 @@ const Index = () => {
     setIsMainFormEnabled(isValid);
   }, [formData.department, formData.projectCode, formData.requesterEmail]);
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
-    if (field === 'department') {
-      if (!/^[a-zA-Z0-9]*$/.test(value)) return;
-      if (value.length > 4) return;
-    }
-    if (field === 'projectCode') {
-      if (!/^[a-zA-Z0-9]*$/.test(value)) return;
-      if (value.length > 4) return;
-    }
-
-    setFormData(prev => ({ ...prev, [field]: value }));
-
-    let error = '';
-    switch (field) {
-      case 'sourceIP':
-      case 'destIP':
-        error = validateIP(value);
-        break;
-      case 'port':
-        error = validatePort(value);
-        break;
-      case 'service':
-        error = validateService(value);
-        break;
-      case 'appCode':
-        error = validateAppCode(value);
-        break;
-      case 'protocol':
-      case 'authentication':
-      case 'encryption':
-      case 'classification':
-        error = validateRequired(value);
-        break;
-    }
-
-    if (error) {
-      setFormErrors(prev => ({ ...prev, [field]: error }));
-      toast.error(error);
-    } else {
-      setFormErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
-
   const handleNetworkRuleChange = (ruleId: string, field: keyof NetworkRule, value: string) => {
     setNetworkRules(prevRules => 
-      prevRules.map(rule => 
-        rule.id === ruleId ? { ...rule, [field]: value } : rule
-      )
+      prevRules.map(rule => {
+        if (rule.id === ruleId) {
+          const updatedRule = { ...rule, [field]: value };
+          
+          // Validation en fonction du champ modifié
+          let error = '';
+          switch (field) {
+            case 'sourceIP':
+            case 'destIP':
+              error = validateIP(value);
+              break;
+            case 'port':
+              error = validatePort(value);
+              break;
+            case 'service':
+              error = validateService(value);
+              break;
+            case 'appCode':
+              error = validateAppCode(value);
+              break;
+            case 'protocol':
+            case 'authentication':
+            case 'encryption':
+            case 'classification':
+              error = validateRequired(value);
+              break;
+          }
+
+          if (error) {
+            setFormErrors(prev => ({ ...prev, [field]: error }));
+            toast.error(error);
+          } else {
+            setFormErrors(prev => ({ ...prev, [field]: '' }));
+          }
+
+          return updatedRule;
+        }
+        return rule;
+      })
     );
   };
 
@@ -371,7 +364,7 @@ const Index = () => {
                   placeholder="IP source"
                   value={rule.sourceIP}
                   onChange={(e) => handleNetworkRuleChange(rule.id, 'sourceIP', e.target.value)}
-                  className="field-input"
+                  className={`field-input ${formErrors.sourceIP ? 'border-red-500' : ''}`}
                 />
                 <button
                   type="button"
@@ -389,7 +382,7 @@ const Index = () => {
                   placeholder="IP destination"
                   value={rule.destIP}
                   onChange={(e) => handleNetworkRuleChange(rule.id, 'destIP', e.target.value)}
-                  className="field-input"
+                  className={`field-input ${formErrors.destIP ? 'border-red-500' : ''}`}
                 />
                 <button
                   type="button"
