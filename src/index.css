@@ -7,24 +7,7 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --radius: 0.75rem;
+    /* ... keep existing code (variables CSS) */
   }
 }
 
@@ -38,7 +21,7 @@
 }
 
 .form-container {
-  @apply max-w-full mx-auto p-6 space-y-8 overflow-x-auto;
+  @apply max-w-[1400px] mx-auto p-6 space-y-8;
 }
 
 .mandatory-fields {
@@ -58,38 +41,58 @@
 }
 
 .form-row {
-  @apply flex flex-nowrap gap-4 min-w-max pb-4;
+  @apply flex items-start space-x-4 pb-8 min-w-max relative;
 }
 
 .field-group {
-  @apply relative space-y-2;
-}
-
-/* Ajustement des largeurs spécifiques pour certains champs */
-.field-group.w-ip {
-  @apply w-48;
-}
-
-.field-group.w-port {
-  @apply w-24;
-}
-
-.field-group.w-service {
-  @apply w-32;
-}
-
-.field-group.w-appcode {
-  @apply w-32;
-}
-
-.field-group.w-select {
-  @apply w-40;
+  @apply flex flex-col items-center gap-2;
 }
 
 .field-label {
-  @apply text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 whitespace-nowrap;
+  @apply text-sm font-medium text-gray-700 whitespace-nowrap;
+}
+
+.field-input {
+  @apply h-9 rounded-md border border-gray-200 bg-white px-3 py-1 text-sm shadow-sm transition-colors hover:border-gray-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-400;
+}
+
+.field-select {
+  @apply h-9;
+}
+
+/* Largeurs spécifiques pour chaque type de champ */
+.w-ip {
+  width: 150px;
+}
+
+.w-protocol {
+  width: 120px;
+}
+
+.w-service {
+  width: 120px;
+}
+
+.w-port {
+  width: 80px;
+}
+
+.w-select {
+  width: 130px;
+}
+
+.w-appcode {
+  width: 100px;
+}
+
+.add-button {
+  @apply mt-1 flex h-6 w-6 items-center justify-center rounded-full border border-blue-500 text-blue-500 hover:bg-blue-50;
 }
 
 .action-buttons {
-  @apply flex flex-wrap justify-between gap-4 mt-8;
+  @apply flex flex-wrap justify-end gap-4 mt-8;
+}
+
+.rule-remove {
+  @apply text-red-500 hover:text-red-600 ml-2 mt-8;
 }

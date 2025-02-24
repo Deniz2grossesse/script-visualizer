@@ -362,51 +362,49 @@ const Index = () => {
 
       <form onSubmit={(e) => e.preventDefault()} className={!isMainFormEnabled ? 'opacity-50 pointer-events-none' : ''}>
         {networkRules.map((rule) => (
-          <div key={rule.id} className="relative">
+          <div key={rule.id} className="mb-6">
             <div className="form-row">
               <div className="field-group w-ip">
                 <label className="field-label">Source IP</label>
                 <Input
                   type="text"
+                  placeholder="IP source"
                   value={rule.sourceIP}
                   onChange={(e) => handleNetworkRuleChange(rule.id, 'sourceIP', e.target.value)}
-                  className={formErrors.sourceIP ? 'border-red-500' : ''}
+                  className="field-input"
                 />
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
                   onClick={() => duplicateRule(rule.id, 'sourceIP')}
+                  className="add-button"
                 >
                   <Plus className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
 
               <div className="field-group w-ip">
-                <label className="field-label">Destination IP</label>
+                <label className="field-label">IP Destination</label>
                 <Input
                   type="text"
+                  placeholder="IP destination"
                   value={rule.destIP}
                   onChange={(e) => handleNetworkRuleChange(rule.id, 'destIP', e.target.value)}
-                  className={formErrors.destIP ? 'border-red-500' : ''}
+                  className="field-input"
                 />
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
                   onClick={() => duplicateRule(rule.id, 'destIP')}
+                  className="add-button"
                 >
                   <Plus className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
 
-              <div className="field-group w-select">
-                <label className="field-label">Protocol</label>
+              <div className="field-group w-protocol">
+                <label className="field-label">Protocole</label>
                 <Select onValueChange={(value) => handleNetworkRuleChange(rule.id, 'protocol', value)}>
-                  <SelectTrigger className={formErrors.protocol ? 'border-red-500' : ''}>
-                    <SelectValue placeholder="Select protocol" />
+                  <SelectTrigger className="field-input field-select">
+                    <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="tcp">TCP</SelectItem>
@@ -414,60 +412,56 @@ const Index = () => {
                     <SelectItem value="icmp">ICMP</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
                   onClick={() => duplicateRule(rule.id, 'protocol')}
+                  className="add-button"
                 >
                   <Plus className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
 
               <div className="field-group w-service">
                 <label className="field-label">Service</label>
                 <Input
                   type="text"
+                  placeholder="Service"
                   value={rule.service}
                   onChange={(e) => handleNetworkRuleChange(rule.id, 'service', e.target.value)}
-                  className={formErrors.service ? 'border-red-500' : ''}
+                  className="field-input"
                 />
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
                   onClick={() => duplicateRule(rule.id, 'service')}
+                  className="add-button"
                 >
                   <Plus className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
 
               <div className="field-group w-port">
                 <label className="field-label">Port</label>
                 <Input
                   type="text"
+                  placeholder="Port"
                   value={rule.port}
                   onChange={(e) => handleNetworkRuleChange(rule.id, 'port', e.target.value)}
-                  className={formErrors.port ? 'border-red-500' : ''}
+                  className="field-input"
                 />
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
                   onClick={() => duplicateRule(rule.id, 'port')}
+                  className="add-button"
                 >
                   <Plus className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
 
               <div className="field-group w-select">
                 <label className="field-label">Authentication</label>
                 <Select onValueChange={(value) => handleNetworkRuleChange(rule.id, 'authentication', value)}>
-                  <SelectTrigger className={formErrors.authentication ? 'border-red-500' : ''}>
-                    <SelectValue placeholder="Select auth" />
+                  <SelectTrigger className="field-input field-select">
+                    <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">None</SelectItem>
@@ -475,22 +469,20 @@ const Index = () => {
                     <SelectItem value="oauth">OAuth</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
                   onClick={() => duplicateRule(rule.id, 'authentication')}
+                  className="add-button"
                 >
                   <Plus className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
 
               <div className="field-group w-select">
                 <label className="field-label">Flow encryption</label>
                 <Select onValueChange={(value) => handleNetworkRuleChange(rule.id, 'encryption', value)}>
-                  <SelectTrigger className={formErrors.encryption ? 'border-red-500' : ''}>
-                    <SelectValue placeholder="Select encryption" />
+                  <SelectTrigger className="field-input field-select">
+                    <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">None</SelectItem>
@@ -498,22 +490,20 @@ const Index = () => {
                     <SelectItem value="ipsec">IPSec</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
                   onClick={() => duplicateRule(rule.id, 'encryption')}
+                  className="add-button"
                 >
                   <Plus className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
 
               <div className="field-group w-select">
                 <label className="field-label">Classification</label>
                 <Select onValueChange={(value) => handleNetworkRuleChange(rule.id, 'classification', value)}>
-                  <SelectTrigger className={formErrors.classification ? 'border-red-500' : ''}>
-                    <SelectValue placeholder="Select class" />
+                  <SelectTrigger className="field-input field-select">
+                    <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="public">Public</SelectItem>
@@ -521,45 +511,40 @@ const Index = () => {
                     <SelectItem value="confidential">Confidential</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
                   onClick={() => duplicateRule(rule.id, 'classification')}
+                  className="add-button"
                 >
                   <Plus className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
 
               <div className="field-group w-appcode">
                 <label className="field-label">APP code</label>
                 <Input
                   type="text"
+                  placeholder="Code (4 chars)"
                   value={rule.appCode}
                   onChange={(e) => handleNetworkRuleChange(rule.id, 'appCode', e.target.value)}
-                  className={formErrors.appCode ? 'border-red-500' : ''}
+                  className="field-input"
                 />
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
                   onClick={() => duplicateRule(rule.id, 'appCode')}
+                  className="add-button"
                 >
                   <Plus className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
 
-              <Button
+              <button
                 type="button"
-                variant="destructive"
-                size="icon"
-                className="mt-8"
                 onClick={() => deleteRule(rule.id)}
+                className="rule-remove"
               >
                 ×
-              </Button>
+              </button>
             </div>
           </div>
         ))}
