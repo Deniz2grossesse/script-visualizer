@@ -43,6 +43,19 @@ interface FormErrors {
   appCode: string;
 }
 
+interface NetworkRule {
+  id: string;
+  sourceIP: string;
+  destIP: string;
+  protocol: string;
+  service: string;
+  port: string;
+  authentication: string;
+  encryption: string;
+  classification: string;
+  appCode: string;
+}
+
 const initialFormData: FormData = {
   department: '',
   projectCode: '',
@@ -146,6 +159,20 @@ const Index = () => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [formErrors, setFormErrors] = useState<FormErrors>(initialFormErrors);
   const [isMainFormEnabled, setIsMainFormEnabled] = useState(false);
+  const [networkRules, setNetworkRules] = useState<NetworkRule[]>([
+    {
+      id: '1',
+      sourceIP: '',
+      destIP: '',
+      protocol: '',
+      service: '',
+      port: '',
+      authentication: '',
+      encryption: '',
+      classification: '',
+      appCode: ''
+    }
+  ]);
 
   useEffect(() => {
     const isValid = validateDepartment(formData.department) &&
@@ -195,6 +222,43 @@ const Index = () => {
     } else {
       setFormErrors(prev => ({ ...prev, [field]: '' }));
     }
+  };
+
+  const handleNetworkRuleChange = (ruleId: string, field: keyof NetworkRule, value: string) => {
+    setNetworkRules(prevRules => 
+      prevRules.map(rule => 
+        rule.id === ruleId ? { ...rule, [field]: value } : rule
+      )
+    );
+  };
+
+  const duplicateRule = (ruleId: string, field: keyof NetworkRule) => {
+    setNetworkRules(prevRules => {
+      const ruleIndex = prevRules.findIndex(rule => rule.id === ruleId);
+      if (ruleIndex === -1) return prevRules;
+
+      const sourceRule = prevRules[ruleIndex];
+      const newRule = {
+        ...sourceRule,
+        id: Date.now().toString(),
+        [field]: '' // Vide uniquement le champ cliqué
+      };
+
+      const newRules = [...prevRules];
+      newRules.splice(ruleIndex + 1, 0, newRule);
+      return newRules;
+    });
+    toast.success("Nouvelle règle créée");
+  };
+
+  const deleteRule = (ruleId: string) => {
+    setNetworkRules(prevRules => {
+      if (prevRules.length === 1) {
+        toast.error("Impossible de supprimer la dernière règle");
+        return prevRules;
+      }
+      return prevRules.filter(rule => rule.id !== ruleId);
+    });
   };
 
   const handleDelete = () => {
@@ -297,140 +361,208 @@ const Index = () => {
       </div>
 
       <form onSubmit={(e) => e.preventDefault()} className={!isMainFormEnabled ? 'opacity-50 pointer-events-none' : ''}>
-        <div className="form-row">
-          <div className="field-group w-ip">
-            <label className="field-label">Source IP</label>
-            <Input
-              type="text"
-              value={formData.sourceIP}
-              onChange={(e) => handleInputChange('sourceIP', e.target.value)}
-              className={formErrors.sourceIP ? 'border-red-500' : ''}
-            />
-            {formErrors.sourceIP && (
-              <p className="text-red-500 text-xs mt-1">{formErrors.sourceIP}</p>
-            )}
-          </div>
+        {networkRules.map((rule) => (
+          <div key={rule.id} className="relative">
+            <div className="form-row">
+              <div className="field-group w-ip">
+                <label className="field-label">Source IP</label>
+                <Input
+                  type="text"
+                  value={rule.sourceIP}
+                  onChange={(e) => handleNetworkRuleChange(rule.id, 'sourceIP', e.target.value)}
+                  className={formErrors.sourceIP ? 'border-red-500' : ''}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
+                  onClick={() => duplicateRule(rule.id, 'sourceIP')}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
 
-          <div className="field-group w-ip">
-            <label className="field-label">Destination IP</label>
-            <Input
-              type="text"
-              value={formData.destIP}
-              onChange={(e) => handleInputChange('destIP', e.target.value)}
-              className={formErrors.destIP ? 'border-red-500' : ''}
-            />
-            {formErrors.destIP && (
-              <p className="text-red-500 text-xs mt-1">{formErrors.destIP}</p>
-            )}
-          </div>
+              <div className="field-group w-ip">
+                <label className="field-label">Destination IP</label>
+                <Input
+                  type="text"
+                  value={rule.destIP}
+                  onChange={(e) => handleNetworkRuleChange(rule.id, 'destIP', e.target.value)}
+                  className={formErrors.destIP ? 'border-red-500' : ''}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
+                  onClick={() => duplicateRule(rule.id, 'destIP')}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
 
-          <div className="field-group w-select">
-            <label className="field-label">Protocol</label>
-            <Select onValueChange={(value) => handleInputChange('protocol', value)}>
-              <SelectTrigger className={formErrors.protocol ? 'border-red-500' : ''}>
-                <SelectValue placeholder="Select protocol" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="tcp">TCP</SelectItem>
-                <SelectItem value="udp">UDP</SelectItem>
-                <SelectItem value="icmp">ICMP</SelectItem>
-              </SelectContent>
-            </Select>
-            {formErrors.protocol && (
-              <p className="text-red-500 text-xs mt-1">{formErrors.protocol}</p>
-            )}
-          </div>
+              <div className="field-group w-select">
+                <label className="field-label">Protocol</label>
+                <Select onValueChange={(value) => handleNetworkRuleChange(rule.id, 'protocol', value)}>
+                  <SelectTrigger className={formErrors.protocol ? 'border-red-500' : ''}>
+                    <SelectValue placeholder="Select protocol" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tcp">TCP</SelectItem>
+                    <SelectItem value="udp">UDP</SelectItem>
+                    <SelectItem value="icmp">ICMP</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
+                  onClick={() => duplicateRule(rule.id, 'protocol')}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
 
-          <div className="field-group w-service">
-            <label className="field-label">Service</label>
-            <Input
-              type="text"
-              value={formData.service}
-              onChange={(e) => handleInputChange('service', e.target.value)}
-              className={formErrors.service ? 'border-red-500' : ''}
-            />
-            {formErrors.service && (
-              <p className="text-red-500 text-xs mt-1">{formErrors.service}</p>
-            )}
-          </div>
+              <div className="field-group w-service">
+                <label className="field-label">Service</label>
+                <Input
+                  type="text"
+                  value={rule.service}
+                  onChange={(e) => handleNetworkRuleChange(rule.id, 'service', e.target.value)}
+                  className={formErrors.service ? 'border-red-500' : ''}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
+                  onClick={() => duplicateRule(rule.id, 'service')}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
 
-          <div className="field-group w-port">
-            <label className="field-label">Port</label>
-            <Input
-              type="text"
-              value={formData.port}
-              onChange={(e) => handleInputChange('port', e.target.value)}
-              className={formErrors.port ? 'border-red-500' : ''}
-            />
-            {formErrors.port && (
-              <p className="text-red-500 text-xs mt-1">{formErrors.port}</p>
-            )}
-          </div>
+              <div className="field-group w-port">
+                <label className="field-label">Port</label>
+                <Input
+                  type="text"
+                  value={rule.port}
+                  onChange={(e) => handleNetworkRuleChange(rule.id, 'port', e.target.value)}
+                  className={formErrors.port ? 'border-red-500' : ''}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
+                  onClick={() => duplicateRule(rule.id, 'port')}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
 
-          <div className="field-group w-select">
-            <label className="field-label">Authentication</label>
-            <Select onValueChange={(value) => handleInputChange('authentication', value)}>
-              <SelectTrigger className={formErrors.authentication ? 'border-red-500' : ''}>
-                <SelectValue placeholder="Select auth" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                <SelectItem value="basic">Basic</SelectItem>
-                <SelectItem value="oauth">OAuth</SelectItem>
-              </SelectContent>
-            </Select>
-            {formErrors.authentication && (
-              <p className="text-red-500 text-xs mt-1">{formErrors.authentication}</p>
-            )}
-          </div>
+              <div className="field-group w-select">
+                <label className="field-label">Authentication</label>
+                <Select onValueChange={(value) => handleNetworkRuleChange(rule.id, 'authentication', value)}>
+                  <SelectTrigger className={formErrors.authentication ? 'border-red-500' : ''}>
+                    <SelectValue placeholder="Select auth" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="basic">Basic</SelectItem>
+                    <SelectItem value="oauth">OAuth</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
+                  onClick={() => duplicateRule(rule.id, 'authentication')}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
 
-          <div className="field-group w-select">
-            <label className="field-label">Flow encryption</label>
-            <Select onValueChange={(value) => handleInputChange('encryption', value)}>
-              <SelectTrigger className={formErrors.encryption ? 'border-red-500' : ''}>
-                <SelectValue placeholder="Select encryption" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                <SelectItem value="ssl">SSL/TLS</SelectItem>
-                <SelectItem value="ipsec">IPSec</SelectItem>
-              </SelectContent>
-            </Select>
-            {formErrors.encryption && (
-              <p className="text-red-500 text-xs mt-1">{formErrors.encryption}</p>
-            )}
-          </div>
+              <div className="field-group w-select">
+                <label className="field-label">Flow encryption</label>
+                <Select onValueChange={(value) => handleNetworkRuleChange(rule.id, 'encryption', value)}>
+                  <SelectTrigger className={formErrors.encryption ? 'border-red-500' : ''}>
+                    <SelectValue placeholder="Select encryption" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="ssl">SSL/TLS</SelectItem>
+                    <SelectItem value="ipsec">IPSec</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
+                  onClick={() => duplicateRule(rule.id, 'encryption')}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
 
-          <div className="field-group w-select">
-            <label className="field-label">Classification</label>
-            <Select onValueChange={(value) => handleInputChange('classification', value)}>
-              <SelectTrigger className={formErrors.classification ? 'border-red-500' : ''}>
-                <SelectValue placeholder="Select class" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="public">Public</SelectItem>
-                <SelectItem value="internal">Internal</SelectItem>
-                <SelectItem value="confidential">Confidential</SelectItem>
-              </SelectContent>
-            </Select>
-            {formErrors.classification && (
-              <p className="text-red-500 text-xs mt-1">{formErrors.classification}</p>
-            )}
-          </div>
+              <div className="field-group w-select">
+                <label className="field-label">Classification</label>
+                <Select onValueChange={(value) => handleNetworkRuleChange(rule.id, 'classification', value)}>
+                  <SelectTrigger className={formErrors.classification ? 'border-red-500' : ''}>
+                    <SelectValue placeholder="Select class" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="public">Public</SelectItem>
+                    <SelectItem value="internal">Internal</SelectItem>
+                    <SelectItem value="confidential">Confidential</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
+                  onClick={() => duplicateRule(rule.id, 'classification')}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
 
-          <div className="field-group w-appcode">
-            <label className="field-label">APP code</label>
-            <Input
-              type="text"
-              value={formData.appCode}
-              onChange={(e) => handleInputChange('appCode', e.target.value)}
-              className={formErrors.appCode ? 'border-red-500' : ''}
-            />
-            {formErrors.appCode && (
-              <p className="text-red-500 text-xs mt-1">{formErrors.appCode}</p>
-            )}
+              <div className="field-group w-appcode">
+                <label className="field-label">APP code</label>
+                <Input
+                  type="text"
+                  value={rule.appCode}
+                  onChange={(e) => handleNetworkRuleChange(rule.id, 'appCode', e.target.value)}
+                  className={formErrors.appCode ? 'border-red-500' : ''}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute -bottom-4 left-1/2 -translate-x-1/2"
+                  onClick={() => duplicateRule(rule.id, 'appCode')}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                className="mt-8"
+                onClick={() => deleteRule(rule.id)}
+              >
+                ×
+              </Button>
+            </div>
           </div>
-        </div>
+        ))}
 
         <div className="action-buttons">
           <Button onClick={handleDelete} variant="destructive">
