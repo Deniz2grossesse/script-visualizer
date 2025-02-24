@@ -31,10 +31,34 @@ interface FormData {
   appCode: string;
 }
 
+interface FormErrors {
+  sourceIP: string;
+  destIP: string;
+  protocol: string;
+  service: string;
+  port: string;
+  authentication: string;
+  encryption: string;
+  classification: string;
+  appCode: string;
+}
+
 const initialFormData: FormData = {
   department: '',
   projectCode: '',
   requesterEmail: '',
+  sourceIP: '',
+  destIP: '',
+  protocol: '',
+  service: '',
+  port: '',
+  authentication: '',
+  encryption: '',
+  classification: '',
+  appCode: ''
+};
+
+const initialFormErrors: FormErrors = {
   sourceIP: '',
   destIP: '',
   protocol: '',
@@ -61,8 +85,66 @@ const validateEmail = (email: string) => {
   return regex.test(email);
 };
 
+const validateIP = (ip: string) => {
+  const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+  if (!ip) {
+    return "L'adresse IP est requise";
+  }
+  if (!ipv4Regex.test(ip)) {
+    return "Format d'IP invalide";
+  }
+  const octets = ip.split('.');
+  for (const octet of octets) {
+    const num = parseInt(octet);
+    if (num < 0 || num > 255) {
+      return "Chaque octet doit être entre 0 et 255";
+    }
+  }
+  return "";
+};
+
+const validatePort = (port: string) => {
+  const portNum = parseInt(port);
+  if (!port) {
+    return "Le port est requis";
+  }
+  if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
+    return "Le port doit être un nombre entre 1 et 65535";
+  }
+  return "";
+};
+
+const validateService = (service: string) => {
+  if (!service) {
+    return "Le service est requis";
+  }
+  if (service.length < 2) {
+    return "Le nom du service doit faire au moins 2 caractères";
+  }
+  return "";
+};
+
+const validateAppCode = (code: string) => {
+  const regex = /^[a-zA-Z0-9]{4}$/;
+  if (!code) {
+    return "Le code application est requis";
+  }
+  if (!regex.test(code)) {
+    return "Le code application doit contenir exactement 4 caractères alphanumériques";
+  }
+  return "";
+};
+
+const validateRequired = (value: string) => {
+  if (!value) {
+    return "Ce champ est requis";
+  }
+  return "";
+};
+
 const Index = () => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [formErrors, setFormErrors] = useState<FormErrors>(initialFormErrors);
   const [isMainFormEnabled, setIsMainFormEnabled] = useState(false);
 
   useEffect(() => {
@@ -81,12 +163,44 @@ const Index = () => {
       if (!/^[a-zA-Z0-9]*$/.test(value)) return;
       if (value.length > 4) return;
     }
+
     setFormData(prev => ({ ...prev, [field]: value }));
+
+    let error = '';
+    switch (field) {
+      case 'sourceIP':
+      case 'destIP':
+        error = validateIP(value);
+        break;
+      case 'port':
+        error = validatePort(value);
+        break;
+      case 'service':
+        error = validateService(value);
+        break;
+      case 'appCode':
+        error = validateAppCode(value);
+        break;
+      case 'protocol':
+      case 'authentication':
+      case 'encryption':
+      case 'classification':
+        error = validateRequired(value);
+        break;
+    }
+
+    if (error) {
+      setFormErrors(prev => ({ ...prev, [field]: error }));
+      toast.error(error);
+    } else {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
   };
 
   const handleDelete = () => {
     setFormData(initialFormData);
-    toast.success("Form has been cleared");
+    setFormErrors(initialFormErrors);
+    toast.success("Formulaire effacé");
   };
 
   const handleResumeDraft = () => {
@@ -188,80 +302,78 @@ const Index = () => {
             <label className="field-label">Source IP</label>
             <Input
               type="text"
-              placeholder="IP source"
               value={formData.sourceIP}
               onChange={(e) => handleInputChange('sourceIP', e.target.value)}
-              className="w-full"
+              className={formErrors.sourceIP ? 'border-red-500' : ''}
             />
-            <button className="add-button">
-              <Plus className="h-4 w-4" />
-            </button>
+            {formErrors.sourceIP && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.sourceIP}</p>
+            )}
           </div>
 
           <div className="field-group">
-            <label className="field-label">IP Destination</label>
+            <label className="field-label">Destination IP</label>
             <Input
               type="text"
-              placeholder="IP destination"
               value={formData.destIP}
               onChange={(e) => handleInputChange('destIP', e.target.value)}
-              className="w-full"
+              className={formErrors.destIP ? 'border-red-500' : ''}
             />
-            <button className="add-button">
-              <Plus className="h-4 w-4" />
-            </button>
+            {formErrors.destIP && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.destIP}</p>
+            )}
           </div>
 
           <div className="field-group">
-            <label className="field-label">Protocole</label>
+            <label className="field-label">Protocol</label>
             <Select onValueChange={(value) => handleInputChange('protocol', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select" />
+              <SelectTrigger className={formErrors.protocol ? 'border-red-500' : ''}>
+                <SelectValue placeholder="Select protocol" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="tcp">TCP</SelectItem>
                 <SelectItem value="udp">UDP</SelectItem>
-                <SelectItem value="http">HTTP</SelectItem>
+                <SelectItem value="icmp">ICMP</SelectItem>
               </SelectContent>
             </Select>
-            <button className="add-button">
-              <Plus className="h-4 w-4" />
-            </button>
+            {formErrors.protocol && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.protocol}</p>
+            )}
           </div>
 
           <div className="field-group">
             <label className="field-label">Service</label>
             <Input
               type="text"
-              placeholder="Service"
               value={formData.service}
               onChange={(e) => handleInputChange('service', e.target.value)}
-              className="w-full"
+              className={formErrors.service ? 'border-red-500' : ''}
             />
-            <button className="add-button">
-              <Plus className="h-4 w-4" />
-            </button>
+            {formErrors.service && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.service}</p>
+            )}
           </div>
 
           <div className="field-group">
             <label className="field-label">Port</label>
             <Input
               type="text"
-              placeholder="Port"
               value={formData.port}
               onChange={(e) => handleInputChange('port', e.target.value)}
-              className="w-full"
+              className={formErrors.port ? 'border-red-500' : ''}
             />
-            <button className="add-button">
-              <Plus className="h-4 w-4" />
-            </button>
+            {formErrors.port && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.port}</p>
+            )}
           </div>
+        </div>
 
+        <div className="form-row">
           <div className="field-group">
             <label className="field-label">Authentication</label>
             <Select onValueChange={(value) => handleInputChange('authentication', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select" />
+              <SelectTrigger className={formErrors.authentication ? 'border-red-500' : ''}>
+                <SelectValue placeholder="Select authentication" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">None</SelectItem>
@@ -269,100 +381,74 @@ const Index = () => {
                 <SelectItem value="oauth">OAuth</SelectItem>
               </SelectContent>
             </Select>
-            <button className="add-button">
-              <Plus className="h-4 w-4" />
-            </button>
+            {formErrors.authentication && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.authentication}</p>
+            )}
           </div>
 
           <div className="field-group">
             <label className="field-label">Flow encryption</label>
             <Select onValueChange={(value) => handleInputChange('encryption', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select" />
+              <SelectTrigger className={formErrors.encryption ? 'border-red-500' : ''}>
+                <SelectValue placeholder="Select encryption" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">None</SelectItem>
-                <SelectItem value="ssl">SSL</SelectItem>
-                <SelectItem value="tls">TLS</SelectItem>
+                <SelectItem value="ssl">SSL/TLS</SelectItem>
+                <SelectItem value="ipsec">IPSec</SelectItem>
               </SelectContent>
             </Select>
-            <button className="add-button">
-              <Plus className="h-4 w-4" />
-            </button>
+            {formErrors.encryption && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.encryption}</p>
+            )}
           </div>
 
           <div className="field-group">
             <label className="field-label">Classification</label>
             <Select onValueChange={(value) => handleInputChange('classification', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select" />
+              <SelectTrigger className={formErrors.classification ? 'border-red-500' : ''}>
+                <SelectValue placeholder="Select classification" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="public">Public</SelectItem>
-                <SelectItem value="private">Private</SelectItem>
+                <SelectItem value="internal">Internal</SelectItem>
                 <SelectItem value="confidential">Confidential</SelectItem>
               </SelectContent>
             </Select>
-            <button className="add-button">
-              <Plus className="h-4 w-4" />
-            </button>
+            {formErrors.classification && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.classification}</p>
+            )}
           </div>
 
           <div className="field-group">
-            <label className="field-label">APP code (4 chars)</label>
+            <label className="field-label">APP code</label>
             <Input
               type="text"
-              placeholder="Code (4 chars)"
               value={formData.appCode}
               onChange={(e) => handleInputChange('appCode', e.target.value)}
-              maxLength={4}
-              className="w-full"
+              className={formErrors.appCode ? 'border-red-500' : ''}
             />
-            <button className="add-button">
-              <Plus className="h-4 w-4" />
-            </button>
+            {formErrors.appCode && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.appCode}</p>
+            )}
           </div>
         </div>
 
         <div className="action-buttons">
-          <Button
-            variant="destructive"
-            className="btn-delete"
-            onClick={handleDelete}
-          >
-            Supprimer
+          <Button onClick={handleDelete} variant="destructive">
+            Delete
           </Button>
-          
-          <Button
-            variant="secondary"
-            className="btn-draft"
-            onClick={handleResumeDraft}
-          >
-            Reprendre le brouillon
+          <Button onClick={handleResumeDraft} variant="outline">
+            Resume Draft
           </Button>
-          
-          <Button
-            variant="outline"
-            className="btn-verify"
-            onClick={handleVerify}
-          >
-            Vérifier
+          <Button onClick={handleVerify}>
+            Verify
           </Button>
-          
-          <Button
-            variant="default"
-            className="btn-validate"
-            onClick={handleValidate}
-          >
-            Valider
+          <Button onClick={handleValidate}>
+            Validate
           </Button>
-          
-          <Button
-            variant="default"
-            className="btn-generate"
-            onClick={handleGenerateScript}
-          >
-            Générer Script
+          <Button onClick={handleGenerateScript} variant="default">
+            Generate Script
           </Button>
         </div>
       </form>
