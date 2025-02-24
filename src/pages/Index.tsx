@@ -298,7 +298,7 @@ const Index = () => {
 
       <form onSubmit={(e) => e.preventDefault()} className={!isMainFormEnabled ? 'opacity-50 pointer-events-none' : ''}>
         <div className="form-row">
-          <div className="field-group">
+          <div className="field-group w-ip">
             <label className="field-label">Source IP</label>
             <Input
               type="text"
@@ -311,7 +311,7 @@ const Index = () => {
             )}
           </div>
 
-          <div className="field-group">
+          <div className="field-group w-ip">
             <label className="field-label">Destination IP</label>
             <Input
               type="text"
@@ -324,7 +324,7 @@ const Index = () => {
             )}
           </div>
 
-          <div className="field-group">
+          <div className="field-group w-select">
             <label className="field-label">Protocol</label>
             <Select onValueChange={(value) => handleInputChange('protocol', value)}>
               <SelectTrigger className={formErrors.protocol ? 'border-red-500' : ''}>
@@ -341,7 +341,7 @@ const Index = () => {
             )}
           </div>
 
-          <div className="field-group">
+          <div className="field-group w-service">
             <label className="field-label">Service</label>
             <Input
               type="text"
@@ -354,7 +354,7 @@ const Index = () => {
             )}
           </div>
 
-          <div className="field-group">
+          <div className="field-group w-port">
             <label className="field-label">Port</label>
             <Input
               type="text"
@@ -366,14 +366,12 @@ const Index = () => {
               <p className="text-red-500 text-xs mt-1">{formErrors.port}</p>
             )}
           </div>
-        </div>
 
-        <div className="form-row">
-          <div className="field-group">
+          <div className="field-group w-select">
             <label className="field-label">Authentication</label>
             <Select onValueChange={(value) => handleInputChange('authentication', value)}>
               <SelectTrigger className={formErrors.authentication ? 'border-red-500' : ''}>
-                <SelectValue placeholder="Select authentication" />
+                <SelectValue placeholder="Select auth" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">None</SelectItem>
@@ -386,7 +384,7 @@ const Index = () => {
             )}
           </div>
 
-          <div className="field-group">
+          <div className="field-group w-select">
             <label className="field-label">Flow encryption</label>
             <Select onValueChange={(value) => handleInputChange('encryption', value)}>
               <SelectTrigger className={formErrors.encryption ? 'border-red-500' : ''}>
@@ -403,11 +401,11 @@ const Index = () => {
             )}
           </div>
 
-          <div className="field-group">
+          <div className="field-group w-select">
             <label className="field-label">Classification</label>
             <Select onValueChange={(value) => handleInputChange('classification', value)}>
               <SelectTrigger className={formErrors.classification ? 'border-red-500' : ''}>
-                <SelectValue placeholder="Select classification" />
+                <SelectValue placeholder="Select class" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="public">Public</SelectItem>
@@ -420,7 +418,7 @@ const Index = () => {
             )}
           </div>
 
-          <div className="field-group">
+          <div className="field-group w-appcode">
             <label className="field-label">APP code</label>
             <Input
               type="text"
