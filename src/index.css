@@ -41,6 +41,10 @@
   @apply max-w-full mx-auto p-6 space-y-8 overflow-x-auto;
 }
 
+.mandatory-fields {
+  @apply max-w-2xl mx-auto;
+}
+
 .form-row {
   @apply flex flex-nowrap gap-4 min-w-max pb-4;
 }

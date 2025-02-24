@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import {
   Select,
@@ -13,6 +13,9 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 interface FormData {
+  department: string;
+  projectCode: string;
+  requesterEmail: string;
   sourceIP: string;
   destIP: string;
   protocol: string;
@@ -25,6 +28,9 @@ interface FormData {
 }
 
 const initialFormData: FormData = {
+  department: '',
+  projectCode: '',
+  requesterEmail: '',
   sourceIP: '',
   destIP: '',
   protocol: '',
@@ -36,10 +42,41 @@ const initialFormData: FormData = {
   appCode: ''
 };
 
+const validateDepartment = (value: string) => {
+  const regex = /^[a-zA-Z0-9]{1,4}$/;
+  return regex.test(value);
+};
+
+const validateProjectCode = (value: string) => {
+  const regex = /^[a-zA-Z0-9]{1,4}$/;
+  return regex.test(value);
+};
+
+const validateEmail = (email: string) => {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+};
+
 const Index = () => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [isMainFormEnabled, setIsMainFormEnabled] = useState(false);
+
+  useEffect(() => {
+    const isValid = validateDepartment(formData.department) &&
+                   validateProjectCode(formData.projectCode) &&
+                   validateEmail(formData.requesterEmail);
+    setIsMainFormEnabled(isValid);
+  }, [formData.department, formData.projectCode, formData.requesterEmail]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
+    if (field === 'department') {
+      if (!/^[a-zA-Z0-9]*$/.test(value)) return;
+      if (value.length > 4) return;
+    }
+    if (field === 'projectCode') {
+      if (!/^[a-zA-Z0-9]*$/.test(value)) return;
+      if (value.length > 4) return;
+    }
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -49,28 +86,76 @@ const Index = () => {
   };
 
   const handleResumeDraft = () => {
-    // Implement draft functionality
     toast.info("Draft functionality to be implemented");
   };
 
   const handleVerify = () => {
-    // Add verification logic
     toast.info("Verifying entries...");
   };
 
   const handleValidate = () => {
-    // Add validation logic
     toast.success("Entries validated successfully");
   };
 
   const handleGenerateScript = () => {
-    // Add script generation logic
     toast.success("Script generation started");
   };
 
   return (
     <div className="form-container">
-      <form onSubmit={(e) => e.preventDefault()}>
+      <h1 className="text-2xl font-bold text-center mb-8">One Click Onboarding</h1>
+      
+      <div className="mandatory-fields space-y-4 mb-8">
+        <div className="field-group w-full">
+          <label className="field-label">
+            Department <span className="text-red-500">*</span>
+          </label>
+          <Input
+            type="text"
+            placeholder="Department (1-4 chars)"
+            value={formData.department}
+            onChange={(e) => handleInputChange('department', e.target.value)}
+            className={`w-full ${!validateDepartment(formData.department) && formData.department ? 'border-red-500' : ''}`}
+          />
+          {formData.department && !validateDepartment(formData.department) && (
+            <p className="text-red-500 text-xs mt-1">Department must be 1-4 alphanumeric characters</p>
+          )}
+        </div>
+
+        <div className="field-group w-full">
+          <label className="field-label">
+            Project/Application Code <span className="text-red-500">*</span>
+          </label>
+          <Input
+            type="text"
+            placeholder="Project code (1-4 chars)"
+            value={formData.projectCode}
+            onChange={(e) => handleInputChange('projectCode', e.target.value)}
+            className={`w-full ${!validateProjectCode(formData.projectCode) && formData.projectCode ? 'border-red-500' : ''}`}
+          />
+          {formData.projectCode && !validateProjectCode(formData.projectCode) && (
+            <p className="text-red-500 text-xs mt-1">Project code must be 1-4 alphanumeric characters</p>
+          )}
+        </div>
+
+        <div className="field-group w-full">
+          <label className="field-label">
+            Requester's Email <span className="text-red-500">*</span>
+          </label>
+          <Input
+            type="email"
+            placeholder="Email address"
+            value={formData.requesterEmail}
+            onChange={(e) => handleInputChange('requesterEmail', e.target.value)}
+            className={`w-full ${!validateEmail(formData.requesterEmail) && formData.requesterEmail ? 'border-red-500' : ''}`}
+          />
+          {formData.requesterEmail && !validateEmail(formData.requesterEmail) && (
+            <p className="text-red-500 text-xs mt-1">Please enter a valid email address</p>
+          )}
+        </div>
+      </div>
+
+      <form onSubmit={(e) => e.preventDefault()} className={!isMainFormEnabled ? 'opacity-50 pointer-events-none' : ''}>
         <div className="form-row">
           <div className="field-group">
             <label className="field-label">Source IP</label>
