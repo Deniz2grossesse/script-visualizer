@@ -105,54 +105,66 @@ const Index = () => {
     <div className="form-container">
       <h1 className="text-2xl font-bold text-center mb-8">One Click Onboarding</h1>
       
-      <div className="mandatory-fields space-y-4 mb-8">
-        <div className="field-group w-full">
-          <label className="field-label">
-            Department <span className="text-red-500">*</span>
-          </label>
-          <Input
-            type="text"
-            placeholder="Department (1-4 chars)"
-            value={formData.department}
-            onChange={(e) => handleInputChange('department', e.target.value)}
-            className={`w-full ${!validateDepartment(formData.department) && formData.department ? 'border-red-500' : ''}`}
-          />
-          {formData.department && !validateDepartment(formData.department) && (
-            <p className="text-red-500 text-xs mt-1">Department must be 1-4 alphanumeric characters</p>
-          )}
+      <div className="mandatory-fields">
+        <div className="mandatory-message">
+          These three fields are mandatory, you cannot start entering them without having filled them in.
         </div>
 
-        <div className="field-group w-full">
-          <label className="field-label">
-            Project/Application Code <span className="text-red-500">*</span>
-          </label>
-          <Input
-            type="text"
-            placeholder="Project code (1-4 chars)"
-            value={formData.projectCode}
-            onChange={(e) => handleInputChange('projectCode', e.target.value)}
-            className={`w-full ${!validateProjectCode(formData.projectCode) && formData.projectCode ? 'border-red-500' : ''}`}
-          />
-          {formData.projectCode && !validateProjectCode(formData.projectCode) && (
-            <p className="text-red-500 text-xs mt-1">Project code must be 1-4 alphanumeric characters</p>
-          )}
+        <div className="mandatory-fields-container">
+          <div className="field-group w-full">
+            <label className="field-label">
+              Department <span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="text"
+              placeholder="Department (1-4 chars)"
+              value={formData.department}
+              onChange={(e) => handleInputChange('department', e.target.value)}
+              className={`w-full ${!validateDepartment(formData.department) && formData.department ? 'border-red-500' : ''}`}
+            />
+            {formData.department && !validateDepartment(formData.department) && (
+              <p className="text-red-500 text-xs mt-1">Department must be 1-4 alphanumeric characters</p>
+            )}
+          </div>
+
+          <div className="field-group w-full">
+            <label className="field-label">
+              Project/Application Code <span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="text"
+              placeholder="Project code (1-4 chars)"
+              value={formData.projectCode}
+              onChange={(e) => handleInputChange('projectCode', e.target.value)}
+              className={`w-full ${!validateProjectCode(formData.projectCode) && formData.projectCode ? 'border-red-500' : ''}`}
+            />
+            {formData.projectCode && !validateProjectCode(formData.projectCode) && (
+              <p className="text-red-500 text-xs mt-1">Project code must be 1-4 alphanumeric characters</p>
+            )}
+          </div>
+
+          <div className="field-group w-full">
+            <label className="field-label">
+              Requester's Email <span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="email"
+              placeholder="Email address"
+              value={formData.requesterEmail}
+              onChange={(e) => handleInputChange('requesterEmail', e.target.value)}
+              className={`w-full ${!validateEmail(formData.requesterEmail) && formData.requesterEmail ? 'border-red-500' : ''}`}
+            />
+            {formData.requesterEmail && !validateEmail(formData.requesterEmail) && (
+              <p className="text-red-500 text-xs mt-1">Please enter a valid email address</p>
+            )}
+          </div>
         </div>
 
-        <div className="field-group w-full">
-          <label className="field-label">
-            Requester's Email <span className="text-red-500">*</span>
-          </label>
-          <Input
-            type="email"
-            placeholder="Email address"
-            value={formData.requesterEmail}
-            onChange={(e) => handleInputChange('requesterEmail', e.target.value)}
-            className={`w-full ${!validateEmail(formData.requesterEmail) && formData.requesterEmail ? 'border-red-500' : ''}`}
-          />
-          {formData.requesterEmail && !validateEmail(formData.requesterEmail) && (
-            <p className="text-red-500 text-xs mt-1">Please enter a valid email address</p>
-          )}
-        </div>
+        <img 
+          src="/lovable-uploads/2c5741ec-76b5-4d23-ade2-f5b173488467.png" 
+          alt="Flow opening simplification & Automation configuration check" 
+          className="mandatory-image"
+        />
       </div>
 
       <form onSubmit={(e) => e.preventDefault()} className={!isMainFormEnabled ? 'opacity-50 pointer-events-none' : ''}>
