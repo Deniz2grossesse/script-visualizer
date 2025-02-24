@@ -60,29 +60,29 @@
   @apply h-9;
 }
 
-/* Largeurs spécifiques pour chaque type de champ */
+/* Largeurs optimisées pour chaque type de champ */
 .w-ip {
-  width: 150px;
+  width: 140px;
 }
 
 .w-protocol {
-  width: 120px;
+  width: 100px;
 }
 
 .w-service {
-  width: 120px;
+  width: 100px;
 }
 
 .w-port {
-  width: 80px;
+  width: 70px;
 }
 
 .w-select {
-  width: 130px;
+  width: 110px;
 }
 
 .w-appcode {
-  width: 100px;
+  width: 90px;
 }
 
 .add-button {
@@ -94,5 +94,5 @@
 }
 
 .rule-remove {
-  @apply text-red-500 hover:text-red-600 ml-2 mt-8;
+  @apply text-red-500 hover:text-red-600 text-xl font-medium ml-auto mt-8;
 }
