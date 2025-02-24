@@ -69,7 +69,7 @@ const Index = () => {
   };
 
   return (
-    <div className="form-container animate-fade-in">
+    <div className="form-container">
       <form onSubmit={(e) => e.preventDefault()}>
         <div className="form-row">
           <div className="field-group">
@@ -130,9 +130,7 @@ const Index = () => {
               <Plus className="h-4 w-4" />
             </button>
           </div>
-        </div>
 
-        <div className="form-row mt-6">
           <div className="field-group">
             <label className="field-label">Port</label>
             <Input
@@ -197,9 +195,7 @@ const Index = () => {
               <Plus className="h-4 w-4" />
             </button>
           </div>
-        </div>
 
-        <div className="form-row mt-6">
           <div className="field-group">
             <label className="field-label">APP code (4 chars)</label>
             <Input

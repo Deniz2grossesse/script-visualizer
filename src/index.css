@@ -38,19 +38,19 @@
 }
 
 .form-container {
-  @apply max-w-5xl mx-auto p-6 space-y-8;
+  @apply max-w-full mx-auto p-6 space-y-8 overflow-x-auto;
 }
 
 .form-row {
-  @apply grid grid-cols-1 md:grid-cols-4 gap-4 items-start;
+  @apply flex flex-nowrap gap-4 min-w-max pb-4;
 }
 
 .field-group {
-  @apply relative space-y-2;
+  @apply relative space-y-2 w-48;
 }
 
 .field-label {
-  @apply text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
+  @apply text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 whitespace-nowrap;
 }
 
 .add-button {
