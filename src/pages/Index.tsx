@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import {
@@ -11,6 +10,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface FormData {
   department: string;
@@ -160,11 +164,22 @@ const Index = () => {
           </div>
         </div>
 
-        <img 
-          src="/lovable-uploads/2c5741ec-76b5-4d23-ade2-f5b173488467.png" 
-          alt="Flow opening simplification & Automation configuration check" 
-          className="mandatory-image"
-        />
+        <Dialog>
+          <DialogTrigger asChild>
+            <img 
+              src="/lovable-uploads/2c5741ec-76b5-4d23-ade2-f5b173488467.png" 
+              alt="Flow opening simplification & Automation configuration check" 
+              className="mandatory-image cursor-pointer hover:opacity-90 transition-opacity"
+            />
+          </DialogTrigger>
+          <DialogContent className="max-w-[90vw] max-h-[90vh] p-0">
+            <img 
+              src="/lovable-uploads/2c5741ec-76b5-4d23-ade2-f5b173488467.png" 
+              alt="Flow opening simplification & Automation configuration check" 
+              className="w-full h-full object-contain"
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <form onSubmit={(e) => e.preventDefault()} className={!isMainFormEnabled ? 'opacity-50 pointer-events-none' : ''}>
