@@ -174,10 +174,23 @@ const Index = () => {
     }
   ]);
 
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    if (field === 'department') {
+      if (!/^[a-zA-Z0-9]*$/.test(value)) return;
+      if (value.length > 4) return;
+    }
+    if (field === 'projectCode') {
+      if (!/^[a-zA-Z0-9]*$/.test(value)) return;
+      if (value.length > 4) return;
+    }
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   useEffect(() => {
-    const isValid = validateDepartment(formData.department) &&
-                   validateProjectCode(formData.projectCode) &&
-                   validateEmail(formData.requesterEmail);
+    const isValid = 
+      formData.department.length > 0 &&
+      formData.projectCode.length > 0 &&
+      formData.requesterEmail.length > 0;
     setIsMainFormEnabled(isValid);
   }, [formData.department, formData.projectCode, formData.requesterEmail]);
 
@@ -187,7 +200,6 @@ const Index = () => {
         if (rule.id === ruleId) {
           const updatedRule = { ...rule, [field]: value };
           
-          // Validation en fonction du champ modifié
           let error = '';
           switch (field) {
             case 'sourceIP':
@@ -213,7 +225,7 @@ const Index = () => {
 
           if (error) {
             setFormErrors(prev => ({ ...prev, [field]: error }));
-            toast.error(error);
+            toast.error(`${field}: ${error}`);
           } else {
             setFormErrors(prev => ({ ...prev, [field]: '' }));
           }
@@ -234,7 +246,7 @@ const Index = () => {
       const newRule = {
         ...sourceRule,
         id: Date.now().toString(),
-        [field]: '' // Vide uniquement le champ cliqué
+        [field]: ''
       };
 
       const newRules = [...prevRules];
@@ -252,28 +264,6 @@ const Index = () => {
       }
       return prevRules.filter(rule => rule.id !== ruleId);
     });
-  };
-
-  const handleDelete = () => {
-    setFormData(initialFormData);
-    setFormErrors(initialFormErrors);
-    toast.success("Formulaire effacé");
-  };
-
-  const handleResumeDraft = () => {
-    toast.info("Draft functionality to be implemented");
-  };
-
-  const handleVerify = () => {
-    toast.info("Verifying entries...");
-  };
-
-  const handleValidate = () => {
-    toast.success("Entries validated successfully");
-  };
-
-  const handleGenerateScript = () => {
-    toast.success("Script generation started");
   };
 
   return (
@@ -295,11 +285,8 @@ const Index = () => {
               placeholder="Department (1-4 chars)"
               value={formData.department}
               onChange={(e) => handleInputChange('department', e.target.value)}
-              className={`w-full ${!validateDepartment(formData.department) && formData.department ? 'border-red-500' : ''}`}
+              className="w-full"
             />
-            {formData.department && !validateDepartment(formData.department) && (
-              <p className="text-red-500 text-xs mt-1">Department must be 1-4 alphanumeric characters</p>
-            )}
           </div>
 
           <div className="field-group w-full">
@@ -311,11 +298,8 @@ const Index = () => {
               placeholder="Project code (1-4 chars)"
               value={formData.projectCode}
               onChange={(e) => handleInputChange('projectCode', e.target.value)}
-              className={`w-full ${!validateProjectCode(formData.projectCode) && formData.projectCode ? 'border-red-500' : ''}`}
+              className="w-full"
             />
-            {formData.projectCode && !validateProjectCode(formData.projectCode) && (
-              <p className="text-red-500 text-xs mt-1">Project code must be 1-4 alphanumeric characters</p>
-            )}
           </div>
 
           <div className="field-group w-full">
@@ -327,11 +311,8 @@ const Index = () => {
               placeholder="Email address"
               value={formData.requesterEmail}
               onChange={(e) => handleInputChange('requesterEmail', e.target.value)}
-              className={`w-full ${!validateEmail(formData.requesterEmail) && formData.requesterEmail ? 'border-red-500' : ''}`}
+              className="w-full"
             />
-            {formData.requesterEmail && !validateEmail(formData.requesterEmail) && (
-              <p className="text-red-500 text-xs mt-1">Please enter a valid email address</p>
-            )}
           </div>
         </div>
 
@@ -339,14 +320,14 @@ const Index = () => {
           <DialogTrigger asChild>
             <img 
               src="/lovable-uploads/2c5741ec-76b5-4d23-ade2-f5b173488467.png" 
-              alt="Flow opening simplification & Automation configuration check" 
+              alt="Flow opening" 
               className="mandatory-image cursor-pointer hover:opacity-90 transition-opacity"
             />
           </DialogTrigger>
           <DialogContent className="max-w-[90vw] max-h-[90vh] p-0">
             <img 
               src="/lovable-uploads/2c5741ec-76b5-4d23-ade2-f5b173488467.png" 
-              alt="Flow opening simplification & Automation configuration check" 
+              alt="Flow opening" 
               className="w-full h-full object-contain"
             />
           </DialogContent>
@@ -543,19 +524,19 @@ const Index = () => {
         ))}
 
         <div className="action-buttons">
-          <Button onClick={handleDelete} variant="destructive">
+          <Button onClick={() => setFormData(initialFormData)} variant="destructive">
             Delete
           </Button>
-          <Button onClick={handleResumeDraft} variant="outline">
+          <Button onClick={() => toast.info("Draft functionality to be implemented")} variant="outline">
             Resume Draft
           </Button>
-          <Button onClick={handleVerify}>
+          <Button onClick={() => toast.info("Verifying entries...")}>
             Verify
           </Button>
-          <Button onClick={handleValidate}>
+          <Button onClick={() => toast.success("Entries validated successfully")}>
             Validate
           </Button>
-          <Button onClick={handleGenerateScript} variant="default">
+          <Button onClick={() => toast.success("Script generation started")} variant="default">
             Generate Script
           </Button>
         </div>
