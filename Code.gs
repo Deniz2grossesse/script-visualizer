@@ -7,15 +7,16 @@ function doGet() {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
+// Fonction d'import CSV - ne s'exécute que sur appel explicite
 function importCSV(csvData) {
-  try {
-    if (!csvData) {
-      return { 
-        success: false, 
-        message: "Aucune donnée CSV fournie" 
-      };
-    }
+  if (!csvData) {
+    return { 
+      success: false, 
+      message: "Aucune donnée CSV fournie" 
+    };
+  }
 
+  try {
     var data = Utilities.parseCsv(csvData);
     
     if (data.length < 12) {
@@ -33,9 +34,9 @@ function importCSV(csvData) {
           protocol: row[7] || 'TCP',
           service: row[8] || '',
           port: row[9] || '',
-          authentication: row[10] || 'No',
-          flowEncryption: row[11] || 'No',
-          classification: row[12] || 'Yellow',
+          authentication: 'No',
+          flowEncryption: 'No',
+          classification: 'Yellow',
           appCode: row[13] || ''
         };
       }
@@ -51,6 +52,7 @@ function importCSV(csvData) {
       };
     }
 
+    // Retourne les données sans les charger automatiquement
     return { 
       success: true, 
       data: processedData,
@@ -66,15 +68,24 @@ function importCSV(csvData) {
   }
 }
 
+// Fonction de génération des scripts - ne s'exécute que sur appel explicite
 function generateScripts(formData) {
+  if (!formData) {
+    return {
+      success: false,
+      message: "Aucune donnée fournie"
+    };
+  }
+
   try {
-    if (!formData || typeof formData !== 'object') {
+    if (typeof formData !== 'object') {
       return {
         success: false,
         message: "Format de données invalide"
       };
     }
 
+    // Validation des champs obligatoires
     if (!formData.department || !formData.projectCode || !formData.email) {
       return {
         success: false,
@@ -82,6 +93,7 @@ function generateScripts(formData) {
       };
     }
 
+    // Validation des longueurs
     if (formData.department.length > 4 || formData.projectCode.length > 4) {
       return {
         success: false,
@@ -89,6 +101,7 @@ function generateScripts(formData) {
       };
     }
 
+    // Validation de l'email
     var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       return {
@@ -97,24 +110,31 @@ function generateScripts(formData) {
       };
     }
 
-    var networkRulesContent = `# Network rules for ${formData.department}/${formData.projectCode}
-allow_access:
-  - department: ${formData.department}
-  - project: ${formData.projectCode}
-  - requester: ${formData.email}`;
+    // Génération des scripts uniquement après validation
+    var networkRulesContent = [
+      '# Network rules for ' + formData.department + '/' + formData.projectCode,
+      'allow_access:',
+      '  - department: ' + formData.department,
+      '  - project: ' + formData.projectCode,
+      '  - requester: ' + formData.email
+    ].join('\n');
 
-    var accessRulesContent = `# Access rules for ${formData.department}/${formData.projectCode}
-grant_access:
-  - level: standard
-  - department: ${formData.department}
-  - project: ${formData.projectCode}`;
+    var accessRulesContent = [
+      '# Access rules for ' + formData.department + '/' + formData.projectCode,
+      'grant_access:',
+      '  - level: standard',
+      '  - department: ' + formData.department,
+      '  - project: ' + formData.projectCode
+    ].join('\n');
 
-    var securityPoliciesContent = `# Security policies for ${formData.department}/${formData.projectCode}
-security_level: standard
-monitoring: enabled
-logging: enabled
-department: ${formData.department}
-project: ${formData.projectCode}`;
+    var securityPoliciesContent = [
+      '# Security policies for ' + formData.department + '/' + formData.projectCode,
+      'security_level: standard',
+      'monitoring: enabled',
+      'logging: enabled',
+      'department: ' + formData.department,
+      'project: ' + formData.projectCode
+    ].join('\n');
 
     return {
       success: true,
