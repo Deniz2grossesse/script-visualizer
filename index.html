@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -528,7 +529,7 @@
         classification: 'Yellow',
         appCode: ''
       });
-      displayRules();
+      displayRules(currentRules);
     }
 
     function deleteForm() {
@@ -557,7 +558,7 @@
             document.getElementById('email').value = data.email || '';
             if (data.rules) {
               currentRules = data.rules;
-              displayRules();
+              displayRules(currentRules);
             }
           } else {
             alert('Aucun brouillon trouvé');
@@ -606,31 +607,34 @@
       };
 
       google.script.run
-        .withSuccessHandler(handleScriptsGenerated)
+        .withSuccessHandler((response) => {
+          if (response.success) {
+            const container = document.getElementById('scriptsContainer');
+            container.innerHTML = '';
+            
+            Object.entries(response.data).forEach(([type, script]) => {
+              const scriptBlock = document.createElement('div');
+              scriptBlock.className = 'script-block';
+              scriptBlock.innerHTML = `
+                <h3>${type}</h3>
+                <pre>${script}</pre>
+                <button class="copy-button" onclick="copyScript(this)">Copy</button>
+              `;
+              container.appendChild(scriptBlock);
+            });
+            
+            document.getElementById('scriptsOutput').style.display = 'block';
+          } else {
+            alert('Erreur lors de la génération: ' + response.message);
+          }
+        })
         .withFailureHandler(handleError)
         .generateScripts(formData);
     }
 
-    function handleScriptsGenerated(response) {
-      if (response.success) {
-        const container = document.getElementById('scriptsContainer');
-        container.innerHTML = '';
-        
-        Object.entries(response.data).forEach(([type, script]) => {
-          const scriptBlock = document.createElement('div');
-          scriptBlock.className = 'script-block';
-          scriptBlock.innerHTML = `
-            <h3>${type}</h3>
-            <pre>${script}</pre>
-            <button class="copy-button" onclick="copyScript(this)">Copy</button>
-          `;
-          container.appendChild(scriptBlock);
-        });
-        
-        document.getElementById('scriptsOutput').style.display = 'block';
-      } else {
-        alert('Erreur lors de la génération: ' + response.message);
-      }
+    function handleError(error) {
+      console.error('Erreur:', error);
+      alert('Une erreur est survenue: ' + error.toString());
     }
 
     function copyScript(button) {
@@ -640,11 +644,6 @@
       }).catch(err => {
         console.error('Erreur lors de la copie:', err);
       });
-    }
-
-    function handleError(error) {
-      console.error('Erreur:', error);
-      alert('Une erreur est survenue: ' + error.toString());
     }
   </script>
 </body>
