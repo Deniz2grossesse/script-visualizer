@@ -100,44 +100,31 @@ const Index = () => {
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    event.preventDefault();
-    const file = event.target.files?.[0];
-    if (!file) return;
+    if (!event.target.files?.length) return;
+    const file = event.target.files[0];
 
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
       const lines = text.split('\n').slice(11);
-      let newRows: CSVRow[] = [];
+      const newRows: CSVRow[] = [];
 
       lines.forEach((line) => {
         if (line.trim() === '') return;
 
         const columns = line.split(',').map(col => col.trim());
-        const hasRequiredData = columns[3] && columns[6] && columns[7] && columns[8] && columns[9];
-        
-        if (columns.length >= 9 && hasRequiredData) {
-          const authValue = columns[10]?.toLowerCase() === 'yes' ? 'yes' : 'no';
-          const encryptValue = columns[11]?.toLowerCase() === 'yes' ? 'yes' : 'no';
-          let classificationValue = columns[12]?.toLowerCase() || 'yellow';
-          
-          if (!['yellow', 'amber', 'red'].includes(classificationValue)) {
-            classificationValue = 'yellow';
-          }
-
-          const newRow: CSVRow = {
+        if (columns.length >= 9) {
+          newRows.push({
             sourceIP: columns[3] || '',
             destIP: columns[6] || '',
             protocol: columns[7] || '',
             service: columns[8] || '',
             port: columns[9] || '',
-            authentication: authValue,
-            flowEncryption: encryptValue,
-            classification: classificationValue,
+            authentication: 'no',
+            flowEncryption: 'no',
+            classification: 'yellow',
             appCode: columns[13] || ''
-          };
-
-          newRows.push(newRow);
+          });
         }
       });
 
@@ -147,59 +134,6 @@ const Index = () => {
     };
 
     reader.readAsText(file);
-  };
-
-  const addEmptyRow = () => {
-    const emptyRow: CSVRow = {
-      sourceIP: '',
-      destIP: '',
-      protocol: '',
-      service: '',
-      port: '',
-      authentication: '',
-      flowEncryption: '',
-      classification: '',
-      appCode: '',
-      isValid: false,
-      errors: []
-    };
-    setCsvRows(prev => [...prev, emptyRow]);
-  };
-
-  const deleteRow = (index: number) => {
-    setCsvRows(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const updateRow = (index: number, field: keyof CSVRow, value: string) => {
-    setCsvRows(prev => {
-      const newRows = [...prev];
-      if (newRows[index]) {
-        newRows[index] = {
-          ...newRows[index],
-          [field]: value
-        };
-        const validation = validateRow(newRows[index]);
-        newRows[index].isValid = validation.isValid;
-        newRows[index].errors = validation.errors;
-      }
-      return newRows;
-    });
-  };
-
-  const handleGenerateScript = () => {
-    const validRows = csvRows.filter(row => {
-      const validation = validateRow(row);
-      return validation.isValid;
-    }).slice(0, 5);
-
-    if (validRows.length === 0) return;
-
-    const scripts = validRows.map((row, index) => ({
-      id: index + 1,
-      script: generateScriptForRow(row)
-    }));
-
-    setGeneratedScripts(scripts);
   };
 
   const generateScriptForRow = (row: CSVRow): string => {
@@ -233,7 +167,22 @@ const Index = () => {
         <div className="flex justify-end gap-4 mb-6">
           <Button 
             type="button"
-            onClick={() => addEmptyRow()}
+            onClick={() => {
+              const emptyRow: CSVRow = {
+                sourceIP: '',
+                destIP: '',
+                protocol: '',
+                service: '',
+                port: '',
+                authentication: '',
+                flowEncryption: '',
+                classification: '',
+                appCode: '',
+                isValid: false,
+                errors: []
+              };
+              setCsvRows(prev => [...prev, emptyRow]);
+            }}
             className="flex items-center gap-2 bg-[#2ECC71] hover:bg-[#27AE60] text-white"
           >
             <Plus className="w-4 h-4" />
@@ -358,19 +307,31 @@ const Index = () => {
                     <td className="p-2">
                       <Input
                         value={row.sourceIP}
-                        onChange={(e) => updateRow(index, 'sourceIP', e.target.value)}
+                        onChange={(e) => {
+                          const newRows = [...csvRows];
+                          newRows[index] = { ...row, sourceIP: e.target.value };
+                          setCsvRows(newRows);
+                        }}
                         className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8"
                       />
                     </td>
                     <td className="p-2">
                       <Input
                         value={row.destIP}
-                        onChange={(e) => updateRow(index, 'destIP', e.target.value)}
+                        onChange={(e) => {
+                          const newRows = [...csvRows];
+                          newRows[index] = { ...row, destIP: e.target.value };
+                          setCsvRows(newRows);
+                        }}
                         className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8"
                       />
                     </td>
                     <td className="p-2">
-                      <Select value={row.protocol} onValueChange={(value) => updateRow(index, 'protocol', value)}>
+                      <Select value={row.protocol} onChange={(e) => {
+                          const newRows = [...csvRows];
+                          newRows[index] = { ...row, protocol: e.target.value };
+                          setCsvRows(newRows);
+                        }}>
                         <SelectTrigger className="h-8">
                           <SelectValue />
                         </SelectTrigger>
@@ -384,19 +345,31 @@ const Index = () => {
                     <td className="p-2">
                       <Input
                         value={row.service}
-                        onChange={(e) => updateRow(index, 'service', e.target.value)}
+                        onChange={(e) => {
+                          const newRows = [...csvRows];
+                          newRows[index] = { ...row, service: e.target.value };
+                          setCsvRows(newRows);
+                        }}
                         className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8"
                       />
                     </td>
                     <td className="p-2">
                       <Input
                         value={row.port}
-                        onChange={(e) => updateRow(index, 'port', e.target.value)}
+                        onChange={(e) => {
+                          const newRows = [...csvRows];
+                          newRows[index] = { ...row, port: e.target.value };
+                          setCsvRows(newRows);
+                        }}
                         className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8"
                       />
                     </td>
                     <td className="p-2">
-                      <Select value={row.authentication} onValueChange={(value) => updateRow(index, 'authentication', value)}>
+                      <Select value={row.authentication} onChange={(e) => {
+                          const newRows = [...csvRows];
+                          newRows[index] = { ...row, authentication: e.target.value };
+                          setCsvRows(newRows);
+                        }}>
                         <SelectTrigger className="h-8">
                           <SelectValue />
                         </SelectTrigger>
@@ -407,7 +380,11 @@ const Index = () => {
                       </Select>
                     </td>
                     <td className="p-2">
-                      <Select value={row.flowEncryption} onValueChange={(value) => updateRow(index, 'flowEncryption', value)}>
+                      <Select value={row.flowEncryption} onChange={(e) => {
+                          const newRows = [...csvRows];
+                          newRows[index] = { ...row, flowEncryption: e.target.value };
+                          setCsvRows(newRows);
+                        }}>
                         <SelectTrigger className="h-8">
                           <SelectValue />
                         </SelectTrigger>
@@ -418,7 +395,11 @@ const Index = () => {
                       </Select>
                     </td>
                     <td className="p-2">
-                      <Select value={row.classification} onValueChange={(value) => updateRow(index, 'classification', value)}>
+                      <Select value={row.classification} onChange={(e) => {
+                          const newRows = [...csvRows];
+                          newRows[index] = { ...row, classification: e.target.value };
+                          setCsvRows(newRows);
+                        }}>
                         <SelectTrigger className="h-8">
                           <SelectValue />
                         </SelectTrigger>
@@ -432,7 +413,11 @@ const Index = () => {
                     <td className="p-2">
                       <Input
                         value={row.appCode}
-                        onChange={(e) => updateRow(index, 'appCode', e.target.value)}
+                        onChange={(e) => {
+                          const newRows = [...csvRows];
+                          newRows[index] = { ...row, appCode: e.target.value };
+                          setCsvRows(newRows);
+                        }}
                         className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8"
                       />
                     </td>
@@ -440,7 +425,9 @@ const Index = () => {
                       <Button
                         type="button"
                         variant="ghost"
-                        onClick={() => deleteRow(index)}
+                        onClick={() => {
+                          setCsvRows(prev => prev.filter((_, i) => i !== index));
+                        }}
                         className="h-8 w-8 p-0 text-red-500 hover:text-red-400 hover:bg-red-500/20"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -470,7 +457,21 @@ const Index = () => {
         <div className="flex flex-wrap justify-end gap-3 mt-4">
           <Button 
             type="button"
-            onClick={() => handleGenerateScript()}
+            onClick={() => {
+              const validRows = csvRows.filter(row => {
+                const validation = validateRow(row);
+                return validation.isValid;
+              }).slice(0, 5);
+
+              if (validRows.length === 0) return;
+
+              const scripts = validRows.map((row, index) => ({
+                id: index + 1,
+                script: generateScriptForRow(row)
+              }));
+
+              setGeneratedScripts(scripts);
+            }}
             className="bg-[#E67E22] hover:bg-[#D35400] text-white border-none transition-colors flex items-center gap-2"
           >
             Generate Scripts
