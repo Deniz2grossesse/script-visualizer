@@ -7,119 +7,180 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
+      background-color: #212121;
       margin: 0;
       padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      color: #BDC3C7;
     }
 
     .container {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      background-color: #34495E;
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
       width: 80%;
-      max-width: 800px;
+      max-width: 1200px;
     }
 
     h1 {
       text-align: center;
-      color: #333;
+      color: white;
+      font-size: 2.5rem;
+      margin-bottom: 32px;
+    }
+
+    .info-box {
+      background-color: #2C3E50;
+      border: 1px solid rgba(189, 195, 199, 0.3);
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .info-box span {
+      color: #BDC3C7;
     }
 
     .top-buttons {
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
+      justify-content: flex-end;
+      gap: 16px;
+      margin-bottom: 24px;
     }
 
     button {
-      background-color: #5cb85c;
-      color: white;
-      padding: 10px 15px;
+      padding: 12px 24px;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
       transition: background-color 0.3s ease;
     }
 
-    button:hover {
-      background-color: #4cae4c;
+    .btn-add {
+      background-color: #2ECC71;
+      color: white;
+    }
+
+    .btn-add:hover {
+      background-color: #27AE60;
+    }
+
+    .btn-import {
+      background-color: #E67E22;
+      color: white;
+    }
+
+    .btn-import:hover {
+      background-color: #D35400;
     }
 
     .rules-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
+      background-color: #2C3E50;
+      border-radius: 8px;
+      overflow: hidden;
     }
 
     .rules-table th,
     .rules-table td {
-      padding: 8px;
-      border: 1px solid #ddd;
-      text-align: left;
+      padding: 12px;
+      border: 1px solid rgba(189, 195, 199, 0.2);
+      color: #BDC3C7;
     }
 
     .rules-table th {
-      background-color: #f2f2f2;
+      background-color: #2C3E50;
+      font-weight: 600;
+      text-align: left;
+      color: white;
     }
 
-    .rules-table tbody tr:nth-child(even) {
-      background-color: #f9f9f9;
+    .rules-table tr:nth-child(even) {
+      background-color: rgba(44, 62, 80, 0.5);
     }
 
     input[type="text"],
     select {
       width: 100%;
-      padding: 6px;
-      border: 1px solid #ddd;
+      padding: 8px 12px;
+      border: 1px solid rgba(189, 195, 199, 0.3);
       border-radius: 4px;
-      box-sizing: border-box;
-      margin-top: 5px;
+      background-color: #34495E;
+      color: #BDC3C7;
+      transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:focus,
+    select:focus {
+      outline: none;
+      border-color: #3498DB;
     }
 
     .delete-rule {
-      background-color: #d9534f;
+      background-color: #E74C3C;
       color: white;
       border: none;
-      padding: 6px 10px;
+      padding: 6px 12px;
       border-radius: 4px;
       cursor: pointer;
     }
 
     .delete-rule:hover {
-      background-color: #c9302c;
+      background-color: #C0392B;
     }
 
     #scriptsOutput {
-      margin-top: 20px;
+      margin-top: 24px;
+      padding: 20px;
+      background-color: #2C3E50;
+      border-radius: 8px;
     }
 
     #scriptsContainer {
       white-space: pre-wrap;
-      background-color: #eee;
-      padding: 10px;
-      border-radius: 4px;
       font-family: monospace;
+      color: #BDC3C7;
+      padding: 16px;
+      background-color: #34495E;
+      border-radius: 4px;
     }
 
-    .btn-add {
-      background-color: #5bc0de;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .btn-add:hover {
-      background-color: #31b0d5;
+    .container {
+      animation: fadeIn 0.5s ease-out;
     }
 
-    .btn-import {
-      background-color: #f0ad4e;
-    }
+    @media (max-width: 768px) {
+      .container {
+        width: 95%;
+        padding: 16px;
+      }
 
-    .btn-import:hover {
-      background-color: #ec971f;
+      .top-buttons {
+        flex-direction: column;
+      }
+
+      .rules-table {
+        display: block;
+        overflow-x: auto;
+      }
     }
   </style>
 </head>
