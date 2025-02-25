@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -20,6 +19,7 @@ const Index = () => {
           <Button 
             type="button"
             className="flex items-center gap-2 bg-[#2ECC71] hover:bg-[#27AE60] text-white"
+            onClick={() => {}} // Bouton complètement inactif
           >
             <Plus className="w-4 h-4" />
             Ajouter une ligne
