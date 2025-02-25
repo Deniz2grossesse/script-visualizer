@@ -393,7 +393,6 @@
 
     <div class="action-buttons">
       <button class="btn-delete" onclick="handleDelete()">Delete</button>
-      <button class="btn-resume" onclick="handleResumeDraft()">Resume Draft</button>
       <button class="btn-verify" onclick="handleVerify()">Verify</button>
       <button class="btn-generate" onclick="handleGenerateScripts()">Generate Scripts</button>
     </div>
@@ -414,7 +413,20 @@
       document.getElementById('loadingMessage').classList.remove('visible');
     }
 
-    // Fonction unique pour l'import CSV
+    function handleDelete() {
+      if (confirm('Voulez-vous vraiment supprimer toutes les règles ?')) {
+        document.getElementById('department').value = '';
+        document.getElementById('projectCode').value = '';
+        document.getElementById('email').value = '';
+        
+        currentRules = [];
+        
+        document.getElementById('rulesTable').style.display = 'none';
+        
+        document.getElementById('scriptsOutput').style.display = 'none';
+      }
+    }
+
     function handleCSVImport() {
       const input = document.createElement('input');
       input.type = 'file';
@@ -431,7 +443,6 @@
               .withSuccessHandler((response) => {
                 hideLoading();
                 if (response.success) {
-                  // Mettre à jour uniquement les règles et afficher la table
                   currentRules = response.data;
                   const table = document.getElementById('rulesTable');
                   const tbody = table.querySelector('tbody');
@@ -478,43 +489,6 @@
       input.click();
     }
 
-    // Fonctions existantes sans modification
-    function handleDelete() {
-      if (confirm('Voulez-vous vraiment supprimer le formulaire ?')) {
-        google.script.run
-          .withSuccessHandler(() => {
-            document.getElementById('department').value = '';
-            document.getElementById('projectCode').value = '';
-            document.getElementById('email').value = '';
-            currentRules = [];
-            document.getElementById('rulesTable').style.display = 'none';
-            document.getElementById('scriptsOutput').style.display = 'none';
-          })
-          .withFailureHandler(handleError)
-          .deleteForm();
-      }
-    }
-
-    function handleResumeDraft() {
-      google.script.run
-        .withSuccessHandler((response) => {
-          if (response.success && response.data) {
-            const data = response.data;
-            document.getElementById('department').value = data.department || '';
-            document.getElementById('projectCode').value = data.projectCode || '';
-            document.getElementById('email').value = data.email || '';
-            if (data.rules) {
-              currentRules = data.rules;
-              displayRules();
-            }
-          } else {
-            alert('Aucun brouillon trouvé');
-          }
-        })
-        .withFailureHandler(handleError)
-        .getDraft();
-    }
-
     function handleVerify() {
       const department = document.getElementById('department').value;
       const projectCode = document.getElementById('projectCode').value;
@@ -550,7 +524,6 @@
       const projectCode = document.getElementById('projectCode').value;
       const email = document.getElementById('email').value;
 
-      // Vérification des champs obligatoires
       if (!department || !projectCode || !email) {
         alert('Veuillez remplir tous les champs obligatoires (département, code projet et email)');
         return;

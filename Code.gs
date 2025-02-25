@@ -1,6 +1,4 @@
-
 function doGet() {
-  console.log("Exécution de doGet");
   return HtmlService.createTemplateFromFile('index')
     .evaluate()
     .setTitle('One Click Onboarding')
@@ -9,10 +7,7 @@ function doGet() {
 }
 
 function importCSV(csvData) {
-  console.log("Exécution de importCSV");
   try {
-    console.log("Début de l'import CSV");
-    
     if (!csvData) {
       return { 
         success: false, 
@@ -55,7 +50,6 @@ function importCSV(csvData) {
       };
     }
 
-    console.log("Fin de importCSV avec succès");
     return { 
       success: true, 
       data: processedData,
@@ -146,79 +140,6 @@ project: ${formData.projectCode}`;
     return {
       success: false,
       message: "Erreur lors de la génération: " + e.toString()
-    };
-  }
-}
-
-function deleteForm() {
-  console.log("Exécution de deleteForm");
-  try {
-    var userProperties = PropertiesService.getUserProperties();
-    userProperties.deleteProperty('draft');
-    console.log("Fin de deleteForm avec succès");
-    return { 
-      success: true, 
-      message: "Formulaire supprimé" 
-    };
-  } catch(e) {
-    console.error("Erreur dans deleteForm:", e.toString());
-    return { 
-      success: false, 
-      message: "Erreur lors de la suppression: " + e.toString() 
-    };
-  }
-}
-
-function saveDraft(formData) {
-  console.log("Exécution de saveDraft");
-  try {
-    if (!formData) {
-      return { 
-        success: false, 
-        message: "Aucune donnée fournie pour la sauvegarde" 
-      };
-    }
-
-    var userProperties = PropertiesService.getUserProperties();
-    userProperties.setProperty('draft', JSON.stringify(formData));
-    
-    console.log("Fin de saveDraft avec succès");
-    return { 
-      success: true, 
-      message: "Brouillon sauvegardé" 
-    };
-  } catch(e) {
-    console.error("Erreur dans saveDraft:", e.toString());
-    return { 
-      success: false, 
-      message: "Erreur lors de la sauvegarde: " + e.toString() 
-    };
-  }
-}
-
-function getDraft() {
-  console.log("Exécution de getDraft");
-  try {
-    var userProperties = PropertiesService.getUserProperties();
-    var draft = userProperties.getProperty('draft');
-    
-    if (!draft) {
-      return { 
-        success: false, 
-        message: "Aucun brouillon trouvé" 
-      };
-    }
-    
-    console.log("Fin de getDraft avec succès");
-    return { 
-      success: true, 
-      data: JSON.parse(draft)
-    };
-  } catch(e) {
-    console.error("Erreur dans getDraft:", e.toString());
-    return { 
-      success: false, 
-      message: "Erreur lors de la récupération: " + e.toString() 
     };
   }
 }
