@@ -1,3 +1,4 @@
+
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -77,6 +78,47 @@ function importCSV(csvData) {
   }
 }
 
+function generateScripts(rows) {
+  console.log("generateScripts called with rows:", JSON.stringify(rows));
+  if (!rows || !Array.isArray(rows)) {
+    return {
+      success: false,
+      message: "Format de données invalide"
+    };
+  }
+
+  try {
+    var scripts = rows.map(function(row) {
+      return generateScriptForRow(row);
+    });
+
+    return {
+      success: true,
+      data: scripts,
+      message: scripts.length + " scripts générés avec succès"
+    };
+  } catch(e) {
+    console.error("Erreur lors de la génération:", e.toString());
+    return { 
+      success: false, 
+      message: "Erreur lors de la génération: " + e.toString() 
+    };
+  }
+}
+
+function generateScriptForRow(row) {
+  return `curl -X POST "https://<securetrack-url>/api/query" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer <your_api_token>" \\
+  -d '{
+    "source": "${row.sourceIP}",
+    "destination": "${row.destIP}",
+    "protocol": "${row.protocol.toUpperCase()}",
+    "port": "${row.port}",
+    "service": "${row.service}"
+  }'`;
+}
+
 function saveDraft(formData) {
   console.log("saveDraft called with data:", JSON.stringify(formData));
   if (!formData) {
@@ -123,68 +165,4 @@ function deleteForm() {
     console.error("Erreur deleteForm:", e.toString());
     return { success: false, message: "Erreur lors de la suppression: " + e.toString() };
   }
-}
-
-function generateScripts(formData) {
-  console.log("generateScripts called with formData:", JSON.stringify(formData));
-  
-  if (!formData) {
-    console.error("formData est undefined");
-    return {
-      success: false,
-      message: "Données manquantes pour la génération des scripts"
-    };
-  }
-
-  if (!formData.csvRows) {
-    console.error("formData.csvRows est undefined");
-    return {
-      success: false,
-      message: "Données CSV manquantes pour la génération des scripts"
-    };
-  }
-
-  if (!Array.isArray(formData.csvRows)) {
-    console.error("formData.csvRows n'est pas un tableau");
-    return {
-      success: false,
-      message: "Format de données invalide"
-    };
-  }
-
-  try {
-    console.log("Nombre de lignes à traiter:", formData.csvRows.length);
-    
-    var scripts = formData.csvRows.map(function(row, index) {
-      console.log("Traitement de la ligne", index + 1, ":", row);
-      return generateScriptForRow(row, index);
-    });
-
-    console.log("Scripts générés:", scripts);
-
-    return {
-      success: true,
-      data: scripts,
-      message: scripts.length + " scripts générés avec succès"
-    };
-  } catch(e) {
-    console.error("Erreur generateScripts:", e.toString());
-    return { 
-      success: false, 
-      message: "Erreur lors de la génération: " + e.toString() 
-    };
-  }
-}
-
-function generateScriptForRow(row, index) {
-  return `curl -X POST "https://<securetrack-url>/api/query" \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer <your_api_token>" \\
-  -d '{
-    "source": "${row.sourceIP}",
-    "destination": "${row.destIP}",
-    "protocol": "${row.protocol.toUpperCase()}",
-    "port": "${row.port}",
-    "service": "${row.service}"
-  }'`;
 }
