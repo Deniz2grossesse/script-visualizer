@@ -126,18 +126,41 @@ function deleteForm() {
 }
 
 function generateScripts(formData) {
-  console.log("generateScripts called with data:", JSON.stringify(formData));
-  if (!formData || !formData.csvRows) {
+  console.log("generateScripts called with formData:", JSON.stringify(formData));
+  
+  if (!formData) {
+    console.error("formData est undefined");
     return {
       success: false,
       message: "Données manquantes pour la génération des scripts"
     };
   }
 
+  if (!formData.csvRows) {
+    console.error("formData.csvRows est undefined");
+    return {
+      success: false,
+      message: "Données CSV manquantes pour la génération des scripts"
+    };
+  }
+
+  if (!Array.isArray(formData.csvRows)) {
+    console.error("formData.csvRows n'est pas un tableau");
+    return {
+      success: false,
+      message: "Format de données invalide"
+    };
+  }
+
   try {
+    console.log("Nombre de lignes à traiter:", formData.csvRows.length);
+    
     var scripts = formData.csvRows.map(function(row, index) {
+      console.log("Traitement de la ligne", index + 1, ":", row);
       return generateScriptForRow(row, index);
     });
+
+    console.log("Scripts générés:", scripts);
 
     return {
       success: true,

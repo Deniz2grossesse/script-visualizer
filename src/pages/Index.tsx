@@ -269,11 +269,11 @@ const Index = () => {
   };
 
   const handleGenerateScript = () => {
-    console.log('handleGenerateScript called');
+    console.log('handleGenerateScript called with csvRows:', csvRows);
     const validRows = csvRows.filter(row => {
       const validation = validateRow(row);
       return validation.isValid;
-    }).slice(0, 5);
+    });
 
     if (validRows.length === 0) {
       console.log('Aucune ligne valide trouvée');
@@ -285,17 +285,37 @@ const Index = () => {
       return;
     }
 
-    const scripts = validRows.map((row, index) => ({
-      id: index + 1,
-      script: generateScriptForRow(row, index)
-    }));
-
-    setGeneratedScripts(scripts);
-    
-    toast({
-      title: "Succès",
-      description: `${scripts.length} script(s) généré(s) avec succès`
-    });
+    // On envoie les données au serveur GAS
+    google.script.run
+      .withSuccessHandler((response) => {
+        console.log('Response from generateScripts:', response);
+        if (response.success) {
+          setGeneratedScripts(response.data.map((script, index) => ({
+            id: index + 1,
+            script: script
+          })));
+          
+          toast({
+            title: "Succès",
+            description: `${response.data.length} script(s) généré(s) avec succès`
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: response.message || "Erreur lors de la génération des scripts"
+          });
+        }
+      })
+      .withFailureHandler((error) => {
+        console.error('Error in generateScripts:', error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Erreur lors de la génération des scripts"
+        });
+      })
+      .generateScripts({ csvRows: validRows });
   };
 
   return (
