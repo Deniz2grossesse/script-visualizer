@@ -279,18 +279,59 @@
       font-family: monospace;
     }
 
-    .copy-button {
-      margin-top: 10px;
-      padding: 8px 16px;
+    .copy-btn {
       background-color: #3498db;
       color: white;
       border: none;
       border-radius: 4px;
+      padding: 4px 8px;
       cursor: pointer;
+      margin-right: 8px;
+      font-size: 12px;
     }
 
-    .copy-button:hover {
+    .copy-btn:hover {
       background-color: #2980b9;
+    }
+
+    .delete-row-btn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .delete-row-btn:hover {
+      background-color: #c0392b;
+    }
+
+    .scripts-container {
+      margin-top: 20px;
+      background-color: #2B3E50;
+      padding: 15px;
+      border-radius: 6px;
+    }
+
+    .script-item {
+      background-color: #34495E;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .script-content {
+      white-space: pre;
+      font-family: monospace;
+      color: #fff;
+      background-color: #1A1F2C;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 10px;
+      overflow-x: auto;
     }
 
     .error-message {
@@ -372,6 +413,7 @@
     <table id="rulesTable" class="rules-table" style="display: none;">
       <thead>
         <tr>
+          <th>Actions</th>
           <th>Source IP</th>
           <th>IP Destination</th>
           <th>Protocol</th>
@@ -381,14 +423,13 @@
           <th>Flow Encryption</th>
           <th>Classification</th>
           <th>APP Code</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
 
-    <div id="scriptsOutput" class="scripts-output" style="display: none;">
-      <div id="scriptsContainer"></div>
-    </div>
+    <div id="scriptsOutput" class="scripts-container" style="display: none;"></div>
 
     <div class="action-buttons">
       <button class="btn-delete" onclick="deleteForm()">Delete</button>
@@ -596,6 +637,9 @@
         }
         
         tr.innerHTML = `
+          <td>
+            <button class="copy-btn" onclick="copyGeneratedScript(${index})">Copy</button>
+          </td>
           <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)" class="${!validateIP(rule.sourceIP) ? 'border-red-500' : ''}"></td>
           <td><input type="text" value="${rule.destIP || ''}" onchange="updateRule(${index}, 'destIP', this.value)" class="${!validateIP(rule.destIP) ? 'border-red-500' : ''}"></td>
           <td>
@@ -627,6 +671,9 @@
             </select>
           </td>
           <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)" class="${!validateAppCode(rule.appCode) ? 'border-red-500' : ''}"></td>
+          <td>
+            <button class="delete-row-btn" onclick="deleteRow(${index})">Delete</button>
+          </td>
         `;
 
         tbody.appendChild(tr);
@@ -634,7 +681,7 @@
         if (currentErrors.length > 0) {
           const errorRow = document.createElement('tr');
           const errorCell = document.createElement('td');
-          errorCell.colSpan = 9;
+          errorCell.colSpan = 11;
           errorCell.innerHTML = `<div class="error-message">${currentErrors.join('<br>')}</div>`;
           errorRow.appendChild(errorCell);
           tbody.appendChild(errorRow);
@@ -642,6 +689,60 @@
       });
         
       table.style.display = 'table';
+      updateGeneratedScripts();
+    }
+
+    function deleteRow(index) {
+      currentRules.splice(index, 1);
+      displayRules(currentRules);
+    }
+
+    function generateScriptForRow(row) {
+      return `curl -k -X POST "https://<securetrack-url>/api/query" \\
+-H "Content-Type: application/json" \\
+-H "Authorization: Bearer <your_api_token>" \\
+-d '{
+  "source": "${row.sourceIP}",
+  "destination": "${row.destIP}",
+  "protocol": "${row.protocol?.toUpperCase()}",
+  "port": "${row.port}",
+  "service": "${row.service}"
+}'`;
+    }
+
+    function updateGeneratedScripts() {
+      const scriptsOutput = document.getElementById('scriptsOutput');
+      scriptsOutput.innerHTML = '';
+      
+      if (currentRules.length > 0) {
+        scriptsOutput.style.display = 'block';
+        
+        currentRules.forEach((rule, index) => {
+          const scriptDiv = document.createElement('div');
+          scriptDiv.className = 'script-item';
+          
+          const script = generateScriptForRow(rule);
+          scriptDiv.innerHTML = `
+            <div class="script-content">${script}</div>
+          `;
+          
+          scriptsOutput.appendChild(scriptDiv);
+        });
+      } else {
+        scriptsOutput.style.display = 'none';
+      }
+    }
+
+    function copyGeneratedScript(index) {
+      const script = generateScriptForRow(currentRules[index]);
+      navigator.clipboard.writeText(script)
+        .then(() => {
+          alert('Script copié dans le presse-papier');
+        })
+        .catch(err => {
+          console.error('Erreur lors de la copie:', err);
+          alert('Erreur lors de la copie du script');
+        });
     }
 
     function updateRule(index, field, value) {
