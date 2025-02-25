@@ -1,4 +1,3 @@
-
 function doGet() {
   return HtmlService.createTemplateFromFile('index')
     .evaluate()
@@ -10,14 +9,54 @@ function doGet() {
 // Fonction pour importer un CSV
 function importCSV(csvData) {
   try {
+    console.log("Début de l'import CSV");
+    console.log("Données reçues:", csvData);
+
     var data = Utilities.parseCsv(csvData);
-    // Vérifie que le CSV a le bon format
-    if (data[0].length < 3) {
-      throw new Error("Format CSV invalide");
+    console.log("Données parsées:", data);
+
+    // On commence à la ligne 12
+    if (data.length < 12) {
+      throw new Error("Le fichier CSV doit contenir au moins 12 lignes");
     }
-    return { success: true, data: data };
+
+    // On prend les données à partir de la ligne 12
+    var processedData = data.slice(11).map(function(row) {
+      if (row.length >= 14) { // Il nous faut au moins 14 colonnes
+        return {
+          sourceIP: row[3] || '',        // Colonne D
+          destIP: row[6] || '',          // Colonne G
+          protocol: row[7] || 'TCP',     // Colonne H
+          service: row[8] || '',         // Colonne I
+          port: row[9] || '',            // Colonne J
+          authentication: row[10] || 'No',// Colonne K
+          flowEncryption: row[11] || 'No',// Colonne L
+          classification: row[12] || 'Yellow', // Colonne M
+          appCode: row[13] || ''         // Colonne N
+        };
+      }
+      return null;
+    }).filter(function(row) {
+      return row !== null;
+    });
+
+    console.log("Données traitées:", processedData);
+
+    if (processedData.length === 0) {
+      throw new Error("Aucune donnée valide trouvée dans le CSV");
+    }
+
+    return { 
+      success: true, 
+      data: processedData,
+      message: processedData.length + " lignes importées avec succès"
+    };
   } catch(e) {
-    return { success: false, message: e.toString() };
+    console.error("Erreur lors de l'import:", e.toString());
+    return { 
+      success: false, 
+      message: "Erreur lors de l'import: " + e.toString() 
+    };
   }
 }
 

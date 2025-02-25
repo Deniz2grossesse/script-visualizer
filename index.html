@@ -396,38 +396,42 @@
     function handleFileSelect(event) {
       const file = event.target.files[0];
       if (file) {
+        console.log("Fichier sélectionné:", file.name);
         const reader = new FileReader();
+        
         reader.onload = function(e) {
+          console.log("Fichier lu");
+          const content = e.target.result;
+          console.log("Contenu du fichier (premiers caractères):", content.substring(0, 100));
+          
           google.script.run
             .withSuccessHandler(handleCSVSuccess)
             .withFailureHandler(handleError)
-            .importCSV(e.target.result);
+            .importCSV(content);
         };
+        
+        reader.onerror = function(e) {
+          console.error("Erreur lors de la lecture du fichier:", e);
+          alert("Erreur lors de la lecture du fichier");
+        };
+
         reader.readAsText(file);
       }
     }
 
     function handleCSVSuccess(response) {
+      console.log("Réponse de l'import:", response);
       if (response.success) {
-        const parsedData = response.data;
-        currentRules = parsedData.slice(1).map(row => ({
-          sourceIP: row[0] || '',
-          destIP: row[1] || '',
-          protocol: row[2] || 'TCP',
-          service: row[3] || '',
-          port: row[4] || '',
-          authentication: row[5] || 'No',
-          flowEncryption: row[6] || 'No',
-          classification: row[7] || 'Yellow',
-          appCode: row[8] || ''
-        }));
+        currentRules = response.data;
         displayRules();
+        alert(response.message);
       } else {
         alert('Erreur lors de l\'import: ' + response.message);
       }
     }
 
     function displayRules() {
+      console.log("Affichage des règles:", currentRules);
       const table = document.getElementById('rulesTable');
       const tbody = table.querySelector('tbody');
       tbody.innerHTML = '';
