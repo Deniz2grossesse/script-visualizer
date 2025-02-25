@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -417,67 +416,32 @@
       document.getElementById('loadingMessage').classList.remove('visible');
     }
 
-    // Gestionnaires d'événements avec préfixe "on" pour plus de clarté
-    function onAddNewLine(event) {
-      if (event) event.preventDefault();
-      if (isProcessing) return;
+    // Gestionnaires d'événements
+    function handleFileInput(event) {
+      const file = event.target.files?.[0];
+      if (!file || isProcessing) return;
+
+      isProcessing = true;
+      showLoading();
       
-      const emptyRule = {
-        sourceIP: '',
-        destIP: '',
-        protocol: 'TCP',
-        service: '',
-        port: '',
-        authentication: 'No',
-        flowEncryption: 'No',
-        classification: 'Yellow',
-        appCode: ''
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = e.target?.result;
+        if (typeof content === 'string') {
+          google.script.run
+            .withSuccessHandler(onImportSuccess)
+            .withFailureHandler(onImportError)
+            .importCSV(content);
+        }
       };
       
-      currentRules.push(emptyRule);
-      displayRules();
-    }
-
-    function onImportCSV(event) {
-      if (event) event.preventDefault();
-      if (isProcessing) return;
-
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.csv';
-      input.style.display = 'none';
-      
-      input.onchange = function(e) {
-        e.preventDefault();
-        const file = e.target?.files?.[0];
-        if (!file) return;
-        
-        isProcessing = true;
-        showLoading();
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const content = e.target?.result;
-          if (typeof content === 'string') {
-            google.script.run
-              .withSuccessHandler(onImportSuccess)
-              .withFailureHandler(onImportError)
-              .importCSV(content);
-          }
-        };
-        
-        reader.onerror = function() {
-          isProcessing = false;
-          hideLoading();
-          alert('Erreur lors de la lecture du fichier');
-        };
-        
-        reader.readAsText(file);
+      reader.onerror = function() {
+        isProcessing = false;
+        hideLoading();
+        alert('Erreur lors de la lecture du fichier');
       };
       
-      document.body.appendChild(input);
-      input.click();
-      document.body.removeChild(input);
+      reader.readAsText(file);
     }
 
     function onImportSuccess(response) {
@@ -527,108 +491,149 @@
       table.style.display = currentRules.length > 0 ? 'table' : 'none';
     }
 
-    function onDelete(event) {
-      if (event) event.preventDefault();
-      if (isProcessing) return;
+    // Initialisation des écouteurs d'événements
+    document.addEventListener('DOMContentLoaded', function() {
+      const deleteButton = document.querySelector('.btn-delete');
+      const verifyButton = document.querySelector('.btn-verify');
+      const generateButton = document.querySelector('.btn-generate');
       
-      if (!confirm('Voulez-vous vraiment supprimer toutes les règles ?')) return;
+      // Créer un input file caché
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = '.csv';
+      fileInput.style.display = 'none';
+      fileInput.addEventListener('change', handleFileInput);
+      document.body.appendChild(fileInput);
       
-      document.getElementById('department').value = '';
-      document.getElementById('projectCode').value = '';
-      document.getElementById('email').value = '';
-      currentRules = [];
-      
-      const table = document.getElementById('rulesTable');
-      if (table) table.style.display = 'none';
-      
-      const scriptsOutput = document.getElementById('scriptsOutput');
-      if (scriptsOutput) scriptsOutput.style.display = 'none';
-    }
-
-    function onVerify(event) {
-      if (event) event.preventDefault();
-      if (isProcessing) return;
-
-      const department = document.getElementById('department').value;
-      const projectCode = document.getElementById('projectCode').value;
-      const email = document.getElementById('email').value;
-      
-      const errors = [];
-      if (!department || department.length > 4) {
-        errors.push('Le département doit faire entre 1 et 4 caractères');
-      }
-      if (!projectCode || projectCode.length > 4) {
-        errors.push('Le code projet doit faire entre 1 et 4 caractères');
-      }
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        errors.push('Email invalide');
-      }
-
-      if (errors.length > 0) {
-        alert('Erreurs:\n' + errors.join('\n'));
-      } else {
-        alert('Tous les champs sont valides');
-      }
-    }
-
-    function onGenerateScripts(event) {
-      if (event) event.preventDefault();
-      if (isProcessing) return;
-
-      const department = document.getElementById('department').value;
-      const projectCode = document.getElementById('projectCode').value;
-      const email = document.getElementById('email').value;
-
-      if (!department || !projectCode || !email) {
-        alert('Veuillez remplir tous les champs obligatoires');
-        return;
-      }
-
-      isProcessing = true;
-      const formData = {
-        department,
-        projectCode,
-        email,
-        rules: currentRules
+      // Remplacer l'ancien onImportCSV par une fonction qui déclenche le file input
+      window.onImportCSV = function() {
+        if (!isProcessing) {
+          fileInput.click();
+        }
       };
 
-      google.script.run
-        .withSuccessHandler(onScriptsGenerated)
-        .withFailureHandler(onGenerateError)
-        .generateScripts(formData);
-    }
-
-    function onScriptsGenerated(response) {
-      isProcessing = false;
-      
-      if (!response.success) {
-        alert('Erreur: ' + response.message);
-        return;
+      if (deleteButton) {
+        deleteButton.addEventListener('click', function() {
+          if (isProcessing) return;
+          
+          if (!confirm('Voulez-vous vraiment supprimer toutes les règles ?')) return;
+          
+          document.getElementById('department').value = '';
+          document.getElementById('projectCode').value = '';
+          document.getElementById('email').value = '';
+          currentRules = [];
+          
+          const table = document.getElementById('rulesTable');
+          if (table) table.style.display = 'none';
+          
+          const scriptsOutput = document.getElementById('scriptsOutput');
+          if (scriptsOutput) scriptsOutput.style.display = 'none';
+        });
       }
 
-      const container = document.getElementById('scriptsContainer');
-      if (!container) return;
-      
-      container.innerHTML = '';
-      
-      Object.entries(response.data).forEach(([type, script]) => {
-        const scriptBlock = document.createElement('div');
-        scriptBlock.className = 'script-block';
-        scriptBlock.innerHTML = `
-          <h3>${type}</h3>
-          <pre>${script}</pre>
-          <button type="button" class="copy-button" onclick="onCopyScript(this)">Copy</button>
-        `;
-        container.appendChild(scriptBlock);
-      });
-      
-      const scriptsOutput = document.getElementById('scriptsOutput');
-      if (scriptsOutput) scriptsOutput.style.display = 'block';
-    }
+      if (verifyButton) {
+        verifyButton.addEventListener('click', function() {
+          if (isProcessing) return;
 
-    function onGenerateError(error) {
-      isProcessing = false;
-      alert('Erreur lors de la génération: ' + error.toString());
+          const department = document.getElementById('department').value;
+          const projectCode = document.getElementById('projectCode').value;
+          const email = document.getElementById('email').value;
+          
+          const errors = [];
+          if (!department || department.length > 4) {
+            errors.push('Le département doit faire entre 1 et 4 caractères');
+          }
+          if (!projectCode || projectCode.length > 4) {
+            errors.push('Le code projet doit faire entre 1 et 4 caractères');
+          }
+          if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            errors.push('Email invalide');
+          }
+
+          if (errors.length > 0) {
+            alert('Erreurs:\n' + errors.join('\n'));
+          } else {
+            alert('Tous les champs sont valides');
+          }
+        });
+      }
+
+      if (generateButton) {
+        generateButton.addEventListener('click', function() {
+          if (isProcessing) return;
+
+          const department = document.getElementById('department').value;
+          const projectCode = document.getElementById('projectCode').value;
+          const email = document.getElementById('email').value;
+
+          if (!department || !projectCode || !email) {
+            alert('Veuillez remplir tous les champs obligatoires');
+            return;
+          }
+
+          isProcessing = true;
+          const formData = {
+            department,
+            projectCode,
+            email,
+            rules: currentRules
+          };
+
+          google.script.run
+            .withSuccessHandler(function(response) {
+              isProcessing = false;
+              
+              if (!response.success) {
+                alert('Erreur: ' + response.message);
+                return;
+              }
+
+              const container = document.getElementById('scriptsContainer');
+              if (!container) return;
+              
+              container.innerHTML = '';
+              
+              Object.entries(response.data).forEach(([type, script]) => {
+                const scriptBlock = document.createElement('div');
+                scriptBlock.className = 'script-block';
+                scriptBlock.innerHTML = `
+                  <h3>${type}</h3>
+                  <pre>${script}</pre>
+                  <button type="button" class="copy-button" onclick="onCopyScript(this)">Copy</button>
+                `;
+                container.appendChild(scriptBlock);
+              });
+              
+              const scriptsOutput = document.getElementById('scriptsOutput');
+              if (scriptsOutput) scriptsOutput.style.display = 'block';
+            })
+            .withFailureHandler(function(error) {
+              isProcessing = false;
+              alert('Erreur lors de la génération: ' + error.toString());
+            })
+            .generateScripts(formData);
+        });
+      }
+    });
+
+    function onAddNewLine(event) {
+      if (event) event.preventDefault();
+      if (isProcessing) return;
+      
+      const emptyRule = {
+        sourceIP: '',
+        destIP: '',
+        protocol: 'TCP',
+        service: '',
+        port: '',
+        authentication: 'No',
+        flowEncryption: 'No',
+        classification: 'Yellow',
+        appCode: ''
+      };
+      
+      currentRules.push(emptyRule);
+      displayRules();
     }
 
     function onCopyScript(button) {
