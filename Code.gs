@@ -7,7 +7,6 @@ function doGet() {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-// Fonction pour importer un CSV
 function importCSV(csvData) {
   try {
     console.log("Début de l'import CSV");
@@ -21,7 +20,6 @@ function importCSV(csvData) {
 
     var data = Utilities.parseCsv(csvData);
     
-    // Vérification de la longueur minimale
     if (data.length < 12) {
       return { 
         success: false, 
@@ -29,7 +27,6 @@ function importCSV(csvData) {
       };
     }
 
-    // On prend les données à partir de la ligne 12
     var processedData = data.slice(11).map(function(row) {
       if (row.length >= 14) {
         return {
@@ -71,106 +68,68 @@ function importCSV(csvData) {
   }
 }
 
-// Fonction pour sauvegarder un brouillon
-function saveDraft(formData) {
-  if (!formData) {
-    return { 
-      success: false, 
-      message: "Aucune donnée fournie pour la sauvegarde" 
-    };
-  }
-
+function generateScripts(formData) {
   try {
-    var userProperties = PropertiesService.getUserProperties();
-    userProperties.setProperty('draft', JSON.stringify(formData));
-    return { 
-      success: true, 
-      message: "Brouillon sauvegardé" 
-    };
-  } catch(e) {
-    return { 
-      success: false, 
-      message: "Erreur lors de la sauvegarde: " + e.toString() 
-    };
-  }
-}
+    console.log("Début de la génération des scripts");
+    console.log("Données reçues:", formData);
 
-// Fonction pour récupérer un brouillon
-function getDraft() {
-  try {
-    var userProperties = PropertiesService.getUserProperties();
-    var draft = userProperties.getProperty('draft');
-    
-    if (!draft) {
-      return { 
-        success: false, 
-        message: "Aucun brouillon trouvé" 
+    // Validation des données requises
+    if (!formData || typeof formData !== 'object') {
+      return {
+        success: false,
+        message: "Format de données invalide"
       };
     }
-    
-    return { 
-      success: true, 
-      data: JSON.parse(draft) 
-    };
-  } catch(e) {
-    return { 
-      success: false, 
-      message: "Erreur lors de la récupération: " + e.toString() 
-    };
-  }
-}
 
-// Fonction pour supprimer le formulaire/brouillon
-function deleteForm() {
-  try {
-    var userProperties = PropertiesService.getUserProperties();
-    userProperties.deleteProperty('draft');
-    return { 
-      success: true, 
-      message: "Formulaire supprimé" 
-    };
-  } catch(e) {
-    return { 
-      success: false, 
-      message: "Erreur lors de la suppression: " + e.toString() 
-    };
-  }
-}
+    // Validation des champs obligatoires
+    if (!formData.department || !formData.projectCode || !formData.email) {
+      return {
+        success: false,
+        message: "Champs obligatoires manquants (department, projectCode, email)"
+      };
+    }
 
-// Fonction pour générer les scripts
-function generateScripts(formData) {
-  if (!formData) {
-    return {
-      success: false,
-      message: "Aucune donnée fournie pour la génération des scripts"
-    };
-  }
+    // Validation du format des données
+    if (formData.department.length > 4 || formData.projectCode.length > 4) {
+      return {
+        success: false,
+        message: "Le département et le code projet doivent faire moins de 4 caractères"
+      };
+    }
 
-  try {
+    // Validation de l'email
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      return {
+        success: false,
+        message: "Format d'email invalide"
+      };
+    }
+
+    // Génération des scripts si toutes les validations sont passées
     var scripts = {
       networkRules: generateNetworkRules(formData),
       accessRules: generateAccessRules(formData),
       securityPolicies: generateSecurityPolicies(formData)
     };
 
+    console.log("Scripts générés avec succès");
     return {
       success: true,
       data: scripts,
       message: "Scripts générés avec succès"
     };
+
   } catch(e) {
-    return { 
-      success: false, 
-      message: "Erreur lors de la génération: " + e.toString() 
+    console.error("Erreur lors de la génération des scripts:", e.toString());
+    return {
+      success: false,
+      message: "Erreur lors de la génération: " + e.toString()
     };
   }
 }
 
 function generateNetworkRules(data) {
-  if (!data || !data.department || !data.projectCode || !data.email) {
-    throw new Error("Données manquantes pour la génération des règles réseau");
-  }
-  
   return `# Network rules for ${data.department}/${data.projectCode}
 allow_access:
   - department: ${data.department}
@@ -179,10 +138,6 @@ allow_access:
 }
 
 function generateAccessRules(data) {
-  if (!data || !data.department || !data.projectCode) {
-    throw new Error("Données manquantes pour la génération des règles d'accès");
-  }
-  
   return `# Access rules for ${data.department}/${data.projectCode}
 grant_access:
   - level: standard
@@ -191,10 +146,6 @@ grant_access:
 }
 
 function generateSecurityPolicies(data) {
-  if (!data || !data.department || !data.projectCode) {
-    throw new Error("Données manquantes pour la génération des politiques de sécurité");
-  }
-  
   return `# Security policies for ${data.department}/${data.projectCode}
 security_level: standard
 monitoring: enabled
