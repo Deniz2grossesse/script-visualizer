@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -326,11 +327,11 @@
     <h1>One Click Onboarding</h1>
 
     <div class="top-buttons">
-      <button type="button" class="btn-add" onclick="addNewLine()">
+      <button type="button" class="btn-add" onclick="onAddNewLine()">
         <span>+</span>
         Ajouter une ligne
       </button>
-      <button type="button" class="btn-import" onclick="importCSVFile()">
+      <button type="button" class="btn-import" onclick="onImportCSV()">
         <span>↓</span>
         Importer CSV
       </button>
@@ -392,9 +393,9 @@
     </div>
 
     <div class="action-buttons">
-      <button type="button" class="btn-delete" onclick="handleDelete()">Delete</button>
-      <button type="button" class="btn-verify" onclick="handleVerify()">Verify</button>
-      <button type="button" class="btn-generate" onclick="handleGenerateScripts()">Generate Scripts</button>
+      <button type="button" class="btn-delete" onclick="onDelete()">Delete</button>
+      <button type="button" class="btn-verify" onclick="onVerify()">Verify</button>
+      <button type="button" class="btn-generate" onclick="onGenerateScripts()">Generate Scripts</button>
     </div>
 
     <div id="loadingMessage" class="loading-message">
@@ -403,8 +404,11 @@
   </div>
 
   <script>
+    // État initial
     let currentRules = [];
-    
+    let isProcessing = false;
+
+    // Utilitaires
     function showLoading() {
       document.getElementById('loadingMessage').classList.add('visible');
     }
@@ -413,28 +417,57 @@
       document.getElementById('loadingMessage').classList.remove('visible');
     }
 
-    function importCSVFile() {
+    // Gestionnaires d'événements avec préfixe "on" pour plus de clarté
+    function onAddNewLine(event) {
+      if (event) event.preventDefault();
+      if (isProcessing) return;
+      
+      const emptyRule = {
+        sourceIP: '',
+        destIP: '',
+        protocol: 'TCP',
+        service: '',
+        port: '',
+        authentication: 'No',
+        flowEncryption: 'No',
+        classification: 'Yellow',
+        appCode: ''
+      };
+      
+      currentRules.push(emptyRule);
+      displayRules();
+    }
+
+    function onImportCSV(event) {
+      if (event) event.preventDefault();
+      if (isProcessing) return;
+
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = '.csv';
+      input.style.display = 'none';
       
-      input.onchange = function(event) {
-        event.preventDefault();
-        const file = event.target.files[0];
+      input.onchange = function(e) {
+        e.preventDefault();
+        const file = e.target?.files?.[0];
         if (!file) return;
         
+        isProcessing = true;
         showLoading();
-        const reader = new FileReader();
         
+        const reader = new FileReader();
         reader.onload = function(e) {
-          const content = e.target.result;
-          google.script.run
-            .withSuccessHandler(handleImportSuccess)
-            .withFailureHandler(handleImportError)
-            .importCSV(content);
+          const content = e.target?.result;
+          if (typeof content === 'string') {
+            google.script.run
+              .withSuccessHandler(onImportSuccess)
+              .withFailureHandler(onImportError)
+              .importCSV(content);
+          }
         };
         
         reader.onerror = function() {
+          isProcessing = false;
           hideLoading();
           alert('Erreur lors de la lecture du fichier');
         };
@@ -442,75 +475,91 @@
         reader.readAsText(file);
       };
       
+      document.body.appendChild(input);
       input.click();
+      document.body.removeChild(input);
     }
 
-    function handleImportSuccess(response) {
+    function onImportSuccess(response) {
+      isProcessing = false;
       hideLoading();
+      
       if (!response.success) {
         alert('Erreur lors de l\'import: ' + response.message);
         return;
       }
+      
       currentRules = response.data;
-      displayImportedRules();
+      displayRules();
     }
 
-    function handleImportError(error) {
+    function onImportError(error) {
+      isProcessing = false;
       hideLoading();
       alert('Une erreur est survenue lors de l\'import: ' + error.toString());
     }
 
-    function displayImportedRules() {
+    function displayRules() {
       const table = document.getElementById('rulesTable');
+      if (!table) return;
+
       const tbody = table.querySelector('tbody');
+      if (!tbody) return;
+
       tbody.innerHTML = '';
       
-      currentRules.forEach(rule => {
+      currentRules.forEach((rule, index) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><input type="text" value="${rule.sourceIP}" readonly></td>
-          <td><input type="text" value="${rule.destIP}" readonly></td>
-          <td><input type="text" value="${rule.protocol}" readonly></td>
-          <td><input type="text" value="${rule.service}" readonly></td>
-          <td><input type="text" value="${rule.port}" readonly></td>
-          <td><input type="text" value="${rule.authentication}" readonly></td>
-          <td><input type="text" value="${rule.flowEncryption}" readonly></td>
-          <td><input type="text" value="${rule.classification}" readonly></td>
-          <td><input type="text" value="${rule.appCode}" readonly></td>
+          <td><input type="text" value="${rule.sourceIP || ''}" readonly></td>
+          <td><input type="text" value="${rule.destIP || ''}" readonly></td>
+          <td><input type="text" value="${rule.protocol || ''}" readonly></td>
+          <td><input type="text" value="${rule.service || ''}" readonly></td>
+          <td><input type="text" value="${rule.port || ''}" readonly></td>
+          <td><input type="text" value="${rule.authentication || ''}" readonly></td>
+          <td><input type="text" value="${rule.flowEncryption || ''}" readonly></td>
+          <td><input type="text" value="${rule.classification || ''}" readonly></td>
+          <td><input type="text" value="${rule.appCode || ''}" readonly></td>
         `;
         tbody.appendChild(tr);
       });
       
-      table.style.display = 'table';
+      table.style.display = currentRules.length > 0 ? 'table' : 'none';
     }
 
-    function handleDelete() {
-      const shouldDelete = confirm('Voulez-vous vraiment supprimer toutes les règles ?');
-      if (!shouldDelete) return;
+    function onDelete(event) {
+      if (event) event.preventDefault();
+      if (isProcessing) return;
+      
+      if (!confirm('Voulez-vous vraiment supprimer toutes les règles ?')) return;
       
       document.getElementById('department').value = '';
       document.getElementById('projectCode').value = '';
       document.getElementById('email').value = '';
       currentRules = [];
-      document.getElementById('rulesTable').style.display = 'none';
-      document.getElementById('scriptsOutput').style.display = 'none';
+      
+      const table = document.getElementById('rulesTable');
+      if (table) table.style.display = 'none';
+      
+      const scriptsOutput = document.getElementById('scriptsOutput');
+      if (scriptsOutput) scriptsOutput.style.display = 'none';
     }
 
-    function handleVerify() {
+    function onVerify(event) {
+      if (event) event.preventDefault();
+      if (isProcessing) return;
+
       const department = document.getElementById('department').value;
       const projectCode = document.getElementById('projectCode').value;
       const email = document.getElementById('email').value;
       
-      let errors = [];
-
+      const errors = [];
       if (!department || department.length > 4) {
         errors.push('Le département doit faire entre 1 et 4 caractères');
       }
-
       if (!projectCode || projectCode.length > 4) {
         errors.push('Le code projet doit faire entre 1 et 4 caractères');
       }
-
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         errors.push('Email invalide');
       }
@@ -522,7 +571,10 @@
       }
     }
 
-    function handleGenerateScripts() {
+    function onGenerateScripts(event) {
+      if (event) event.preventDefault();
+      if (isProcessing) return;
+
       const department = document.getElementById('department').value;
       const projectCode = document.getElementById('projectCode').value;
       const email = document.getElementById('email').value;
@@ -532,26 +584,31 @@
         return;
       }
 
+      isProcessing = true;
       const formData = {
-        department: department,
-        projectCode: projectCode,
-        email: email,
+        department,
+        projectCode,
+        email,
         rules: currentRules
       };
 
       google.script.run
-        .withSuccessHandler(handleScriptsGenerated)
-        .withFailureHandler(handleGenerateError)
+        .withSuccessHandler(onScriptsGenerated)
+        .withFailureHandler(onGenerateError)
         .generateScripts(formData);
     }
 
-    function handleScriptsGenerated(response) {
+    function onScriptsGenerated(response) {
+      isProcessing = false;
+      
       if (!response.success) {
         alert('Erreur: ' + response.message);
         return;
       }
 
       const container = document.getElementById('scriptsContainer');
+      if (!container) return;
+      
       container.innerHTML = '';
       
       Object.entries(response.data).forEach(([type, script]) => {
@@ -560,20 +617,26 @@
         scriptBlock.innerHTML = `
           <h3>${type}</h3>
           <pre>${script}</pre>
-          <button type="button" class="copy-button" onclick="copyToClipboard(this)">Copy</button>
+          <button type="button" class="copy-button" onclick="onCopyScript(this)">Copy</button>
         `;
         container.appendChild(scriptBlock);
       });
       
-      document.getElementById('scriptsOutput').style.display = 'block';
+      const scriptsOutput = document.getElementById('scriptsOutput');
+      if (scriptsOutput) scriptsOutput.style.display = 'block';
     }
 
-    function handleGenerateError(error) {
+    function onGenerateError(error) {
+      isProcessing = false;
       alert('Erreur lors de la génération: ' + error.toString());
     }
 
-    function copyToClipboard(button) {
+    function onCopyScript(button) {
+      if (!button || !button.previousElementSibling) return;
+      
       const scriptText = button.previousElementSibling.textContent;
+      if (!scriptText) return;
+      
       navigator.clipboard.writeText(scriptText)
         .then(() => alert('Script copié dans le presse-papier'))
         .catch(err => console.error('Erreur lors de la copie:', err));
