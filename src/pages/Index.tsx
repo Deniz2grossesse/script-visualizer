@@ -38,6 +38,7 @@ const Index = () => {
   const { toast } = useToast();
   const [generatedScripts, setGeneratedScripts] = useState<{ id: number; script: string }[]>([]);
   const [csvRows, setCsvRows] = useState<CSVRow[]>([]);
+  const [isImporting, setIsImporting] = useState(false);
 
   const generateScriptForRow = (row: CSVRow): string => {
     return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
@@ -57,6 +58,114 @@ const Index = () => {
   }'`;
   };
 
+  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || isImporting) return;
+
+    setIsImporting(true);
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        if (!text) {
+          toast({
+            title: "Erreur",
+            description: "Le fichier est vide",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        const lines = text.split('\n').slice(11);
+        const newRows: CSVRow[] = [];
+
+        lines.forEach((line) => {
+          if (line.trim() === '') return;
+
+          const columns = line.split(',').map(col => col.trim());
+          if (columns.length >= 9) {
+            newRows.push({
+              sourceIP: columns[3] || '',
+              destIP: columns[6] || '',
+              protocol: 'tcp',
+              service: columns[8] || '',
+              port: columns[9] || '',
+              authentication: 'no',
+              flowEncryption: 'no',
+              classification: 'yellow',
+              appCode: columns[13] || ''
+            });
+          }
+        });
+
+        if (newRows.length > 0) {
+          const shouldUpdate = window.confirm(`Voulez-vous importer ${newRows.length} règles ?`);
+          if (shouldUpdate) {
+            setCsvRows(newRows);
+          }
+        } else {
+          toast({
+            title: "Information",
+            description: "Aucune règle valide trouvée dans le fichier",
+          });
+        }
+      } catch (error) {
+        console.error('Erreur lors du parsing du CSV:', error);
+        toast({
+          title: "Erreur",
+          description: "Erreur lors de la lecture du fichier",
+          variant: "destructive"
+        });
+      } finally {
+        setIsImporting(false);
+      }
+    };
+
+    reader.onerror = () => {
+      setIsImporting(false);
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la lecture du fichier",
+        variant: "destructive"
+      });
+    };
+
+    reader.readAsText(file);
+  };
+
+  const handleAddRow = () => {
+    const emptyRow: CSVRow = {
+      sourceIP: '',
+      destIP: '',
+      protocol: 'tcp',
+      service: '',
+      port: '',
+      authentication: 'no',
+      flowEncryption: 'no',
+      classification: 'yellow',
+      appCode: ''
+    };
+    setCsvRows(prev => [...prev, emptyRow]);
+  };
+
+  const handleGenerateScripts = () => {
+    const validRows = csvRows.slice(0, 5);
+    if (validRows.length === 0) {
+      toast({
+        title: "Information",
+        description: "Aucune règle à générer",
+      });
+      return;
+    }
+
+    const scripts = validRows.map((row, index) => ({
+      id: index + 1,
+      script: generateScriptForRow(row)
+    }));
+    setGeneratedScripts(scripts);
+  };
+
   return (
     <div className="min-h-screen bg-[#212121] text-[#BDC3C7] font-sans p-6">
       <div className="w-[1200px] mx-auto bg-[#34495E] rounded-lg p-8 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
@@ -70,68 +179,22 @@ const Index = () => {
         <div className="flex justify-end gap-4 mb-6">
           <Button 
             type="button"
-            onClick={() => {
-              const emptyRow: CSVRow = {
-                sourceIP: '',
-                destIP: '',
-                protocol: 'tcp',
-                service: '',
-                port: '',
-                authentication: 'no',
-                flowEncryption: 'no',
-                classification: 'yellow',
-                appCode: ''
-              };
-              setCsvRows(prev => [...prev, emptyRow]);
-            }}
+            onClick={handleAddRow}
+            disabled={isImporting}
             className="flex items-center gap-2 bg-[#2ECC71] hover:bg-[#27AE60] text-white"
           >
             <Plus className="w-4 h-4" />
             Ajouter une ligne
           </Button>
           
-          <label className="flex items-center gap-2 cursor-pointer px-4 py-2 bg-[#E67E22] text-white rounded-md hover:bg-[#D35400] transition-colors">
+          <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 bg-[#E67E22] text-white rounded-md hover:bg-[#D35400] transition-colors ${isImporting ? 'opacity-50 cursor-not-allowed' : ''}`}>
             <Upload className="w-4 h-4" />
             Importer CSV
             <input
               type="file"
               accept=".csv"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                  const text = e.target?.result as string;
-                  const lines = text.split('\n').slice(11);
-                  const newRows: CSVRow[] = [];
-
-                  lines.forEach((line) => {
-                    if (line.trim() === '') return;
-
-                    const columns = line.split(',').map(col => col.trim());
-                    if (columns.length >= 9) {
-                      newRows.push({
-                        sourceIP: columns[3] || '',
-                        destIP: columns[6] || '',
-                        protocol: 'tcp',
-                        service: columns[8] || '',
-                        port: columns[9] || '',
-                        authentication: 'no',
-                        flowEncryption: 'no',
-                        classification: 'yellow',
-                        appCode: columns[13] || ''
-                      });
-                    }
-                  });
-
-                  if (newRows.length > 0) {
-                    setCsvRows(newRows);
-                  }
-                };
-
-                reader.readAsText(file);
-              }}
+              onChange={handleImportCSV}
+              disabled={isImporting}
               className="hidden"
             />
           </label>
@@ -296,16 +359,8 @@ const Index = () => {
         <div className="flex justify-end gap-3 mt-4">
           <Button 
             type="button"
-            onClick={() => {
-              const validRows = csvRows.slice(0, 5);
-              if (validRows.length > 0) {
-                const scripts = validRows.map((row, index) => ({
-                  id: index + 1,
-                  script: generateScriptForRow(row)
-                }));
-                setGeneratedScripts(scripts);
-              }
-            }}
+            onClick={handleGenerateScripts}
+            disabled={csvRows.length === 0 || isImporting}
             className="bg-[#E67E22] hover:bg-[#D35400] text-white border-none transition-colors flex items-center gap-2"
           >
             Generate Scripts
