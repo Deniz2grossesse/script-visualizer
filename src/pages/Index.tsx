@@ -136,6 +136,16 @@ const Index = () => {
         console.log(`Nombre de colonnes trouvées:`, columns.length);
         
         if (columns.length >= 9) {
+          // Normaliser les valeurs de "yes"/"no" et classification
+          const authValue = columns[10]?.toLowerCase() === 'yes' ? 'yes' : 'no';
+          const encryptValue = columns[11]?.toLowerCase() === 'yes' ? 'yes' : 'no';
+          let classificationValue = columns[12]?.toLowerCase() || '';
+          
+          // Normaliser la classification
+          if (!['yellow', 'amber', 'red'].includes(classificationValue)) {
+            classificationValue = 'yellow'; // Valeur par défaut
+          }
+
           // Créer une nouvelle ligne avec les données du CSV
           const newRow: CSVRow = {
             sourceIP: columns[3] || '', // Colonne D
@@ -143,15 +153,15 @@ const Index = () => {
             protocol: columns[7] || '', // Colonne H
             service: columns[8] || '', // Colonne I
             port: columns[9] || '', // Colonne J
-            authentication: columns[10] || '', // Colonne K
-            flowEncryption: columns[11] || '', // Colonne L
-            classification: columns[12] || '', // Colonne M
+            authentication: authValue, // Colonne K normalisée
+            flowEncryption: encryptValue, // Colonne L normalisée
+            classification: classificationValue, // Colonne M normalisée
             appCode: columns[13] || '', // Colonne N
             isValid: false,
             errors: []
           };
 
-          console.log(`Données extraites pour la nouvelle ligne:`, newRow);
+          console.log(`Données extraites et normalisées pour la nouvelle ligne:`, newRow);
 
           const validation = validateRow(newRow);
           if (!validation.isValid) {
