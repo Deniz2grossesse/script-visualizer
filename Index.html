@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -191,6 +190,11 @@
     <div class="container">
       <h1>Network Rules Generator</h1>
       
+      <div class="action-buttons" style="margin-bottom: 20px;">
+        <button class="btn btn-primary" onclick="importCSVFile()">Importer CSV</button>
+        <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleCSVFile(this)">
+      </div>
+      
       <div class="info-box">
         Ces trois champs sont obligatoires, vous ne pouvez pas commencer à les saisir sans les avoir remplis.
       </div>
@@ -273,7 +277,8 @@
         <button class="btn btn-resume" onclick="resumeDraft()">Resume Draft</button>
         <button class="btn btn-verify" onclick="verifyRules()">Verify</button>
         <button class="btn btn-validate" onclick="validateRules()">Validate</button>
-        <button onclick="generateScripts()" class="btn btn-generate">Generate Scripts</button>
+        <button class="btn btn-generate" onclick="generateScripts()">Generate Scripts</button>
+        <button class="btn btn-primary" onclick="saveDraftRules()">Save Draft</button>
       </div>
 
       <div id="output" class="output">
@@ -410,17 +415,149 @@
         }
       }
 
-      // Fonctions à implémenter plus tard si nécessaire
+      function importCSVFile() {
+        document.getElementById('csvFileInput').click();
+      }
+
+      function handleCSVFile(input) {
+        const file = input.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            google.script.run
+              .withSuccessHandler(function(response) {
+                if (response.success) {
+                  fillFormWithCSVData(response.rules);
+                } else {
+                  alert('Erreur lors de l\'importation: ' + response.message);
+                }
+              })
+              .importCSV(e.target.result);
+          };
+          reader.readAsText(file);
+        }
+      }
+
+      function fillFormWithCSVData(rules) {
+        deleteRules();
+        
+        if (rules.length > 0) {
+          const firstRule = rules[0];
+          document.getElementById('department').value = firstRule.department;
+          document.getElementById('projectCode').value = firstRule.projectCode;
+          document.getElementById('email').value = firstRule.email;
+          
+          fillRuleInputs(document.querySelector('.rules-grid'), firstRule);
+        }
+        
+        for (let i = 1; i < rules.length && i < 5; i++) {
+          addNewRule();
+          fillRuleInputs(document.querySelectorAll('.rules-grid')[i], rules[i]);
+        }
+      }
+
+      function fillRuleInputs(ruleElement, ruleData) {
+        ruleElement.querySelector('.sourceIP').value = ruleData.sourceIP;
+        ruleElement.querySelector('.destIP').value = ruleData.destIP;
+        ruleElement.querySelector('.protocol').value = ruleData.protocol;
+        ruleElement.querySelector('.service').value = ruleData.service;
+        ruleElement.querySelector('.port').value = ruleData.port;
+        ruleElement.querySelector('.appCode').value = ruleData.appCode;
+      }
+
+      function saveDraftRules() {
+        const rules = [];
+        document.querySelectorAll('.rules-grid').forEach(rule => {
+          const ruleData = {
+            department: document.getElementById('department').value,
+            projectCode: document.getElementById('projectCode').value,
+            email: document.getElementById('email').value,
+            sourceIP: rule.querySelector('.sourceIP').value,
+            destIP: rule.querySelector('.destIP').value,
+            protocol: rule.querySelector('.protocol').value,
+            service: rule.querySelector('.service').value,
+            port: rule.querySelector('.port').value,
+            appCode: rule.querySelector('.appCode').value
+          };
+          if (ruleData.sourceIP && ruleData.destIP) {
+            rules.push(ruleData);
+          }
+        });
+
+        if (rules.length === 0) {
+          alert('Aucune règle à sauvegarder');
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(function(response) {
+            if (response.success) {
+              alert('Brouillon sauvegardé avec succès');
+            } else {
+              alert('Erreur lors de la sauvegarde: ' + response.message);
+            }
+          })
+          .saveDraft(rules);
+      }
+
       function resumeDraft() {
-        alert('Fonction à implémenter');
+        google.script.run
+          .withSuccessHandler(function(response) {
+            if (response.success) {
+              fillFormWithCSVData(response.data);
+            } else {
+              alert('Erreur lors de la récupération du brouillon: ' + response.message);
+            }
+          })
+          .getDraftRules();
       }
 
       function verifyRules() {
-        alert('Fonction à implémenter');
+        const rules = [];
+        document.querySelectorAll('.rules-grid').forEach(rule => {
+          const ruleData = {
+            sourceIP: rule.querySelector('.sourceIP').value,
+            destIP: rule.querySelector('.destIP').value,
+            protocol: rule.querySelector('.protocol').value,
+            service: rule.querySelector('.service').value,
+            port: rule.querySelector('.port').value
+          };
+          if (ruleData.sourceIP && ruleData.destIP) {
+            rules.push(ruleData);
+          }
+        });
+
+        google.script.run
+          .withSuccessHandler(function(results) {
+            let message = '';
+            results.forEach((result, index) => {
+              if (!result.isValid) {
+                message += `Règle ${index + 1}: ${result.errors.join(', ')}\n`;
+              }
+            });
+            
+            if (message) {
+              alert('Erreurs détectées:\n' + message);
+            } else {
+              alert('Toutes les règles sont valides');
+            }
+          })
+          .verifyRules(rules);
       }
 
       function validateRules() {
-        alert('Fonction à implémenter');
+        const mandatory = {
+          department: document.getElementById('department').value,
+          projectCode: document.getElementById('projectCode').value,
+          email: document.getElementById('email').value
+        };
+
+        if (!mandatory.department || !mandatory.projectCode || !mandatory.email) {
+          alert('Veuillez remplir tous les champs obligatoires');
+          return;
+        }
+
+        verifyRules();
       }
     </script>
   </body>
