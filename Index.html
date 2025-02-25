@@ -4,99 +4,222 @@
   <head>
     <base target="_top">
     <meta charset="UTF-8">
-    <title>Network Rules Generator</title>
+    <title>One Click Onboarding</title>
     <style>
-      /* ... keep existing code (styles CSS) */
+      body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #fff;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 40px;
+        color: #333;
+      }
+      .info-box {
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        padding: 15px;
+        margin-bottom: 30px;
+        border-radius: 6px;
+      }
+      .mandatory {
+        margin-bottom: 40px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: #374151;
+      }
+      .required {
+        color: #ef4444;
+        margin-left: 4px;
+      }
+      input, select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      .rules-grid {
+        display: grid;
+        grid-template-columns: repeat(9, 1fr);
+        gap: 15px;
+        align-items: start;
+        margin-bottom: 20px;
+      }
+      .rules-grid > div {
+        position: relative;
+      }
+      .add-button {
+        width: 24px;
+        height: 24px;
+        border: 1px solid #3b82f6;
+        border-radius: 50%;
+        color: #3b82f6;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        margin: 8px auto 0;
+        font-size: 18px;
+      }
+      .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 30px;
+      }
+      .btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: 1px solid #d1d5db;
+        background: white;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .btn-delete {
+        color: #ef4444;
+      }
+      .btn-resume {
+        color: #333;
+      }
+      .btn-verify {
+        color: #3b82f6;
+      }
+      .btn-validate {
+        color: #10b981;
+      }
+      .btn-generate {
+        background: #10b981;
+        color: white;
+        border: none;
+      }
+      .output {
+        margin-top: 30px;
+        display: none;
+      }
+      .script-output {
+        width: 100%;
+        min-height: 100px;
+        margin: 10px 0;
+        padding: 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        font-family: monospace;
+      }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>Network Rules Generator</h1>
+      <h1>One Click Onboarding</h1>
       
+      <div class="info-box">
+        These three fields are mandatory, you cannot start entering them without having filled them in.
+      </div>
+
       <div class="mandatory">
-        <h3>Informations obligatoires</h3>
         <div class="form-group">
           <label>Department <span class="required">*</span></label>
-          <input type="text" id="department" placeholder="1-4 caractères" maxlength="4">
+          <input type="text" id="department" placeholder="Department (1-4 chars)" maxlength="4">
         </div>
         <div class="form-group">
-          <label>Project Code <span class="required">*</span></label>
-          <input type="text" id="projectCode" placeholder="1-4 caractères" maxlength="4">
+          <label>Project/Application Code <span class="required">*</span></label>
+          <input type="text" id="projectCode" placeholder="Project code (1-4 chars)" maxlength="4">
         </div>
         <div class="form-group">
-          <label>Email <span class="required">*</span></label>
-          <input type="email" id="email" placeholder="Votre email">
+          <label>Requester's Email <span class="required">*</span></label>
+          <input type="email" id="email" placeholder="Email address">
         </div>
       </div>
 
-      <div class="form-section">
-        <div class="section-title">Configuration de la règle réseau</div>
-        <div id="networkRule">
-          <div class="form-group">
-            <label>Source IP</label>
-            <input type="text" id="sourceIP" placeholder="ex: 10.10.10.10">
-          </div>
-          <div class="form-group">
-            <label>Destination IP</label>
-            <input type="text" id="destIP" placeholder="ex: 20.20.20.20">
-          </div>
-          <div class="form-group">
-            <label>Protocol</label>
-            <select id="protocol">
-              <option value="tcp">TCP</option>
-              <option value="udp">UDP</option>
-              <option value="icmp">ICMP</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Service</label>
-            <input type="text" id="service" placeholder="ex: HTTP">
-          </div>
-          <div class="form-group">
-            <label>Port</label>
-            <input type="number" id="port" placeholder="ex: 80">
-          </div>
-          <div class="form-group">
-            <label>Authentication</label>
-            <select id="authentication">
-              <option value="none">None</option>
-              <option value="basic">Basic</option>
-              <option value="oauth">OAuth</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Flow Encryption</label>
-            <select id="encryption">
-              <option value="none">None</option>
-              <option value="ssl">SSL/TLS</option>
-              <option value="ipsec">IPSec</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Classification</label>
-            <select id="classification">
-              <option value="public">Public</option>
-              <option value="internal">Internal</option>
-              <option value="confidential">Confidential</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>APP Code</label>
-            <input type="text" id="appCode" placeholder="Code (4 chars)" maxlength="4">
-          </div>
+      <div class="rules-grid">
+        <div>
+          <label>Source IP</label>
+          <input type="text" id="sourceIP" placeholder="IP source">
+          <button class="add-button">+</button>
         </div>
+        <div>
+          <label>IP Destination</label>
+          <input type="text" id="destIP" placeholder="IP destination">
+          <button class="add-button">+</button>
+        </div>
+        <div>
+          <label>Protocole</label>
+          <select id="protocol">
+            <option value="tcp">TCP</option>
+            <option value="udp">UDP</option>
+            <option value="icmp">ICMP</option>
+          </select>
+          <button class="add-button">+</button>
+        </div>
+        <div>
+          <label>Service</label>
+          <input type="text" id="service" placeholder="Service">
+          <button class="add-button">+</button>
+        </div>
+        <div>
+          <label>Port</label>
+          <input type="number" id="port" placeholder="Port">
+          <button class="add-button">+</button>
+        </div>
+        <div>
+          <label>Authentication</label>
+          <select id="authentication">
+            <option value="none">Select</option>
+            <option value="basic">Basic</option>
+            <option value="oauth">OAuth</option>
+          </select>
+          <button class="add-button">+</button>
+        </div>
+        <div>
+          <label>Flow encryption</label>
+          <select id="encryption">
+            <option value="none">Select</option>
+            <option value="ssl">SSL/TLS</option>
+            <option value="ipsec">IPSec</option>
+          </select>
+          <button class="add-button">+</button>
+        </div>
+        <div>
+          <label>Classification</label>
+          <select id="classification">
+            <option value="public">Select</option>
+            <option value="internal">Internal</option>
+            <option value="confidential">Confidential</option>
+          </select>
+          <button class="add-button">+</button>
+        </div>
+        <div>
+          <label>APP code</label>
+          <input type="text" id="appCode" placeholder="Code (4 chars)" maxlength="4">
+          <button class="add-button">+</button>
+        </div>
+      </div>
 
-        <div class="button-group">
-          <button onclick="resetForm()" class="reset">Réinitialiser</button>
-          <button onclick="validateAndGenerate()" class="generate">Générer le script</button>
-        </div>
+      <div class="action-buttons">
+        <button class="btn btn-delete">Delete</button>
+        <button class="btn btn-resume">Resume Draft</button>
+        <button class="btn btn-verify">Verify</button>
+        <button class="btn btn-validate">Validate</button>
+        <button onclick="validateAndGenerate()" class="btn btn-generate">Generate Scripts</button>
       </div>
 
       <div id="output" class="output">
-        <h3>Script généré</h3>
+        <h3>Generated Script</h3>
         <textarea id="scriptOutput" class="script-output" readonly></textarea>
         <div class="button-group">
-          <button onclick="copyScript()" class="copy">Copier le script</button>
+          <button onclick="copyScript()" class="btn">Copy script</button>
         </div>
       </div>
     </div>
