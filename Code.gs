@@ -1,4 +1,3 @@
-
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -128,7 +127,7 @@ function deleteForm() {
 
 function generateScripts(formData) {
   console.log("generateScripts called with data:", JSON.stringify(formData));
-  if (!formData) {
+  if (!formData || !formData.csvRows) {
     return {
       success: false,
       message: "Données manquantes pour la génération des scripts"
@@ -136,16 +135,14 @@ function generateScripts(formData) {
   }
 
   try {
-    var scripts = {
-      networkRules: generateNetworkRules(formData),
-      accessRules: generateAccessRules(formData),
-      securityPolicies: generateSecurityPolicies(formData)
-    };
+    var scripts = formData.csvRows.map(function(row, index) {
+      return generateScriptForRow(row, index);
+    });
 
     return {
       success: true,
       data: scripts,
-      message: "Scripts générés avec succès"
+      message: scripts.length + " scripts générés avec succès"
     };
   } catch(e) {
     console.error("Erreur generateScripts:", e.toString());
@@ -156,27 +153,21 @@ function generateScripts(formData) {
   }
 }
 
-function generateNetworkRules(data) {
-  return `# Network rules for ${data.department}/${data.projectCode}
-allow_access:
-  - department: ${data.department}
-  - project: ${data.projectCode}
-  - requester: ${data.email}`;
-}
-
-function generateAccessRules(data) {
-  return `# Access rules for ${data.department}/${data.projectCode}
-grant_access:
-  - level: standard
-  - department: ${data.department}
-  - project: ${data.projectCode}`;
-}
-
-function generateSecurityPolicies(data) {
-  return `# Security policies for ${data.department}/${data.projectCode}
-security_level: standard
-monitoring: enabled
-logging: enabled
-department: ${data.department}
-project: ${data.projectCode}`;
+function generateScriptForRow(row, index) {
+  return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
+  -H "Authorization: Bearer <TON_TOKEN>" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "source": {
+      "ip": "${row.sourceIP.split('/')[0]}"
+    },
+    "destination": {
+      "ip": "${row.destIP}"
+    },
+    "service": {
+      "protocol": "${row.protocol.toUpperCase()}",
+      "port": ${row.port},
+      "name": "${row.service}"
+    }
+  }'`;
 }
