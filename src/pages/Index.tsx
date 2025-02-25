@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Network, Shield, ArrowRight, Plus, Lock, FileCode, AlertTriangle, Check, X, Upload, Trash2 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface FieldError {
   error: boolean;
@@ -154,6 +154,14 @@ const Index = () => {
       }
     };
 
+    reader.onerror = function() {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Erreur lors de la lecture du fichier"
+      });
+    };
+
     reader.readAsText(file);
   };
 
@@ -172,13 +180,17 @@ const Index = () => {
       errors: []
     };
     setCsvRows(prev => [...prev, emptyRow]);
+    toast({
+      title: "Nouvelle ligne",
+      description: "Une nouvelle ligne a été ajoutée"
+    });
   };
 
   const deleteRow = (index: number) => {
     setCsvRows(prev => prev.filter((_, i) => i !== index));
     toast({
       title: "Ligne supprimée",
-      description: "La ligne a été supprimée avec succès."
+      description: "La ligne a été supprimée avec succès"
     });
   };
 
