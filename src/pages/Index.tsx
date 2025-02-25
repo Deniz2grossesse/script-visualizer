@@ -262,7 +262,7 @@ const Index = () => {
             <Input 
               placeholder="IP source" 
               className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-white/50 text-sm h-9 mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
-              onChange={(e) => validateIP(e.target.value, 'sourceIP')}
+              onChange={(e) => validateIP(e.target.value)}
             />
             <Button 
               variant="outline" 
