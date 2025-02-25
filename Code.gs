@@ -11,29 +11,37 @@ function doGet() {
 function importCSV(csvData) {
   try {
     console.log("Début de l'import CSV");
-    console.log("Données reçues:", csvData);
+    
+    if (!csvData) {
+      return { 
+        success: false, 
+        message: "Aucune donnée CSV fournie" 
+      };
+    }
 
     var data = Utilities.parseCsv(csvData);
-    console.log("Données parsées:", data);
-
-    // On commence à la ligne 12
+    
+    // Vérification de la longueur minimale
     if (data.length < 12) {
-      throw new Error("Le fichier CSV doit contenir au moins 12 lignes");
+      return { 
+        success: false, 
+        message: "Le fichier CSV doit contenir au moins 12 lignes" 
+      };
     }
 
     // On prend les données à partir de la ligne 12
     var processedData = data.slice(11).map(function(row) {
-      if (row.length >= 14) { // Il nous faut au moins 14 colonnes
+      if (row.length >= 14) {
         return {
-          sourceIP: row[3] || '',        // Colonne D
-          destIP: row[6] || '',          // Colonne G
-          protocol: row[7] || 'TCP',     // Colonne H
-          service: row[8] || '',         // Colonne I
-          port: row[9] || '',            // Colonne J
-          authentication: row[10] || 'No',// Colonne K
-          flowEncryption: row[11] || 'No',// Colonne L
-          classification: row[12] || 'Yellow', // Colonne M
-          appCode: row[13] || ''         // Colonne N
+          sourceIP: row[3] || '',
+          destIP: row[6] || '',
+          protocol: row[7] || 'TCP',
+          service: row[8] || '',
+          port: row[9] || '',
+          authentication: row[10] || 'No',
+          flowEncryption: row[11] || 'No',
+          classification: row[12] || 'Yellow',
+          appCode: row[13] || ''
         };
       }
       return null;
@@ -41,10 +49,11 @@ function importCSV(csvData) {
       return row !== null;
     });
 
-    console.log("Données traitées:", processedData);
-
     if (processedData.length === 0) {
-      throw new Error("Aucune donnée valide trouvée dans le CSV");
+      return { 
+        success: false, 
+        message: "Aucune donnée valide trouvée dans le CSV" 
+      };
     }
 
     return { 
@@ -52,6 +61,7 @@ function importCSV(csvData) {
       data: processedData,
       message: processedData.length + " lignes importées avec succès"
     };
+
   } catch(e) {
     console.error("Erreur lors de l'import:", e.toString());
     return { 
@@ -63,12 +73,25 @@ function importCSV(csvData) {
 
 // Fonction pour sauvegarder un brouillon
 function saveDraft(formData) {
+  if (!formData) {
+    return { 
+      success: false, 
+      message: "Aucune donnée fournie pour la sauvegarde" 
+    };
+  }
+
   try {
     var userProperties = PropertiesService.getUserProperties();
     userProperties.setProperty('draft', JSON.stringify(formData));
-    return { success: true, message: "Brouillon sauvegardé" };
+    return { 
+      success: true, 
+      message: "Brouillon sauvegardé" 
+    };
   } catch(e) {
-    return { success: false, message: "Erreur lors de la sauvegarde: " + e.toString() };
+    return { 
+      success: false, 
+      message: "Erreur lors de la sauvegarde: " + e.toString() 
+    };
   }
 }
 
@@ -77,12 +100,23 @@ function getDraft() {
   try {
     var userProperties = PropertiesService.getUserProperties();
     var draft = userProperties.getProperty('draft');
+    
     if (!draft) {
-      return { success: false, message: "Aucun brouillon trouvé" };
+      return { 
+        success: false, 
+        message: "Aucun brouillon trouvé" 
+      };
     }
-    return { success: true, data: JSON.parse(draft) };
+    
+    return { 
+      success: true, 
+      data: JSON.parse(draft) 
+    };
   } catch(e) {
-    return { success: false, message: "Erreur lors de la récupération: " + e.toString() };
+    return { 
+      success: false, 
+      message: "Erreur lors de la récupération: " + e.toString() 
+    };
   }
 }
 
@@ -91,14 +125,27 @@ function deleteForm() {
   try {
     var userProperties = PropertiesService.getUserProperties();
     userProperties.deleteProperty('draft');
-    return { success: true, message: "Formulaire supprimé" };
+    return { 
+      success: true, 
+      message: "Formulaire supprimé" 
+    };
   } catch(e) {
-    return { success: false, message: "Erreur lors de la suppression: " + e.toString() };
+    return { 
+      success: false, 
+      message: "Erreur lors de la suppression: " + e.toString() 
+    };
   }
 }
 
 // Fonction pour générer les scripts
 function generateScripts(formData) {
+  if (!formData) {
+    return {
+      success: false,
+      message: "Aucune donnée fournie pour la génération des scripts"
+    };
+  }
+
   try {
     var scripts = {
       networkRules: generateNetworkRules(formData),
@@ -112,11 +159,18 @@ function generateScripts(formData) {
       message: "Scripts générés avec succès"
     };
   } catch(e) {
-    return { success: false, message: "Erreur lors de la génération: " + e.toString() };
+    return { 
+      success: false, 
+      message: "Erreur lors de la génération: " + e.toString() 
+    };
   }
 }
 
 function generateNetworkRules(data) {
+  if (!data || !data.department || !data.projectCode || !data.email) {
+    throw new Error("Données manquantes pour la génération des règles réseau");
+  }
+  
   return `# Network rules for ${data.department}/${data.projectCode}
 allow_access:
   - department: ${data.department}
@@ -125,6 +179,10 @@ allow_access:
 }
 
 function generateAccessRules(data) {
+  if (!data || !data.department || !data.projectCode) {
+    throw new Error("Données manquantes pour la génération des règles d'accès");
+  }
+  
   return `# Access rules for ${data.department}/${data.projectCode}
 grant_access:
   - level: standard
@@ -133,6 +191,10 @@ grant_access:
 }
 
 function generateSecurityPolicies(data) {
+  if (!data || !data.department || !data.projectCode) {
+    throw new Error("Données manquantes pour la génération des politiques de sécurité");
+  }
+  
   return `# Security policies for ${data.department}/${data.projectCode}
 security_level: standard
 monitoring: enabled
