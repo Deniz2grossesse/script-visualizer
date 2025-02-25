@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Network, Shield, ArrowRight, Plus, Lock, FileCode, AlertTriangle, Check, X, Upload } from "lucide-react";
+import { Network, Shield, ArrowRight, Plus, Lock, FileCode, AlertTriangle, Check, X, Upload, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface FieldError {
@@ -30,6 +30,8 @@ interface CSVRow {
   flowEncryption: string;
   classification: string;
   appCode: string;
+  isValid?: boolean;
+  errors?: string[];
 }
 
 const Index = () => {
@@ -69,6 +71,34 @@ const Index = () => {
     return !isNaN(portNum) && portNum >= 1 && portNum <= 65535;
   };
 
+  const validateRow = (row: CSVRow): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    if (!validateIP(row.sourceIP)) {
+      errors.push("IP source invalide");
+    }
+    if (!validateIP(row.destIP)) {
+      errors.push("IP destination invalide");
+    }
+    if (!validatePort(row.port)) {
+      errors.push("Port invalide");
+    }
+    if (!['tcp', 'udp', 'icmp'].includes(row.protocol.toLowerCase())) {
+      errors.push("Protocole invalide");
+    }
+    if (!['yes', 'no'].includes(row.authentication.toLowerCase())) {
+      errors.push("Authentication doit être 'yes' ou 'no'");
+    }
+    if (!['yes', 'no'].includes(row.flowEncryption.toLowerCase())) {
+      errors.push("Flow encryption doit être 'yes' ou 'no'");
+    }
+    if (!['yellow', 'amber', 'red'].includes(row.classification.toLowerCase())) {
+      errors.push("Classification invalide");
+    }
+
+    return { isValid: errors.length === 0, errors };
+  };
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -85,7 +115,7 @@ const Index = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
-      const lines = text.split('\n');
+      const lines = text.split('\n').slice(11); // On commence à la ligne 12
       const newRows: CSVRow[] = [];
       let errorCount = 0;
 
@@ -95,43 +125,27 @@ const Index = () => {
         const columns = line.split(',').map(col => col.trim());
         if (columns.length >= 9) {
           const row = {
-            sourceIP: columns[0],
-            destIP: columns[1],
-            protocol: columns[2],
-            service: columns[3],
-            port: columns[4],
-            authentication: columns[5],
-            flowEncryption: columns[6],
-            classification: columns[7],
-            appCode: columns[8]
+            sourceIP: columns[3], // Colonne D
+            destIP: columns[6], // Colonne G
+            protocol: columns[7], // Colonne H
+            service: columns[8], // Colonne I
+            port: columns[9], // Colonne J
+            authentication: columns[10], // Colonne K
+            flowEncryption: columns[11], // Colonne L
+            classification: columns[12], // Colonne M
+            appCode: columns[13], // Colonne N
           };
 
-          // Validation des données
-          let isValid = true;
-          if (!validateIP(row.sourceIP) || !validateIP(row.destIP)) {
-            isValid = false;
-          }
-          if (!validatePort(row.port)) {
-            isValid = false;
-          }
-          if (!['tcp', 'udp', 'icmp'].includes(row.protocol.toLowerCase())) {
-            isValid = false;
-          }
-          if (!['yes', 'no'].includes(row.authentication.toLowerCase())) {
-            isValid = false;
-          }
-          if (!['yes', 'no'].includes(row.flowEncryption.toLowerCase())) {
-            isValid = false;
-          }
-          if (!['yellow', 'amber', 'red'].includes(row.classification.toLowerCase())) {
-            isValid = false;
-          }
-
-          if (!isValid) {
+          const validation = validateRow(row);
+          if (!validation.isValid) {
             errorCount++;
           }
 
-          newRows.push(row);
+          newRows.push({
+            ...row,
+            isValid: validation.isValid,
+            errors: validation.errors
+          });
         }
       });
 
@@ -145,6 +159,45 @@ const Index = () => {
     reader.readAsText(file);
   };
 
+  const addEmptyRow = () => {
+    const emptyRow: CSVRow = {
+      sourceIP: '',
+      destIP: '',
+      protocol: '',
+      service: '',
+      port: '',
+      authentication: '',
+      flowEncryption: '',
+      classification: '',
+      appCode: '',
+      isValid: false,
+      errors: []
+    };
+    setCsvRows([...csvRows, emptyRow]);
+  };
+
+  const deleteRow = (index: number) => {
+    const newRows = [...csvRows];
+    newRows.splice(index, 1);
+    setCsvRows(newRows);
+    toast({
+      title: "Ligne supprimée",
+      description: "La ligne a été supprimée avec succès."
+    });
+  };
+
+  const updateRow = (index: number, field: keyof CSVRow, value: string) => {
+    const newRows = [...csvRows];
+    newRows[index] = {
+      ...newRows[index],
+      [field]: value
+    };
+    const validation = validateRow(newRows[index]);
+    newRows[index].isValid = validation.isValid;
+    newRows[index].errors = validation.errors;
+    setCsvRows(newRows);
+  };
+
   return (
     <div className="min-h-screen bg-[#212121] text-[#BDC3C7] font-sans p-6">
       <div className="w-[1200px] mx-auto bg-[#34495E] rounded-lg p-8 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
@@ -155,7 +208,14 @@ const Index = () => {
           <span className="text-[#BDC3C7]">These three fields are mandatory, you cannot start entering them without having filled them in.</span>
         </div>
 
-        <div className="flex justify-end mb-6">
+        <div className="flex justify-end gap-4 mb-6">
+          <Button 
+            onClick={addEmptyRow}
+            className="flex items-center gap-2 bg-[#2ECC71] hover:bg-[#27AE60] text-white"
+          >
+            <Plus className="w-4 h-4" />
+            Ajouter une ligne
+          </Button>
           <label className="flex items-center gap-2 cursor-pointer px-4 py-2 bg-[#E67E22] text-white rounded-md hover:bg-[#D35400] transition-colors">
             <Upload className="w-4 h-4" />
             Importer CSV
@@ -254,182 +314,6 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="flex gap-4 mb-8">
-          <div className="w-[180px] flex flex-col">
-            <label className="block text-xs font-medium text-[#BDC3C7] flex items-center gap-1 mb-2 h-5">
-              <Network className="w-3 h-3" /> Source IP
-            </label>
-            <Input 
-              placeholder="IP source" 
-              className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-white/50 text-sm h-9 mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
-              onChange={(e) => validateIP(e.target.value)}
-            />
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="w-6 h-6 rounded-full self-center border-[#E67E22] hover:bg-[#E67E22]/20 transition-colors"
-            >
-              <Plus className="h-3 w-3 text-[#E67E22]" />
-            </Button>
-          </div>
-
-          <div className="w-[180px] flex flex-col">
-            <label className="block text-xs font-medium text-[#BDC3C7] flex items-center gap-1 mb-2 h-5">
-              <Network className="w-3 h-3" /> IP Destination
-            </label>
-            <Input 
-              placeholder="IP destination" 
-              className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-white/50 text-sm h-9 mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
-            />
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="w-6 h-6 rounded-full self-center border-[#E67E22] hover:bg-[#E67E22]/20 transition-colors"
-            >
-              <Plus className="h-3 w-3 text-[#E67E22]" />
-            </Button>
-          </div>
-
-          <div className="w-[120px] flex flex-col">
-            <label className="block text-xs font-medium text-[#BDC3C7] flex items-center gap-1 mb-2 h-5">
-              <Shield className="w-3 h-3" /> Protocol
-            </label>
-            <Select>
-              <SelectTrigger className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white h-9 text-sm mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50">
-                <SelectValue placeholder="Select" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="tcp">TCP</SelectItem>
-                <SelectItem value="udp">UDP</SelectItem>
-                <SelectItem value="icmp">ICMP</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="w-6 h-6 rounded-full self-center border-[#E67E22] hover:bg-[#E67E22]/20 transition-colors"
-            >
-              <Plus className="h-3 w-3 text-[#E67E22]" />
-            </Button>
-          </div>
-
-          <div className="w-[90px] flex flex-col">
-            <label className="block text-xs font-medium text-[#BDC3C7] mb-2 h-5">Service</label>
-            <Input 
-              placeholder="Service"
-              className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-white/50 text-sm h-9 mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
-            />
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="w-6 h-6 rounded-full self-center border-[#E67E22] hover:bg-[#E67E22]/20 transition-colors"
-            >
-              <Plus className="h-3 w-3 text-[#E67E22]" />
-            </Button>
-          </div>
-
-          <div className="w-[100px] flex flex-col">
-            <label className="block text-xs font-medium text-[#BDC3C7] mb-2 h-5">Port</label>
-            <Input 
-              type="number" 
-              placeholder="Port"
-              className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-white/50 text-sm h-9 mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
-            />
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="w-6 h-6 rounded-full self-center border-[#E67E22] hover:bg-[#E67E22]/20 transition-colors"
-            >
-              <Plus className="h-3 w-3 text-[#E67E22]" />
-            </Button>
-          </div>
-
-          <div className="w-[110px] flex flex-col">
-            <label className="block text-xs font-medium text-[#BDC3C7] flex items-center gap-1 mb-2 h-5">
-              <Lock className="w-3 h-3" /> Authentication
-            </label>
-            <Select>
-              <SelectTrigger className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white h-9 text-sm mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50">
-                <SelectValue placeholder="Select" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="yes">YES</SelectItem>
-                <SelectItem value="no">NON</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="w-6 h-6 rounded-full self-center border-[#E67E22] hover:bg-[#E67E22]/20 transition-colors"
-            >
-              <Plus className="h-3 w-3 text-[#E67E22]" />
-            </Button>
-          </div>
-
-          <div className="w-[110px] flex flex-col">
-            <label className="block text-xs font-medium text-[#BDC3C7] flex items-center gap-1 mb-2 h-5">
-              <Shield className="w-3 h-3" /> Flow encryption
-            </label>
-            <Select>
-              <SelectTrigger className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white h-9 text-sm mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50">
-                <SelectValue placeholder="Select" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="yes">YES</SelectItem>
-                <SelectItem value="no">NON</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="w-6 h-6 rounded-full self-center border-[#E67E22] hover:bg-[#E67E22]/20 transition-colors"
-            >
-              <Plus className="h-3 w-3 text-[#E67E22]" />
-            </Button>
-          </div>
-
-          <div className="w-[130px] flex flex-col">
-            <label className="block text-xs font-medium text-[#BDC3C7] flex items-center gap-1 mb-2 h-5">
-              <Shield className="w-3 h-3" /> Classification
-            </label>
-            <Select>
-              <SelectTrigger className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white h-9 text-sm mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50">
-                <SelectValue placeholder="Select" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="yellow">YELLOW</SelectItem>
-                <SelectItem value="amber">AMBER</SelectItem>
-                <SelectItem value="red">RED</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="w-6 h-6 rounded-full self-center border-[#E67E22] hover:bg-[#E67E22]/20 transition-colors"
-            >
-              <Plus className="h-3 w-3 text-[#E67E22]" />
-            </Button>
-          </div>
-
-          <div className="w-[90px] flex flex-col">
-            <label className="block text-xs font-medium text-[#BDC3C7] flex items-center gap-1 mb-2 h-5">
-              <FileCode className="w-3 h-3" /> APP code
-            </label>
-            <Input 
-              placeholder="Code (4)" 
-              maxLength={4} 
-              className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-white/50 text-sm h-9 mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
-            />
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="w-6 h-6 rounded-full self-center border-[#E67E22] hover:bg-[#E67E22]/20 transition-colors"
-            >
-              <Plus className="h-3 w-3 text-[#E67E22]" />
-            </Button>
-          </div>
-        </div>
-
         {csvRows.length > 0 && (
           <div className="mt-8 overflow-x-auto">
             <table className="w-full border-collapse">
@@ -444,24 +328,120 @@ const Index = () => {
                   <th className="p-2 text-left">Flow Encryption</th>
                   <th className="p-2 text-left">Classification</th>
                   <th className="p-2 text-left">APP Code</th>
+                  <th className="p-2 text-left">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {csvRows.map((row, index) => (
-                  <tr key={index} className="border-b border-[#2C3E50] hover:bg-[#2C3E50]/50">
-                    <td className="p-2">{row.sourceIP}</td>
-                    <td className="p-2">{row.destIP}</td>
-                    <td className="p-2">{row.protocol}</td>
-                    <td className="p-2">{row.service}</td>
-                    <td className="p-2">{row.port}</td>
-                    <td className="p-2">{row.authentication}</td>
-                    <td className="p-2">{row.flowEncryption}</td>
-                    <td className="p-2">{row.classification}</td>
-                    <td className="p-2">{row.appCode}</td>
+                  <tr key={index} className={`border-b border-[#2C3E50] hover:bg-[#2C3E50]/50 ${!row.isValid ? 'bg-red-900/20' : ''}`}>
+                    <td className="p-2">
+                      <Input
+                        value={row.sourceIP}
+                        onChange={(e) => updateRow(index, 'sourceIP', e.target.value)}
+                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <Input
+                        value={row.destIP}
+                        onChange={(e) => updateRow(index, 'destIP', e.target.value)}
+                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <Select value={row.protocol} onValueChange={(value) => updateRow(index, 'protocol', value)}>
+                        <SelectTrigger className="h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="tcp">TCP</SelectItem>
+                          <SelectItem value="udp">UDP</SelectItem>
+                          <SelectItem value="icmp">ICMP</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="p-2">
+                      <Input
+                        value={row.service}
+                        onChange={(e) => updateRow(index, 'service', e.target.value)}
+                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <Input
+                        value={row.port}
+                        onChange={(e) => updateRow(index, 'port', e.target.value)}
+                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <Select value={row.authentication} onValueChange={(value) => updateRow(index, 'authentication', value)}>
+                        <SelectTrigger className="h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">YES</SelectItem>
+                          <SelectItem value="no">NO</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="p-2">
+                      <Select value={row.flowEncryption} onValueChange={(value) => updateRow(index, 'flowEncryption', value)}>
+                        <SelectTrigger className="h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">YES</SelectItem>
+                          <SelectItem value="no">NO</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="p-2">
+                      <Select value={row.classification} onValueChange={(value) => updateRow(index, 'classification', value)}>
+                        <SelectTrigger className="h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yellow">YELLOW</SelectItem>
+                          <SelectItem value="amber">AMBER</SelectItem>
+                          <SelectItem value="red">RED</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="p-2">
+                      <Input
+                        value={row.appCode}
+                        onChange={(e) => updateRow(index, 'appCode', e.target.value)}
+                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <Button
+                        variant="ghost"
+                        onClick={() => deleteRow(index)}
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-400 hover:bg-red-500/20"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            {csvRows.some(row => !row.isValid) && (
+              <div className="mt-4 p-4 bg-red-900/20 rounded-md">
+                <h3 className="text-red-500 font-semibold mb-2">Erreurs de validation :</h3>
+                <ul className="list-disc list-inside space-y-1">
+                  {csvRows.map((row, index) => 
+                    row.errors && row.errors.length > 0 && (
+                      <li key={index} className="text-red-400">
+                        Ligne {index + 1}: {row.errors.join(', ')}
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 
