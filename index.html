@@ -1,9 +1,11 @@
-
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <base target="_top">
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="0">
   <title>Network Rules Generator</title>
   <style>
     body {
@@ -406,6 +408,29 @@
 
   <script>
     let currentRules = [];
+    
+    // Ajout d'un timestamp aux appels google.script.run
+    function addTimestamp(fn) {
+      return function() {
+        const timestamp = new Date().getTime();
+        console.log('Appel avec timestamp:', timestamp);
+        const args = Array.from(arguments);
+        if (typeof args[0] === 'object') {
+          args[0]._timestamp = timestamp;
+        }
+        return fn.apply(this, args);
+      }
+    }
+
+    // Wrapper pour les appels google.script.run
+    const scriptRun = {
+      withSuccessHandler: function(callback) {
+        return google.script.run.withSuccessHandler(callback);
+      },
+      withFailureHandler: function(callback) {
+        return google.script.run.withFailureHandler(callback);
+      }
+    };
 
     function showLoading() {
       document.getElementById('loadingMessage').classList.add('visible');
@@ -435,8 +460,7 @@
             const content = e.target.result;
             console.log("Contenu du fichier (premiers caractères):", content.substring(0, 100));
             
-            google.script.run
-              .withSuccessHandler(function(response) {
+            scriptRun.withSuccessHandler(function(response) {
                 hideLoading();
                 console.log("Réponse du serveur:", response);
                 if (response.success) {
@@ -453,7 +477,7 @@
                 console.error("Erreur:", error);
                 alert("Erreur lors de l'import: " + error.toString());
               })
-              .importCSV(content);
+              .importCSV(content + '?t=' + new Date().getTime());
           };
           
           reader.onerror = function(e) {
