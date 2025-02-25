@@ -169,7 +169,7 @@ const Index = () => {
         </div>
 
         <div className="flex gap-4 mb-8">
-          <div className="w-[120px] flex flex-col">
+          <div className="w-[180px] flex flex-col">
             <label className="block text-xs font-medium text-white/70 flex items-center gap-1 mb-2 h-5">
               <Network className="w-3 h-3" /> Source IP
             </label>
@@ -187,7 +187,7 @@ const Index = () => {
             </Button>
           </div>
 
-          <div className="w-[120px] flex flex-col">
+          <div className="w-[180px] flex flex-col">
             <label className="block text-xs font-medium text-white/70 flex items-center gap-1 mb-2 h-5">
               <Network className="w-3 h-3" /> IP Destination
             </label>
@@ -227,7 +227,7 @@ const Index = () => {
             </Button>
           </div>
 
-          <div className="w-[120px] flex flex-col">
+          <div className="w-[90px] flex flex-col">
             <label className="block text-xs font-medium text-white/70 mb-2 h-5">Service</label>
             <Input 
               placeholder="Service"
@@ -258,7 +258,7 @@ const Index = () => {
             </Button>
           </div>
 
-          <div className="w-[130px] flex flex-col">
+          <div className="w-[110px] flex flex-col">
             <label className="block text-xs font-medium text-white/70 flex items-center gap-1 mb-2 h-5">
               <Lock className="w-3 h-3" /> Authentication
             </label>
@@ -281,7 +281,7 @@ const Index = () => {
             </Button>
           </div>
 
-          <div className="w-[130px] flex flex-col">
+          <div className="w-[110px] flex flex-col">
             <label className="block text-xs font-medium text-white/70 flex items-center gap-1 mb-2 h-5">
               <Shield className="w-3 h-3" /> Flow encryption
             </label>
@@ -327,12 +327,12 @@ const Index = () => {
             </Button>
           </div>
 
-          <div className="w-[120px] flex flex-col">
+          <div className="w-[90px] flex flex-col">
             <label className="block text-xs font-medium text-white/70 flex items-center gap-1 mb-2 h-5">
               <FileCode className="w-3 h-3" /> APP code
             </label>
             <Input 
-              placeholder="Code (4 chars)" 
+              placeholder="Code (4)" 
               maxLength={4} 
               className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white placeholder-white/50 text-sm h-9 mb-2"
             />
