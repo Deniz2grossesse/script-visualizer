@@ -80,91 +80,89 @@ const Index = () => {
           <span className="text-[#BDC3C7]">These three fields are mandatory, you cannot start entering them without having filled them in.</span>
         </div>
 
-        <div className="mb-10 space-y-6">
-          <div className="grid gap-6 max-w-sm">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Department <span className="text-destructive">*</span>
-              </label>
-              <div className="relative">
-                <Input 
-                  placeholder="Department (1-4 chars)" 
-                  maxLength={4}
-                  className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-[#BDC3C7]/50 pr-10 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
-                  onChange={(e) => {
-                    const isValid = e.target.value.length >= 1 && e.target.value.length <= 4;
-                    setErrors(prev => ({
-                      ...prev,
-                      department: {
-                        error: !isValid,
-                        message: isValid ? '' : 'Entre 1 et 4 caractères requis'
-                      }
-                    }));
-                  }}
-                />
-                {errors.department.error ? (
-                  <X className="absolute right-3 top-2.5 h-5 w-5 text-destructive" />
-                ) : errors.department.message === '' ? (
-                  <Check className="absolute right-3 top-2.5 h-5 w-5 text-green-500" />
-                ) : null}
-              </div>
-              {errors.department.error && (
-                <p className="text-destructive text-sm mt-1">{errors.department.message}</p>
-              )}
+        <div className="grid gap-6 max-w-sm mb-10">
+          <div>
+            <label className="block text-sm font-medium mb-2 text-white">
+              Department <span className="text-destructive">*</span>
+            </label>
+            <div className="relative">
+              <Input 
+                placeholder="Department (1-4 chars)" 
+                maxLength={4}
+                className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-white/50 pr-10 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
+                onChange={(e) => {
+                  const isValid = e.target.value.length >= 1 && e.target.value.length <= 4;
+                  setErrors(prev => ({
+                    ...prev,
+                    department: {
+                      error: !isValid,
+                      message: isValid ? '' : 'Entre 1 et 4 caractères requis'
+                    }
+                  }));
+                }}
+              />
+              {errors.department.error ? (
+                <X className="absolute right-3 top-2.5 h-5 w-5 text-destructive" />
+              ) : errors.department.message === '' ? (
+                <Check className="absolute right-3 top-2.5 h-5 w-5 text-green-500" />
+              ) : null}
             </div>
+            {errors.department.error && (
+              <p className="text-destructive text-sm mt-1">{errors.department.message}</p>
+            )}
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Project/Application Code <span className="text-destructive">*</span>
-              </label>
-              <div className="relative">
-                <Input 
-                  placeholder="Project code (1-4 chars)" 
-                  maxLength={4}
-                  className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-[#BDC3C7]/50 pr-10 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
-                  onChange={(e) => {
-                    const isValid = e.target.value.length >= 1 && e.target.value.length <= 4;
-                    setErrors(prev => ({
-                      ...prev,
-                      projectCode: {
-                        error: !isValid,
-                        message: isValid ? '' : 'Entre 1 et 4 caractères requis'
-                      }
-                    }));
-                  }}
-                />
-                {errors.projectCode.error ? (
-                  <X className="absolute right-3 top-2.5 h-5 w-5 text-destructive" />
-                ) : errors.projectCode.message === '' ? (
-                  <Check className="absolute right-3 top-2.5 h-5 w-5 text-green-500" />
-                ) : null}
-              </div>
-              {errors.projectCode.error && (
-                <p className="text-destructive text-sm mt-1">{errors.projectCode.message}</p>
-              )}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Project/Application Code <span className="text-destructive">*</span>
+            </label>
+            <div className="relative">
+              <Input 
+                placeholder="Project code (1-4 chars)" 
+                maxLength={4}
+                className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-[#BDC3C7]/50 pr-10 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
+                onChange={(e) => {
+                  const isValid = e.target.value.length >= 1 && e.target.value.length <= 4;
+                  setErrors(prev => ({
+                    ...prev,
+                    projectCode: {
+                      error: !isValid,
+                      message: isValid ? '' : 'Entre 1 et 4 caractères requis'
+                    }
+                  }));
+                }}
+              />
+              {errors.projectCode.error ? (
+                <X className="absolute right-3 top-2.5 h-5 w-5 text-destructive" />
+              ) : errors.projectCode.message === '' ? (
+                <Check className="absolute right-3 top-2.5 h-5 w-5 text-green-500" />
+              ) : null}
             </div>
+            {errors.projectCode.error && (
+              <p className="text-destructive text-sm mt-1">{errors.projectCode.message}</p>
+            )}
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Requester's Email <span className="text-destructive">*</span>
-              </label>
-              <div className="relative">
-                <Input 
-                  type="email" 
-                  placeholder="Email address"
-                  className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-[#BDC3C7]/50 pr-10 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
-                  onChange={(e) => validateEmail(e.target.value)}
-                />
-                {errors.email.error ? (
-                  <X className="absolute right-3 top-2.5 h-5 w-5 text-destructive" />
-                ) : errors.email.message === '' ? (
-                  <Check className="absolute right-3 top-2.5 h-5 w-5 text-green-500" />
-                ) : null}
-              </div>
-              {errors.email.error && (
-                <p className="text-destructive text-sm mt-1">{errors.email.message}</p>
-              )}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Requester's Email <span className="text-destructive">*</span>
+            </label>
+            <div className="relative">
+              <Input 
+                type="email" 
+                placeholder="Email address"
+                className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-[#BDC3C7]/50 pr-10 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
+                onChange={(e) => validateEmail(e.target.value)}
+              />
+              {errors.email.error ? (
+                <X className="absolute right-3 top-2.5 h-5 w-5 text-destructive" />
+              ) : errors.email.message === '' ? (
+                <Check className="absolute right-3 top-2.5 h-5 w-5 text-green-500" />
+              ) : null}
             </div>
+            {errors.email.error && (
+              <p className="text-destructive text-sm mt-1">{errors.email.message}</p>
+            )}
           </div>
         </div>
 
