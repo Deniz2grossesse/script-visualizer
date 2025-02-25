@@ -271,13 +271,13 @@ const Index = () => {
       <h1 className="text-2xl font-bold text-center mb-8">One Click Onboarding</h1>
       
       <div className="mandatory-fields">
-        <div className="mandatory-message">
+        <div className="mandatory-message text-left">
           These three fields are mandatory, you cannot start entering them without having filled them in.
         </div>
 
-        <div className="mandatory-fields-container">
+        <div className="mandatory-fields-container ml-8">
           <div className="field-group w-full">
-            <label className="field-label">
+            <label className="field-label text-left w-full">
               Department <span className="text-red-500">*</span>
             </label>
             <Input
@@ -290,7 +290,7 @@ const Index = () => {
           </div>
 
           <div className="field-group w-full">
-            <label className="field-label">
+            <label className="field-label text-left w-full">
               Project/Application Code <span className="text-red-500">*</span>
             </label>
             <Input
@@ -303,7 +303,7 @@ const Index = () => {
           </div>
 
           <div className="field-group w-full">
-            <label className="field-label">
+            <label className="field-label text-left w-full">
               Requester's Email <span className="text-red-500">*</span>
             </label>
             <Input

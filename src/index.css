@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -29,7 +28,7 @@
 }
 
 .mandatory-message {
-  @apply text-sm text-gray-700 p-4 bg-gray-50 rounded-lg border border-gray-200;
+  @apply text-sm text-gray-700 p-4 bg-gray-50 rounded-lg border border-gray-200 max-w-[280px];
 }
 
 .mandatory-fields-container {
