@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,7 @@ interface CSVRow {
 const Index = () => {
   console.log('Index component rendered');
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [generatedScripts, setGeneratedScripts] = useState<{ id: number; script: string }[]>([]);
   const [csvRows, setCsvRows] = useState<CSVRow[]>([]);
   const [currentRow, setCurrentRow] = useState(1);
@@ -49,6 +50,10 @@ const Index = () => {
     department: { error: false, message: '' },
     projectCode: { error: false, message: '' },
   });
+
+  useEffect(() => {
+    console.log('Index component mounted');
+  }, []);
 
   const validateEmail = (email: string): boolean => {
     console.log('validateEmail called with:', email);
@@ -101,6 +106,11 @@ const Index = () => {
     }
 
     return { isValid: errors.length === 0, errors };
+  };
+
+  const handleFileUploadClick = () => {
+    console.log('handleFileUploadClick called - user initiated action');
+    fileInputRef.current?.click();
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -306,16 +316,20 @@ const Index = () => {
             <Plus className="w-4 h-4" />
             Ajouter une ligne
           </Button>
-          <label className="flex items-center gap-2 cursor-pointer px-4 py-2 bg-[#E67E22] text-white rounded-md hover:bg-[#D35400] transition-colors">
+          <Button
+            onClick={handleFileUploadClick}
+            className="flex items-center gap-2 bg-[#E67E22] hover:bg-[#D35400] text-white"
+          >
             <Upload className="w-4 h-4" />
             Importer CSV
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-          </label>
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
         </div>
 
         <div className="grid gap-6 max-w-sm mb-10">
