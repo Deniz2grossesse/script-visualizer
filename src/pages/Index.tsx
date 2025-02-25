@@ -122,7 +122,7 @@ const Index = () => {
       const lines = text.split('\n').slice(11); // On commence à la ligne 12
       console.log("Nombre de lignes après la ligne 11:", lines.length);
       
-      const newRows: CSVRow[] = [];
+      let newRows = [...csvRows]; // On garde les lignes existantes
       let errorCount = 0;
 
       lines.forEach((line, index) => {
@@ -136,43 +136,44 @@ const Index = () => {
         console.log(`Nombre de colonnes trouvées:`, columns.length);
         
         if (columns.length >= 9) {
-          const row = {
-            sourceIP: columns[3], // Colonne D
-            destIP: columns[6], // Colonne G
-            protocol: columns[7], // Colonne H
-            service: columns[8], // Colonne I
-            port: columns[9], // Colonne J
-            authentication: columns[10], // Colonne K
-            flowEncryption: columns[11], // Colonne L
-            classification: columns[12], // Colonne M
-            appCode: columns[13], // Colonne N
+          // Créer une nouvelle ligne avec les données du CSV
+          const newRow: CSVRow = {
+            sourceIP: columns[3] || '', // Colonne D
+            destIP: columns[6] || '', // Colonne G
+            protocol: columns[7] || '', // Colonne H
+            service: columns[8] || '', // Colonne I
+            port: columns[9] || '', // Colonne J
+            authentication: columns[10] || '', // Colonne K
+            flowEncryption: columns[11] || '', // Colonne L
+            classification: columns[12] || '', // Colonne M
+            appCode: columns[13] || '', // Colonne N
+            isValid: false,
+            errors: []
           };
 
-          console.log(`Données extraites de la ligne:`, row);
+          console.log(`Données extraites pour la nouvelle ligne:`, newRow);
 
-          const validation = validateRow(row);
+          const validation = validateRow(newRow);
           if (!validation.isValid) {
             errorCount++;
             console.log(`Erreurs de validation pour la ligne ${index + 12}:`, validation.errors);
           }
-
-          newRows.push({
-            ...row,
-            isValid: validation.isValid,
-            errors: validation.errors
-          });
+          
+          newRow.isValid = validation.isValid;
+          newRow.errors = validation.errors;
+          newRows.push(newRow);
         } else {
           console.log(`Ligne ${index + 12} ignorée car pas assez de colonnes`);
         }
       });
 
-      console.log(`Total des lignes traitées:`, newRows.length);
+      console.log(`Total des lignes ajoutées:`, newRows.length - csvRows.length);
       console.log(`Nombre d'erreurs trouvées:`, errorCount);
 
       setCsvRows(newRows);
       toast({
         title: "Import CSV",
-        description: `${newRows.length} lignes importées. ${errorCount} lignes contiennent des erreurs.`
+        description: `${newRows.length - csvRows.length} nouvelles lignes ajoutées. ${errorCount} lignes contiennent des erreurs.`
       });
     };
 
