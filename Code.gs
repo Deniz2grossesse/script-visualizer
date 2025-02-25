@@ -7,32 +7,6 @@ function doGet() {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-// Fonction pour valider les entrées
-function validateInput(data) {
-  // Validation des champs obligatoires
-  if (!data.department || !data.projectCode || !data.email) {
-    return { success: false, message: "Tous les champs sont obligatoires" };
-  }
-  
-  // Validation du département (1-4 caractères)
-  if (data.department.length > 4) {
-    return { success: false, message: "Le département doit faire entre 1 et 4 caractères" };
-  }
-  
-  // Validation du code projet (1-4 caractères)
-  if (data.projectCode.length > 4) {
-    return { success: false, message: "Le code projet doit faire entre 1 et 4 caractères" };
-  }
-  
-  // Validation de l'email
-  var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(data.email)) {
-    return { success: false, message: "Email invalide" };
-  }
-  
-  return { success: true };
-}
-
 // Fonction pour importer un CSV
 function importCSV(csvData) {
   try {
@@ -86,21 +60,11 @@ function deleteForm() {
 // Fonction pour générer les scripts
 function generateScripts(formData) {
   try {
-    // Validation des données
-    var validation = validateInput(formData);
-    if (!validation.success) {
-      return validation;
-    }
-
-    // Création des scripts (exemple)
     var scripts = {
       networkRules: generateNetworkRules(formData),
       accessRules: generateAccessRules(formData),
       securityPolicies: generateSecurityPolicies(formData)
     };
-
-    // Sauvegarde dans une feuille de calcul pour suivi
-    logToSpreadsheet(formData, scripts);
 
     return {
       success: true,
@@ -112,7 +76,6 @@ function generateScripts(formData) {
   }
 }
 
-// Fonctions utilitaires pour la génération des scripts
 function generateNetworkRules(data) {
   return `# Network rules for ${data.department}/${data.projectCode}
 allow_access:
@@ -136,35 +99,4 @@ monitoring: enabled
 logging: enabled
 department: ${data.department}
 project: ${data.projectCode}`;
-}
-
-// Fonction pour logger les générations dans une feuille de calcul
-function logToSpreadsheet(formData, scripts) {
-  try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet() || 
-             SpreadsheetApp.create('Network Rules Generator Logs');
-    var sheet = ss.getSheetByName('Logs') || ss.insertSheet('Logs');
-    
-    // Si la feuille est vide, ajout des en-têtes
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow([
-        'Date', 'Department', 'Project Code', 'Requester Email', 
-        'Network Rules', 'Access Rules', 'Security Policies'
-      ]);
-    }
-    
-    // Ajout de la nouvelle entrée
-    sheet.appendRow([
-      new Date(),
-      formData.department,
-      formData.projectCode,
-      formData.email,
-      scripts.networkRules,
-      scripts.accessRules,
-      scripts.securityPolicies
-    ]);
-    
-  } catch(e) {
-    console.error('Erreur de logging:', e.toString());
-  }
 }
