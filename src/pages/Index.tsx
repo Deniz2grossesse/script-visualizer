@@ -17,64 +17,63 @@ const Index = () => {
       </div>
 
       {/* Mandatory Fields */}
-      <div className="mb-8 space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Department <span className="text-red-500">*</span>
-          </label>
-          <Input 
-            placeholder="Department (1-4 chars)" 
-            maxLength={4}
-            className="max-w-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Project/Application Code <span className="text-red-500">*</span>
-          </label>
-          <Input 
-            placeholder="Project code (1-4 chars)" 
-            maxLength={4}
-            className="max-w-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Requester's Email <span className="text-red-500">*</span>
-          </label>
-          <Input 
-            type="email" 
-            placeholder="Email address"
-            className="max-w-sm"
-          />
+      <div className="mb-10">
+        <div className="grid gap-6 max-w-sm">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Department <span className="text-red-500">*</span>
+            </label>
+            <Input 
+              placeholder="Department (1-4 chars)" 
+              maxLength={4}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Project/Application Code <span className="text-red-500">*</span>
+            </label>
+            <Input 
+              placeholder="Project code (1-4 chars)" 
+              maxLength={4}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Requester's Email <span className="text-red-500">*</span>
+            </label>
+            <Input 
+              type="email" 
+              placeholder="Email address"
+            />
+          </div>
         </div>
       </div>
 
       {/* Network Rules Grid */}
-      <div className="grid grid-cols-9 gap-4 mb-8">
+      <div className="flex gap-3 mb-8 overflow-x-auto pb-4">
         {/* Source IP */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Source IP</label>
-          <Input placeholder="IP source" />
-          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full ml-auto">
+        <div className="min-w-[120px]">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Source IP</label>
+          <Input placeholder="IP source" className="mb-2" />
+          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full mx-auto block">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Destination IP */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">IP Destination</label>
-          <Input placeholder="IP destination" />
-          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full ml-auto">
+        <div className="min-w-[120px]">
+          <label className="block text-sm font-medium text-gray-700 mb-1">IP Destination</label>
+          <Input placeholder="IP destination" className="mb-2" />
+          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full mx-auto block">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Protocol */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Protocol</label>
+        <div className="min-w-[120px]">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Protocol</label>
           <Select>
-            <SelectTrigger>
+            <SelectTrigger className="mb-2">
               <SelectValue placeholder="Select" />
             </SelectTrigger>
             <SelectContent>
@@ -83,34 +82,34 @@ const Index = () => {
               <SelectItem value="icmp">ICMP</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full ml-auto">
+          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full mx-auto block">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Service */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Service</label>
-          <Input placeholder="Service" />
-          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full ml-auto">
+        <div className="min-w-[120px]">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
+          <Input placeholder="Service" className="mb-2" />
+          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full mx-auto block">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Port */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Port</label>
-          <Input type="number" placeholder="Port" />
-          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full ml-auto">
+        <div className="min-w-[100px]">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Port</label>
+          <Input type="number" placeholder="Port" className="mb-2" />
+          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full mx-auto block">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Authentication */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Authentication</label>
+        <div className="min-w-[130px]">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Authentication</label>
           <Select>
-            <SelectTrigger>
+            <SelectTrigger className="mb-2">
               <SelectValue placeholder="Select" />
             </SelectTrigger>
             <SelectContent>
@@ -119,16 +118,16 @@ const Index = () => {
               <SelectItem value="oauth">OAuth</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full ml-auto">
+          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full mx-auto block">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Flow Encryption */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Flow encryption</label>
+        <div className="min-w-[130px]">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Flow encryption</label>
           <Select>
-            <SelectTrigger>
+            <SelectTrigger className="mb-2">
               <SelectValue placeholder="Select" />
             </SelectTrigger>
             <SelectContent>
@@ -137,16 +136,16 @@ const Index = () => {
               <SelectItem value="ipsec">IPSec</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full ml-auto">
+          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full mx-auto block">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Classification */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Classification</label>
+        <div className="min-w-[130px]">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Classification</label>
           <Select>
-            <SelectTrigger>
+            <SelectTrigger className="mb-2">
               <SelectValue placeholder="Select" />
             </SelectTrigger>
             <SelectContent>
@@ -155,16 +154,16 @@ const Index = () => {
               <SelectItem value="confidential">Confidential</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full ml-auto">
+          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full mx-auto block">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
 
         {/* APP Code */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">APP code</label>
-          <Input placeholder="Code (4 chars)" maxLength={4} />
-          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full ml-auto">
+        <div className="min-w-[120px]">
+          <label className="block text-sm font-medium text-gray-700 mb-1">APP code</label>
+          <Input placeholder="Code (4 chars)" maxLength={4} className="mb-2" />
+          <Button variant="outline" size="icon" className="w-6 h-6 rounded-full mx-auto block">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
