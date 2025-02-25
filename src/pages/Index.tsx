@@ -101,6 +101,7 @@ const Index = () => {
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("Début du handleFileUpload");
     const file = event.target.files?.[0];
     
     if (!file) {
@@ -108,48 +109,84 @@ const Index = () => {
       return;
     }
 
+    console.log("Type du fichier:", file.type);
+    console.log("Nom du fichier:", file.name);
+
     const reader = new FileReader();
     
     reader.onload = (e) => {
+      console.log("FileReader onload déclenché");
       const text = e.target?.result as string;
+      console.log("Contenu du fichier (premiers caractères):", text.substring(0, 100));
+      
       const lines = text.split('\n').slice(11); // On commence à la ligne 12
+      console.log("Nombre de lignes après la ligne 11:", lines.length);
       
       let newRows = [...csvRows]; // On garde les lignes existantes
-      
-      lines.forEach((line) => {
-        if (line.trim() === '') return;
+      let errorCount = 0;
 
+      lines.forEach((line, index) => {
+        if (line.trim() === '') {
+          console.log(`Ligne ${index + 12} vide, ignorée`);
+          return;
+        }
+
+        console.log(`Traitement de la ligne ${index + 12}:`, line);
         const columns = line.split(',').map(col => col.trim());
+        console.log(`Nombre de colonnes trouvées:`, columns.length);
         
         // Vérifier si les colonnes principales contiennent des données
         const hasRequiredData = columns[3] && columns[6] && columns[7] && columns[8] && columns[9];
         
         if (columns.length >= 9 && hasRequiredData) {
+          // Normaliser les valeurs de "yes"/"no" et classification
+          const authValue = columns[10]?.toLowerCase() === 'yes' ? 'yes' : 'no';
+          const encryptValue = columns[11]?.toLowerCase() === 'yes' ? 'yes' : 'no';
+          let classificationValue = columns[12]?.toLowerCase() || '';
+          
+          // Normaliser la classification
+          if (!['yellow', 'amber', 'red'].includes(classificationValue)) {
+            classificationValue = 'yellow'; // Valeur par défaut
+          }
+
           // Créer une nouvelle ligne avec les données du CSV
           const newRow: CSVRow = {
-            sourceIP: columns[3] || '',
-            destIP: columns[6] || '',
-            protocol: columns[7] || 'TCP',
-            service: columns[8] || '',
-            port: columns[9] || '',
-            authentication: columns[10]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
-            flowEncryption: columns[11]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
-            classification: columns[12]?.toLowerCase() === 'yellow' ? 'Yellow' : 
-                          columns[12]?.toLowerCase() === 'amber' ? 'Amber' : 
-                          columns[12]?.toLowerCase() === 'red' ? 'Red' : 'Yellow',
-            appCode: columns[13] || '',
+            sourceIP: columns[3] || '', // Colonne D
+            destIP: columns[6] || '', // Colonne G
+            protocol: columns[7] || '', // Colonne H
+            service: columns[8] || '', // Colonne I
+            port: columns[9] || '', // Colonne J
+            authentication: authValue, // Colonne K normalisée
+            flowEncryption: encryptValue, // Colonne L normalisée
+            classification: classificationValue, // Colonne M normalisée
+            appCode: columns[13] || '', // Colonne N
             isValid: false,
             errors: []
           };
 
+          console.log(`Données extraites et normalisées pour la nouvelle ligne:`, newRow);
+
+          const validation = validateRow(newRow);
+          if (!validation.isValid) {
+            errorCount++;
+            console.log(`Erreurs de validation pour la ligne ${index + 12}:`, validation.errors);
+          }
+          
+          newRow.isValid = validation.isValid;
+          newRow.errors = validation.errors;
           newRows.push(newRow);
+        } else {
+          console.log(`Ligne ${index + 12} ignorée car pas assez de colonnes ou données manquantes`);
         }
       });
+
+      console.log(`Total des lignes ajoutées:`, newRows.length - csvRows.length);
+      console.log(`Nombre d'erreurs trouvées:`, errorCount);
 
       setCsvRows(newRows);
       toast({
         title: "Import CSV",
-        description: `${newRows.length - csvRows.length} nouvelles lignes ajoutées.`
+        description: `${newRows.length - csvRows.length} nouvelles lignes ajoutées. ${errorCount} lignes contiennent des erreurs.`
       });
     };
 
@@ -162,6 +199,7 @@ const Index = () => {
       });
     };
 
+    console.log("Début de la lecture du fichier");
     reader.readAsText(file);
   };
 
@@ -169,12 +207,12 @@ const Index = () => {
     const emptyRow: CSVRow = {
       sourceIP: '',
       destIP: '',
-      protocol: 'TCP',
+      protocol: '',
       service: '',
       port: '',
-      authentication: 'No',
-      flowEncryption: 'No',
-      classification: 'Yellow',
+      authentication: '',
+      flowEncryption: '',
+      classification: '',
       appCode: '',
       isValid: false,
       errors: []
@@ -198,85 +236,55 @@ const Index = () => {
       ...newRows[index],
       [field]: value
     };
+    const validation = validateRow(newRows[index]);
+    newRows[index].isValid = validation.isValid;
+    newRows[index].errors = validation.errors;
     setCsvRows(newRows);
   };
 
-  const generateScriptForRow = (row: CSVRow): string => {
-    if (!row.sourceIP || !row.destIP || !row.protocol || !row.port) {
-      return '';
-    }
-
-    // Nettoyage des valeurs avant utilisation
-    const sourceIP = row.sourceIP.split('/')[0].trim();
-    const destIP = row.destIP.trim();
-    const protocol = row.protocol.toUpperCase().trim();
-    const port = row.port.trim();
-
+  const generateScriptForRow = (row: CSVRow, rowIndex: number): string => {
     return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
   -H "Authorization: Bearer <TON_TOKEN>" \\
   -H "Content-Type: application/json" \\
   -d '{
     "source": {
-      "ip": "${sourceIP}"
+      "ip": "${row.sourceIP.split('/')[0]}"
     },
     "destination": {
-      "ip": "${destIP}"
+      "ip": "${row.destIP}"
     },
     "service": {
-      "protocol": "${protocol}",
-      "port": ${port}
+      "protocol": "${row.protocol.toUpperCase()}",
+      "port": ${row.port}
     }
   }'`;
   };
 
   const handleGenerateScript = () => {
-    if (csvRows.length === 0) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Aucune ligne à traiter. Veuillez d'abord importer ou ajouter des données."
-      });
-      return;
-    }
-
-    // Valider les lignes avant génération
     const validRows = csvRows.filter(row => {
       const validation = validateRow(row);
       return validation.isValid;
-    });
+    }).slice(0, 5); // Limite à 5 lignes maximum
 
     if (validRows.length === 0) {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Aucune ligne valide trouvée. Veuillez corriger les erreurs avant de générer les scripts."
+        description: "Aucune ligne valide trouvée"
       });
       return;
     }
 
-    // Limiter à 5 scripts maximum
-    const rowsToProcess = validRows.slice(0, 5);
-    
-    const scripts = rowsToProcess.map((row, index) => ({
+    const scripts = validRows.map((row, index) => ({
       id: index + 1,
-      script: generateScriptForRow(row)
-    })).filter(script => script.script !== '');
-
-    if (scripts.length === 0) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de générer des scripts valides avec les données fournies."
-      });
-      return;
-    }
+      script: generateScriptForRow(row, index)
+    }));
 
     setGeneratedScripts(scripts);
     
     toast({
       title: "Succès",
-      description: `${scripts.length} script(s) généré(s) avec succès`,
-      duration: 3000,
+      description: `${scripts.length} script(s) généré(s) avec succès`
     });
   };
 

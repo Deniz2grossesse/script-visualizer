@@ -11,12 +11,10 @@ function doGet() {
 function importCSV(csvData) {
   try {
     console.log("Début de l'import CSV");
-    console.log("Type des données reçues:", typeof csvData);
-    console.log("Longueur des données:", csvData.length);
+    console.log("Données reçues:", csvData);
 
     var data = Utilities.parseCsv(csvData);
-    console.log("Nombre de lignes parsées:", data.length);
-    console.log("Première ligne:", data[0]);
+    console.log("Données parsées:", data);
 
     // On commence à la ligne 12
     if (data.length < 12) {
@@ -24,11 +22,9 @@ function importCSV(csvData) {
     }
 
     // On prend les données à partir de la ligne 12
-    var processedData = data.slice(11).map(function(row, index) {
-      console.log("Traitement ligne", index + 12, ":", row);
-      
+    var processedData = data.slice(11).map(function(row) {
       if (row.length >= 14) { // Il nous faut au moins 14 colonnes
-        var processedRow = {
+        return {
           sourceIP: row[3] || '',        // Colonne D
           destIP: row[6] || '',          // Colonne G
           protocol: row[7] || 'TCP',     // Colonne H
@@ -39,17 +35,14 @@ function importCSV(csvData) {
           classification: row[12] || 'Yellow', // Colonne M
           appCode: row[13] || ''         // Colonne N
         };
-        console.log("Ligne traitée:", processedRow);
-        return processedRow;
       }
-      console.log("Ligne ignorée - pas assez de colonnes");
       return null;
     }).filter(function(row) {
       return row !== null;
     });
 
-    console.log("Nombre de lignes traitées:", processedData.length);
-    
+    console.log("Données traitées:", processedData);
+
     if (processedData.length === 0) {
       throw new Error("Aucune donnée valide trouvée dans le CSV");
     }

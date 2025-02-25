@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -425,64 +424,56 @@
 
     function handleFileSelect(event) {
       const file = event.target.files[0];
-      if (!file) return;
-
-      showLoading();
-      const reader = new FileReader();
-      
-      reader.onload = function(e) {
-        try {
+      if (file) {
+        showLoading();
+        console.log("Fichier sélectionné:", file.name);
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          console.log("Fichier lu");
           const content = e.target.result;
-          const lines = content.split('\n').slice(11); // Commence à la ligne 12
-          const newRules = [];
+          console.log("Contenu du fichier (premiers caractères):", content.substring(0, 100));
           
-          lines.forEach((line) => {
-            if (line.trim() === '') return;
-            
-            const columns = line.split(',').map(col => col.trim());
-            if (columns.length >= 9) {
-              newRules.push({
-                sourceIP: columns[3] || '',
-                destIP: columns[6] || '',
-                protocol: columns[7] || 'TCP',
-                service: columns[8] || '',
-                port: columns[9] || '',
-                authentication: columns[10]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
-                flowEncryption: columns[11]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
-                classification: columns[12]?.toLowerCase() === 'yellow' ? 'Yellow' : 
-                              columns[12]?.toLowerCase() === 'amber' ? 'Amber' : 
-                              columns[12]?.toLowerCase() === 'red' ? 'Red' : 'Yellow',
-                appCode: columns[13] || ''
-              });
-            }
-          });
-
-          // Mise à jour uniquement des données et de l'affichage du tableau
-          currentRules = newRules;
-          displayImportedRules(newRules);
+          google.script.run
+            .withSuccessHandler(function(response) {
+              hideLoading();
+              handleCSVSuccess(response);
+            })
+            .withFailureHandler(function(error) {
+              hideLoading();
+              handleError(error);
+            })
+            .importCSV(content);
+        };
+        
+        reader.onerror = function(e) {
           hideLoading();
-          alert(`${newRules.length} règles importées avec succès`);
-        } catch (error) {
-          console.error('Erreur lors du traitement du fichier:', error);
-          hideLoading();
-          alert('Erreur lors du traitement du fichier CSV');
-        }
-      };
-      
-      reader.onerror = function() {
-        hideLoading();
-        alert('Erreur lors de la lecture du fichier');
-      };
+          console.error("Erreur lors de la lecture du fichier:", e);
+          alert("Erreur lors de la lecture du fichier");
+        };
 
-      reader.readAsText(file);
+        reader.readAsText(file);
+      }
     }
 
-    function displayImportedRules(rules) {
+    function handleCSVSuccess(response) {
+      console.log("Réponse de l'import:", response);
+      if (response.success) {
+        currentRules = response.data;
+        displayRules();
+        alert(response.message);
+      } else {
+        alert('Erreur lors de l\'import: ' + response.message);
+      }
+    }
+
+    function displayRules() {
+      console.log("Affichage des règles:", currentRules);
       const table = document.getElementById('rulesTable');
       const tbody = table.querySelector('tbody');
       tbody.innerHTML = '';
       
-      rules.forEach((rule, index) => {
+      currentRules.forEach((rule, index) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><input type="text" value="${rule.sourceIP}" onchange="updateRule(${index}, 'sourceIP', this.value)"></td>
@@ -539,23 +530,43 @@
         classification: 'Yellow',
         appCode: ''
       });
-      displayImportedRules(currentRules);
+      displayRules();
     }
 
     function deleteForm() {
       if (confirm('Voulez-vous vraiment supprimer le formulaire ?')) {
-        document.getElementById('department').value = '';
-        document.getElementById('projectCode').value = '';
-        document.getElementById('email').value = '';
-        currentRules = [];
-        document.getElementById('rulesTable').style.display = 'none';
-        document.getElementById('scriptsOutput').style.display = 'none';
+        google.script.run
+          .withSuccessHandler(() => {
+            document.getElementById('department').value = '';
+            document.getElementById('projectCode').value = '';
+            document.getElementById('email').value = '';
+            currentRules = [];
+            document.getElementById('rulesTable').style.display = 'none';
+            document.getElementById('scriptsOutput').style.display = 'none';
+          })
+          .withFailureHandler(handleError)
+          .deleteForm();
       }
     }
 
     function resumeDraft() {
-      // Cette fonction sera implémentée plus tard
-      alert('Fonctionnalité en cours de développement');
+      google.script.run
+        .withSuccessHandler((response) => {
+          if (response.success && response.data) {
+            const data = response.data;
+            document.getElementById('department').value = data.department || '';
+            document.getElementById('projectCode').value = data.projectCode || '';
+            document.getElementById('email').value = data.email || '';
+            if (data.rules) {
+              currentRules = data.rules;
+              displayRules();
+            }
+          } else {
+            alert('Aucun brouillon trouvé');
+          }
+        })
+        .withFailureHandler(handleError)
+        .getDraft();
     }
 
     function verifyFields() {
@@ -589,51 +600,39 @@
     }
 
     function generateScripts() {
-      if (currentRules.length === 0) {
-        alert('Aucune règle à traiter. Veuillez d\'abord importer ou ajouter des données.');
-        return;
-      }
+      const formData = {
+        department: document.getElementById('department').value,
+        projectCode: document.getElementById('projectCode').value,
+        email: document.getElementById('email').value,
+        rules: currentRules
+      };
 
-      const scriptsContainer = document.getElementById('scriptsContainer');
-      scriptsContainer.innerHTML = '';
+      google.script.run
+        .withSuccessHandler(handleScriptsGenerated)
+        .withFailureHandler(handleError)
+        .generateScripts(formData);
+    }
 
-      currentRules.slice(0, 5).forEach((rule, index) => {
-        const script = generateScriptForRule(rule);
-        if (script) {
+    function handleScriptsGenerated(response) {
+      if (response.success) {
+        const container = document.getElementById('scriptsContainer');
+        container.innerHTML = '';
+        
+        Object.entries(response.data).forEach(([type, script]) => {
           const scriptBlock = document.createElement('div');
           scriptBlock.className = 'script-block';
           scriptBlock.innerHTML = `
-            <h3>Script ${index + 1}</h3>
+            <h3>${type}</h3>
             <pre>${script}</pre>
             <button class="copy-button" onclick="copyScript(this)">Copy</button>
           `;
-          scriptsContainer.appendChild(scriptBlock);
-        }
-      });
-
-      document.getElementById('scriptsOutput').style.display = 'block';
-    }
-
-    function generateScriptForRule(rule) {
-      if (!rule.sourceIP || !rule.destIP || !rule.protocol || !rule.port) {
-        return null;
+          container.appendChild(scriptBlock);
+        });
+        
+        document.getElementById('scriptsOutput').style.display = 'block';
+      } else {
+        alert('Erreur lors de la génération: ' + response.message);
       }
-
-      return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
-  -H "Authorization: Bearer <TON_TOKEN>" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "source": {
-      "ip": "${rule.sourceIP.split('/')[0]}"
-    },
-    "destination": {
-      "ip": "${rule.destIP}"
-    },
-    "service": {
-      "protocol": "${rule.protocol.toUpperCase()}",
-      "port": ${rule.port}
-    }
-  }'`;
     }
 
     function copyScript(button) {
@@ -642,8 +641,12 @@
         alert('Script copié dans le presse-papier');
       }).catch(err => {
         console.error('Erreur lors de la copie:', err);
-        alert('Erreur lors de la copie du script');
       });
+    }
+
+    function handleError(error) {
+      console.error('Erreur:', error);
+      alert('Une erreur est survenue: ' + error.toString());
     }
   </script>
 </body>
