@@ -1,5 +1,6 @@
 
 function doGet() {
+  console.log("Exécution de doGet");
   return HtmlService.createTemplateFromFile('index')
     .evaluate()
     .setTitle('One Click Onboarding')
@@ -8,6 +9,7 @@ function doGet() {
 }
 
 function importCSV(csvData) {
+  console.log("Exécution de importCSV");
   try {
     console.log("Début de l'import CSV");
     
@@ -53,6 +55,7 @@ function importCSV(csvData) {
       };
     }
 
+    console.log("Fin de importCSV avec succès");
     return { 
       success: true, 
       data: processedData,
@@ -69,6 +72,7 @@ function importCSV(csvData) {
 }
 
 function generateScripts(formData) {
+  console.log("Exécution de generateScripts");
   try {
     console.log("Début de la génération des scripts");
     console.log("Données reçues:", formData);
@@ -126,7 +130,7 @@ logging: enabled
 department: ${formData.department}
 project: ${formData.projectCode}`;
 
-    // Retourne les scripts générés
+    console.log("Fin de generateScripts avec succès");
     return {
       success: true,
       data: {
@@ -147,14 +151,17 @@ project: ${formData.projectCode}`;
 }
 
 function deleteForm() {
+  console.log("Exécution de deleteForm");
   try {
     var userProperties = PropertiesService.getUserProperties();
     userProperties.deleteProperty('draft');
+    console.log("Fin de deleteForm avec succès");
     return { 
       success: true, 
       message: "Formulaire supprimé" 
     };
   } catch(e) {
+    console.error("Erreur dans deleteForm:", e.toString());
     return { 
       success: false, 
       message: "Erreur lors de la suppression: " + e.toString() 
@@ -163,6 +170,7 @@ function deleteForm() {
 }
 
 function saveDraft(formData) {
+  console.log("Exécution de saveDraft");
   try {
     if (!formData) {
       return { 
@@ -174,11 +182,13 @@ function saveDraft(formData) {
     var userProperties = PropertiesService.getUserProperties();
     userProperties.setProperty('draft', JSON.stringify(formData));
     
+    console.log("Fin de saveDraft avec succès");
     return { 
       success: true, 
       message: "Brouillon sauvegardé" 
     };
   } catch(e) {
+    console.error("Erreur dans saveDraft:", e.toString());
     return { 
       success: false, 
       message: "Erreur lors de la sauvegarde: " + e.toString() 
@@ -187,6 +197,7 @@ function saveDraft(formData) {
 }
 
 function getDraft() {
+  console.log("Exécution de getDraft");
   try {
     var userProperties = PropertiesService.getUserProperties();
     var draft = userProperties.getProperty('draft');
@@ -198,11 +209,13 @@ function getDraft() {
       };
     }
     
+    console.log("Fin de getDraft avec succès");
     return { 
       success: true, 
       data: JSON.parse(draft)
     };
   } catch(e) {
+    console.error("Erreur dans getDraft:", e.toString());
     return { 
       success: false, 
       message: "Erreur lors de la récupération: " + e.toString() 
