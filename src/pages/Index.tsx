@@ -89,7 +89,7 @@ const Index = () => {
               <Input 
                 placeholder="Department (1-4 chars)" 
                 maxLength={4}
-                className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-white/50 pr-10 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
+                className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-white pr-10 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
                 onChange={(e) => {
                   const isValid = e.target.value.length >= 1 && e.target.value.length <= 4;
                   setErrors(prev => ({
@@ -173,7 +173,7 @@ const Index = () => {
             </label>
             <Input 
               placeholder="IP source" 
-              className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-[#BDC3C7]/50 text-sm h-9 mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
+              className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-white text-sm h-9 mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
               onChange={(e) => validateIP(e.target.value, 'sourceIP')}
             />
             <Button 
@@ -191,7 +191,7 @@ const Index = () => {
             </label>
             <Input 
               placeholder="IP destination" 
-              className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-[#BDC3C7]/50 text-sm h-9 mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
+              className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-white text-sm h-9 mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
             />
             <Button 
               variant="outline" 
@@ -229,7 +229,7 @@ const Index = () => {
             <label className="block text-xs font-medium text-[#BDC3C7] mb-2 h-5">Service</label>
             <Input 
               placeholder="Service"
-              className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-[#BDC3C7]/50 text-sm h-9 mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
+              className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-white text-sm h-9 mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
             />
             <Button 
               variant="outline" 
@@ -245,7 +245,7 @@ const Index = () => {
             <Input 
               type="number" 
               placeholder="Port"
-              className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-[#BDC3C7]/50 text-sm h-9 mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
+              className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-white text-sm h-9 mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
             />
             <Button 
               variant="outline" 
@@ -332,7 +332,7 @@ const Index = () => {
             <Input 
               placeholder="Code (4)" 
               maxLength={4} 
-              className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-[#BDC3C7]/50 text-sm h-9 mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
+              className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-white text-sm h-9 mb-2 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
             />
             <Button 
               variant="outline" 
