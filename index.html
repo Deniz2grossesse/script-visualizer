@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -392,10 +393,10 @@
     </div>
 
     <div class="action-buttons">
-      <button class="btn-delete" onclick="deleteForm()">Delete</button>
-      <button class="btn-resume" onclick="resumeDraft()">Resume Draft</button>
-      <button class="btn-verify" onclick="verifyFields()">Verify</button>
-      <button class="btn-generate" onclick="generateScripts()">Generate Scripts</button>
+      <button class="btn-delete" onclick="handleDelete()">Delete</button>
+      <button class="btn-resume" onclick="handleResumeDraft()">Resume Draft</button>
+      <button class="btn-verify" onclick="handleVerify()">Verify</button>
+      <button class="btn-generate" onclick="handleGenerateScripts()">Generate Scripts</button>
     </div>
 
     <div id="loadingMessage" class="loading-message">
@@ -414,6 +415,96 @@
       document.getElementById('loadingMessage').classList.remove('visible');
     }
 
+    function handleDelete() {
+      if (confirm('Voulez-vous vraiment supprimer le formulaire ?')) {
+        google.script.run
+          .withSuccessHandler(() => {
+            document.getElementById('department').value = '';
+            document.getElementById('projectCode').value = '';
+            document.getElementById('email').value = '';
+            currentRules = [];
+            document.getElementById('rulesTable').style.display = 'none';
+            document.getElementById('scriptsOutput').style.display = 'none';
+          })
+          .withFailureHandler(handleError)
+          .deleteForm();
+      }
+    }
+
+    function handleResumeDraft() {
+      google.script.run
+        .withSuccessHandler((response) => {
+          if (response.success && response.data) {
+            const data = response.data;
+            document.getElementById('department').value = data.department || '';
+            document.getElementById('projectCode').value = data.projectCode || '';
+            document.getElementById('email').value = data.email || '';
+            if (data.rules) {
+              currentRules = data.rules;
+              displayRules();
+            }
+          } else {
+            alert('Aucun brouillon trouvé');
+          }
+        })
+        .withFailureHandler(handleError)
+        .getDraft();
+    }
+
+    function handleVerify() {
+      const department = document.getElementById('department').value;
+      const projectCode = document.getElementById('projectCode').value;
+      const email = document.getElementById('email').value;
+      
+      let isValid = true;
+      let errors = [];
+
+      if (!department || department.length > 4) {
+        errors.push('Le département doit faire entre 1 et 4 caractères');
+        isValid = false;
+      }
+
+      if (!projectCode || projectCode.length > 4) {
+        errors.push('Le code projet doit faire entre 1 et 4 caractères');
+        isValid = false;
+      }
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errors.push('Email invalide');
+        isValid = false;
+      }
+
+      if (isValid) {
+        alert('Tous les champs sont valides');
+      } else {
+        alert('Erreurs:\n' + errors.join('\n'));
+      }
+    }
+
+    function handleGenerateScripts() {
+      const department = document.getElementById('department').value;
+      const projectCode = document.getElementById('projectCode').value;
+      const email = document.getElementById('email').value;
+
+      // Vérification des champs obligatoires
+      if (!department || !projectCode || !email) {
+        alert('Veuillez remplir tous les champs obligatoires (département, code projet et email)');
+        return;
+      }
+
+      const formData = {
+        department: department,
+        projectCode: projectCode,
+        email: email,
+        rules: currentRules
+      };
+
+      google.script.run
+        .withSuccessHandler(handleScriptsGenerated)
+        .withFailureHandler(handleError)
+        .generateScripts(formData);
+    }
+
     function importCSV() {
       const input = document.createElement('input');
       input.type = 'file';
@@ -426,13 +517,10 @@
       const file = event.target.files[0];
       if (file) {
         showLoading();
-        console.log("Fichier sélectionné:", file.name);
         const reader = new FileReader();
         
         reader.onload = function(e) {
-          console.log("Fichier lu");
           const content = e.target.result;
-          console.log("Contenu du fichier (premiers caractères):", content.substring(0, 100));
           
           google.script.run
             .withSuccessHandler(function(response) {
@@ -457,7 +545,6 @@
     }
 
     function handleCSVSuccess(response) {
-      console.log("Réponse de l'import:", response);
       if (response.success) {
         currentRules = response.data;
         displayRules();
@@ -468,7 +555,6 @@
     }
 
     function displayRules() {
-      console.log("Affichage des règles:", currentRules);
       const table = document.getElementById('rulesTable');
       const tbody = table.querySelector('tbody');
       tbody.innerHTML = '';
@@ -514,105 +600,6 @@
       table.style.display = 'table';
     }
 
-    function updateRule(index, field, value) {
-      currentRules[index][field] = value;
-    }
-
-    function addNewLine() {
-      currentRules.push({
-        sourceIP: '',
-        destIP: '',
-        protocol: 'TCP',
-        service: '',
-        port: '',
-        authentication: 'No',
-        flowEncryption: 'No',
-        classification: 'Yellow',
-        appCode: ''
-      });
-      displayRules();
-    }
-
-    function deleteForm() {
-      if (confirm('Voulez-vous vraiment supprimer le formulaire ?')) {
-        google.script.run
-          .withSuccessHandler(() => {
-            document.getElementById('department').value = '';
-            document.getElementById('projectCode').value = '';
-            document.getElementById('email').value = '';
-            currentRules = [];
-            document.getElementById('rulesTable').style.display = 'none';
-            document.getElementById('scriptsOutput').style.display = 'none';
-          })
-          .withFailureHandler(handleError)
-          .deleteForm();
-      }
-    }
-
-    function resumeDraft() {
-      google.script.run
-        .withSuccessHandler((response) => {
-          if (response.success && response.data) {
-            const data = response.data;
-            document.getElementById('department').value = data.department || '';
-            document.getElementById('projectCode').value = data.projectCode || '';
-            document.getElementById('email').value = data.email || '';
-            if (data.rules) {
-              currentRules = data.rules;
-              displayRules();
-            }
-          } else {
-            alert('Aucun brouillon trouvé');
-          }
-        })
-        .withFailureHandler(handleError)
-        .getDraft();
-    }
-
-    function verifyFields() {
-      const department = document.getElementById('department').value;
-      const projectCode = document.getElementById('projectCode').value;
-      const email = document.getElementById('email').value;
-      
-      let isValid = true;
-      let errors = [];
-
-      if (!department || department.length > 4) {
-        errors.push('Le département doit faire entre 1 et 4 caractères');
-        isValid = false;
-      }
-
-      if (!projectCode || projectCode.length > 4) {
-        errors.push('Le code projet doit faire entre 1 et 4 caractères');
-        isValid = false;
-      }
-
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        errors.push('Email invalide');
-        isValid = false;
-      }
-
-      if (isValid) {
-        alert('Tous les champs sont valides');
-      } else {
-        alert('Erreurs:\n' + errors.join('\n'));
-      }
-    }
-
-    function generateScripts() {
-      const formData = {
-        department: document.getElementById('department').value,
-        projectCode: document.getElementById('projectCode').value,
-        email: document.getElementById('email').value,
-        rules: currentRules
-      };
-
-      google.script.run
-        .withSuccessHandler(handleScriptsGenerated)
-        .withFailureHandler(handleError)
-        .generateScripts(formData);
-    }
-
     function handleScriptsGenerated(response) {
       if (response.success) {
         const container = document.getElementById('scriptsContainer');
@@ -633,6 +620,25 @@
       } else {
         alert('Erreur lors de la génération: ' + response.message);
       }
+    }
+
+    function updateRule(index, field, value) {
+      currentRules[index][field] = value;
+    }
+
+    function addNewLine() {
+      currentRules.push({
+        sourceIP: '',
+        destIP: '',
+        protocol: 'TCP',
+        service: '',
+        port: '',
+        authentication: 'No',
+        flowEncryption: 'No',
+        classification: 'Yellow',
+        appCode: ''
+      });
+      displayRules();
     }
 
     function copyScript(button) {
