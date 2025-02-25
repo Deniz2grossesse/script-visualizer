@@ -10,11 +10,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
 interface FormData {
@@ -320,12 +315,12 @@ const Index = () => {
     <div className="form-container">
       <h1 className="text-2xl font-bold text-center mb-8">One Click Onboarding</h1>
       
-      <div className="mandatory-fields">
+      <div className="mandatory-fields grid grid-cols-[1fr_1fr] gap-8 items-start">
         <div className="mandatory-message text-left">
           These three fields are mandatory, you cannot start entering them without having filled them in.
         </div>
 
-        <div className="mandatory-fields-container ml-8">
+        <div className="mandatory-fields-container">
           <div className="field-group w-full">
             <label className="field-label text-left w-full">
               Department <span className="text-red-500">*</span>
@@ -365,23 +360,6 @@ const Index = () => {
             />
           </div>
         </div>
-
-        <Dialog>
-          <DialogTrigger asChild>
-            <img 
-              src="/lovable-uploads/2c5741ec-76b5-4d23-ade2-f5b173488467.png" 
-              alt="Flow opening" 
-              className="mandatory-image cursor-pointer hover:opacity-90 transition-opacity"
-            />
-          </DialogTrigger>
-          <DialogContent className="max-w-[90vw] max-h-[90vh] p-0">
-            <img 
-              src="/lovable-uploads/2c5741ec-76b5-4d23-ade2-f5b173488467.png" 
-              alt="Flow opening" 
-              className="w-full h-full object-contain"
-            />
-          </DialogContent>
-        </Dialog>
       </div>
 
       <form onSubmit={(e) => e.preventDefault()} className={!isMainFormEnabled ? 'opacity-50 pointer-events-none' : ''}>
