@@ -100,14 +100,15 @@ const Index = () => {
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault();
     const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
-      const lines = text.split('\n').slice(11); // On commence à la ligne 12
-      let newRows = [...csvRows];
+      const lines = text.split('\n').slice(11);
+      let newRows: CSVRow[] = [];
 
       lines.forEach((line) => {
         if (line.trim() === '') return;
@@ -143,15 +144,14 @@ const Index = () => {
         }
       });
 
-      setCsvRows(newRows);
-      
-      const errorCount = newRows.filter(row => !row.isValid).length;
-      const newRowCount = newRows.length - csvRows.length;
-      
-      toast({
-        title: "Import CSV",
-        description: `${newRowCount} nouvelles lignes ajoutées. ${errorCount} lignes contiennent des erreurs.`
-      });
+      if (newRows.length > 0) {
+        setCsvRows(newRows);
+        const errorCount = newRows.filter(row => !row.isValid).length;
+        toast({
+          title: "Import CSV",
+          description: `${newRows.length} nouvelles lignes ajoutées. ${errorCount} lignes contiennent des erreurs.`
+        });
+      }
     };
 
     reader.readAsText(file);
@@ -171,15 +171,11 @@ const Index = () => {
       isValid: false,
       errors: []
     };
-    setCsvRows([...csvRows, emptyRow]);
+    setCsvRows(prev => [...prev, emptyRow]);
   };
 
   const deleteRow = (index: number) => {
-    setCsvRows(prev => {
-      const newRows = [...prev];
-      newRows.splice(index, 1);
-      return newRows;
-    });
+    setCsvRows(prev => prev.filter((_, i) => i !== index));
     toast({
       title: "Ligne supprimée",
       description: "La ligne a été supprimée avec succès."
@@ -260,7 +256,8 @@ const Index = () => {
 
         <div className="flex justify-end gap-4 mb-6">
           <Button 
-            onClick={addEmptyRow}
+            type="button"
+            onClick={() => addEmptyRow()}
             className="flex items-center gap-2 bg-[#2ECC71] hover:bg-[#27AE60] text-white"
           >
             <Plus className="w-4 h-4" />
@@ -465,6 +462,7 @@ const Index = () => {
                     </td>
                     <td className="p-2">
                       <Button
+                        type="button"
                         variant="ghost"
                         onClick={() => deleteRow(index)}
                         className="h-8 w-8 p-0 text-red-500 hover:text-red-400 hover:bg-red-500/20"
@@ -493,27 +491,10 @@ const Index = () => {
           </div>
         )}
 
-        <div className="flex flex-wrap justify-end gap-3">
+        <div className="flex flex-wrap justify-end gap-3 mt-4">
           <Button 
-            variant="outline" 
-            className="text-[#E74C3C] hover:bg-[#E74C3C]/20 border-[#E74C3C] transition-colors"
-          >
-            Delete
-          </Button>
-          <Button 
-            variant="outline"
-            className="text-[#BDC3C7] hover:bg-white/20 border-[#BDC3C7]/30 transition-colors"
-          >
-            Resume Draft
-          </Button>
-          <Button 
-            variant="outline"
-            className="text-[#E67E22] hover:bg-[#E67E22]/20 border-[#E67E22] transition-colors"
-          >
-            Verify
-          </Button>
-          <Button 
-            onClick={handleGenerateScript}
+            type="button"
+            onClick={() => handleGenerateScript()}
             className="bg-[#E67E22] hover:bg-[#D35400] text-white border-none transition-colors flex items-center gap-2"
           >
             Generate Scripts
@@ -539,15 +520,6 @@ const Index = () => {
                       readOnly
                       className="w-full h-48 p-4 rounded-md font-mono text-sm bg-[#2C3E50] border border-[#BDC3C7]/30 shadow-input focus:border-primary transition-colors text-white"
                     />
-                    <div className="mt-2 flex justify-end">
-                      <Button 
-                        onClick={() => navigator.clipboard.writeText(script)}
-                        variant="outline" 
-                        className="text-white hover:bg-white/20 transition-colors"
-                      >
-                        Copy script
-                      </Button>
-                    </div>
                   </div>
                 </div>
               ))}
