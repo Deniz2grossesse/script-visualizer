@@ -1,3 +1,4 @@
+
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -5,6 +6,17 @@ function doGet() {
     .setTitle('One Click Onboarding')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function handleFileSelect(fileData) {
+  console.log("handleFileSelect called with file data length:", fileData ? fileData.length : 0);
+  if (!fileData) {
+    return { 
+      success: false, 
+      message: "Aucun fichier sélectionné" 
+    };
+  }
+  return importCSV(fileData);
 }
 
 function importCSV(csvData) {
@@ -18,26 +30,24 @@ function importCSV(csvData) {
     console.log("Nombre de lignes parsées:", data.length);
     console.log("Première ligne:", data[0]);
 
-    // On commence à la ligne 12
     if (data.length < 12) {
       throw new Error("Le fichier CSV doit contenir au moins 12 lignes");
     }
 
-    // On prend les données à partir de la ligne 12
     var processedData = data.slice(11).map(function(row, index) {
       console.log("Traitement ligne", index + 12, ":", row);
       
-      if (row.length >= 14) { // Il nous faut au moins 14 colonnes
+      if (row.length >= 14) {
         var processedRow = {
-          sourceIP: row[3] || '',        // Colonne D
-          destIP: row[6] || '',          // Colonne G
-          protocol: row[7] || 'TCP',     // Colonne H
-          service: row[8] || '',         // Colonne I
-          port: row[9] || '',            // Colonne J
-          authentication: row[10] || 'No',// Colonne K
-          flowEncryption: row[11] || 'No',// Colonne L
-          classification: row[12] || 'Yellow', // Colonne M
-          appCode: row[13] || ''         // Colonne N
+          sourceIP: row[3] || '',
+          destIP: row[6] || '',
+          protocol: row[7] || 'TCP',
+          service: row[8] || '',
+          port: row[9] || '',
+          authentication: row[10] || 'No',
+          flowEncryption: row[11] || 'No',
+          classification: row[12] || 'Yellow',
+          appCode: row[13] || ''
         };
         console.log("Ligne traitée:", processedRow);
         return processedRow;
@@ -69,12 +79,20 @@ function importCSV(csvData) {
 }
 
 function saveDraft(formData) {
-  console.log("saveDraft called with:", formData);
+  console.log("saveDraft called with data:", JSON.stringify(formData));
+  if (!formData) {
+    return {
+      success: false,
+      message: "Données manquantes"
+    };
+  }
+  
   try {
     var userProperties = PropertiesService.getUserProperties();
     userProperties.setProperty('draft', JSON.stringify(formData));
     return { success: true, message: "Brouillon sauvegardé" };
   } catch(e) {
+    console.error("Erreur saveDraft:", e.toString());
     return { success: false, message: "Erreur lors de la sauvegarde: " + e.toString() };
   }
 }
@@ -85,10 +103,13 @@ function getDraft() {
     var userProperties = PropertiesService.getUserProperties();
     var draft = userProperties.getProperty('draft');
     if (!draft) {
+      console.log("Aucun brouillon trouvé");
       return { success: false, message: "Aucun brouillon trouvé" };
     }
+    console.log("Brouillon récupéré:", draft);
     return { success: true, data: JSON.parse(draft) };
   } catch(e) {
+    console.error("Erreur getDraft:", e.toString());
     return { success: false, message: "Erreur lors de la récupération: " + e.toString() };
   }
 }
@@ -100,11 +121,20 @@ function deleteForm() {
     userProperties.deleteProperty('draft');
     return { success: true, message: "Formulaire supprimé" };
   } catch(e) {
+    console.error("Erreur deleteForm:", e.toString());
     return { success: false, message: "Erreur lors de la suppression: " + e.toString() };
   }
 }
 
 function generateScripts(formData) {
+  console.log("generateScripts called with data:", JSON.stringify(formData));
+  if (!formData) {
+    return {
+      success: false,
+      message: "Données manquantes pour la génération des scripts"
+    };
+  }
+
   try {
     var scripts = {
       networkRules: generateNetworkRules(formData),
@@ -118,7 +148,11 @@ function generateScripts(formData) {
       message: "Scripts générés avec succès"
     };
   } catch(e) {
-    return { success: false, message: "Erreur lors de la génération: " + e.toString() };
+    console.error("Erreur generateScripts:", e.toString());
+    return { 
+      success: false, 
+      message: "Erreur lors de la génération: " + e.toString() 
+    };
   }
 }
 
