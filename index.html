@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -17,7 +18,7 @@
       max-width: 1200px;
       margin: 0 auto;
       padding: 30px;
-      background: #2B3E50;
+      background: #1A1F2C;
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
@@ -31,7 +32,7 @@
     }
     
     .alert {
-      background-color: rgba(0, 0, 0, 0.2);
+      background-color: #2B3E50;
       padding: 16px;
       border-radius: 6px;
       margin-bottom: 40px;
@@ -40,6 +41,7 @@
       gap: 12px;
       font-size: 14px;
       color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .alert-icon {
@@ -67,19 +69,24 @@
     input[type="email"] {
       width: 100%;
       padding: 12px;
-      border: 1px solid transparent;
-      background-color: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background-color: #2B3E50;
       border-radius: 6px;
       color: #ffffff;
       font-size: 14px;
       box-sizing: border-box;
+      transition: all 0.2s ease;
     }
     
     input[type="text"]:focus,
     input[type="email"]:focus {
       outline: none;
-      border-color: rgba(255, 255, 255, 0.1);
-      background-color: rgba(0, 0, 0, 0.3);
+      border-color: #3498db;
+      background-color: #34495E;
+    }
+    
+    ::placeholder {
+      color: rgba(255, 255, 255, 0.4);
     }
     
     .button-group {
@@ -105,6 +112,7 @@
       cursor: pointer;
       text-align: center;
       min-width: 120px;
+      transition: all 0.2s ease;
     }
     
     .btn-add {
@@ -147,7 +155,7 @@
     }
     
     .btn-delete {
-      background-color: white;
+      background-color: transparent;
       color: #ff4757;
       border: 2px solid #ff4757;
       padding: 12px 35px;
@@ -155,26 +163,31 @@
     
     .btn-delete:hover {
       background-color: #ff4757;
+      color: white;
     }
     
     .btn-resume {
-      background-color: white;
-      color: #666;
+      background-color: transparent;
+      color: #fff;
+      border: 2px solid #666;
       padding: 12px 35px;
     }
     
     .btn-resume:hover {
       background-color: #666;
+      color: white;
     }
     
     .btn-verify {
-      background-color: white;
-      color: rgb(52, 152, 219);
+      background-color: transparent;
+      color: #3498db;
+      border: 2px solid #3498db;
       padding: 12px 35px;
     }
     
     .btn-verify:hover {
-      background-color: rgb(41, 128, 185);
+      background-color: #3498db;
+      color: white;
     }
     
     .btn-generate {
