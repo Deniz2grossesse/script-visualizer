@@ -490,6 +490,84 @@
       }
     }
 
+    // Fonction de validation d'une adresse IP
+    function validateIP(ip) {
+      const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+      if (!ipPattern.test(ip)) return false;
+      return ip.split('.').every(num => {
+        const n = parseInt(num);
+        return n >= 0 && n <= 255;
+      });
+    }
+
+    // Fonction de validation d'un port
+    function validatePort(port) {
+      const portNum = parseInt(port);
+      return !isNaN(portNum) && portNum >= 1 && portNum <= 65535;
+    }
+
+    // Fonction de validation d'un service
+    function validateService(service) {
+      return service && service.length >= 2 && service.length <= 50;
+    }
+
+    // Fonction de validation d'un code d'application
+    function validateAppCode(code) {
+      return code && code.length >= 2 && code.length <= 10;
+    }
+
+    function validateRow(row) {
+      let isValid = true;
+      let errors = [];
+
+      if (!validateIP(row.sourceIP)) {
+        errors.push("IP source invalide");
+        isValid = false;
+      }
+
+      if (!validateIP(row.destIP)) {
+        errors.push("IP destination invalide");
+        isValid = false;
+      }
+
+      if (!validatePort(row.port)) {
+        errors.push("Port invalide (doit être entre 1 et 65535)");
+        isValid = false;
+      }
+
+      if (!validateService(row.service)) {
+        errors.push("Service invalide (doit faire entre 2 et 50 caractères)");
+        isValid = false;
+      }
+
+      if (!validateAppCode(row.appCode)) {
+        errors.push("Code application invalide (doit faire entre 2 et 10 caractères)");
+        isValid = false;
+      }
+
+      if (!['TCP', 'UDP', 'ICMP'].includes(row.protocol.toUpperCase())) {
+        errors.push("Protocole invalide (doit être TCP, UDP ou ICMP)");
+        isValid = false;
+      }
+
+      if (!['Yes', 'No'].includes(row.authentication)) {
+        errors.push("Authentication invalide (doit être Yes ou No)");
+        isValid = false;
+      }
+
+      if (!['Yes', 'No'].includes(row.flowEncryption)) {
+        errors.push("Flow Encryption invalide (doit être Yes ou No)");
+        isValid = false;
+      }
+
+      if (!['Yellow', 'Amber', 'Red'].includes(row.classification)) {
+        errors.push("Classification invalide (doit être Yellow, Amber ou Red)");
+        isValid = false;
+      }
+
+      return { isValid, errors };
+    }
+
     function displayRules(rules) {
       console.log("Affichage des règles:", rules);
       const table = document.getElementById('rulesTable');
@@ -497,10 +575,14 @@
       tbody.innerHTML = '';
         
       rules.forEach((rule, index) => {
+        const validation = validateRow(rule);
+        const rowClass = validation.isValid ? '' : 'bg-red-100';
+        
         const tr = document.createElement('tr');
+        tr.className = rowClass;
         tr.innerHTML = `
-          <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)"></td>
-          <td><input type="text" value="${rule.destIP || ''}" onchange="updateRule(${index}, 'destIP', this.value)"></td>
+          <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)" class="${!validateIP(rule.sourceIP) ? 'border-red-500' : ''}"></td>
+          <td><input type="text" value="${rule.destIP || ''}" onchange="updateRule(${index}, 'destIP', this.value)" class="${!validateIP(rule.destIP) ? 'border-red-500' : ''}"></td>
           <td>
             <select onchange="updateRule(${index}, 'protocol', this.value)">
               <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
@@ -508,8 +590,8 @@
               <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
             </select>
           </td>
-          <td><input type="text" value="${rule.service || ''}" onchange="updateRule(${index}, 'service', this.value)"></td>
-          <td><input type="text" value="${rule.port || ''}" onchange="updateRule(${index}, 'port', this.value)"></td>
+          <td><input type="text" value="${rule.service || ''}" onchange="updateRule(${index}, 'service', this.value)" class="${!validateService(rule.service) ? 'border-red-500' : ''}"></td>
+          <td><input type="text" value="${rule.port || ''}" onchange="updateRule(${index}, 'port', this.value)" class="${!validatePort(rule.port) ? 'border-red-500' : ''}"></td>
           <td>
             <select onchange="updateRule(${index}, 'authentication', this.value)">
               <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
@@ -529,8 +611,16 @@
               <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
             </select>
           </td>
-          <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
+          <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)" class="${!validateAppCode(rule.appCode) ? 'border-red-500' : ''}"></td>
         `;
+
+        if (!validation.isValid) {
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'error-message';
+          errorDiv.textContent = validation.errors.join(', ');
+          tr.appendChild(errorDiv);
+        }
+
         tbody.appendChild(tr);
       });
         
