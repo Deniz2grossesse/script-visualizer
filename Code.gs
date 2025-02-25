@@ -154,20 +154,14 @@ function generateScripts(formData) {
 }
 
 function generateScriptForRow(row, index) {
-  return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
-  -H "Authorization: Bearer <TON_TOKEN>" \\
+  return `curl -X POST "https://<securetrack-url>/api/query" \\
   -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer <your_api_token>" \\
   -d '{
-    "source": {
-      "ip": "${row.sourceIP.split('/')[0]}"
-    },
-    "destination": {
-      "ip": "${row.destIP}"
-    },
-    "service": {
-      "protocol": "${row.protocol.toUpperCase()}",
-      "port": ${row.port},
-      "name": "${row.service}"
-    }
+    "source": "${row.sourceIP}",
+    "destination": "${row.destIP}",
+    "protocol": "${row.protocol.toUpperCase()}",
+    "port": "${row.port}",
+    "service": "${row.service}"
   }'`;
 }
