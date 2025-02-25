@@ -38,6 +38,7 @@ const Index = () => {
   const { toast } = useToast();
   const [generatedScript, setGeneratedScript] = useState('');
   const [csvRows, setCsvRows] = useState<CSVRow[]>([]);
+  const [currentRow, setCurrentRow] = useState(1);
   const [errors, setErrors] = useState<FormErrors>({
     email: { error: false, message: '' },
     sourceIP: { error: false, message: '' },
@@ -242,9 +243,9 @@ const Index = () => {
   };
 
   const handleGenerateScript = () => {
-    const department = document.getElementById('department')?.value;
-    const projectCode = document.getElementById('projectCode')?.value;
-    const email = document.getElementById('email')?.value;
+    const department = (document.getElementById('department') as HTMLInputElement)?.value;
+    const projectCode = (document.getElementById('projectCode') as HTMLInputElement)?.value;
+    const email = (document.getElementById('email') as HTMLInputElement)?.value;
 
     if (!department || !projectCode || !email) {
       toast({
@@ -257,15 +258,15 @@ const Index = () => {
 
     // Validation des champs de règle réseau
     const formData = {
-      sourceIP: document.getElementById('sourceIP')?.value,
-      destIP: document.getElementById('destIP')?.value,
-      protocol: document.getElementById('protocol')?.value,
-      service: document.getElementById('service')?.value,
-      port: document.getElementById('port')?.value,
-      authentication: document.getElementById('authentication')?.value,
-      encryption: document.getElementById('encryption')?.value,
-      classification: document.getElementById('classification')?.value,
-      appCode: document.getElementById('appCode')?.value
+      sourceIP: (document.getElementById('sourceIP') as HTMLInputElement)?.value,
+      destIP: (document.getElementById('destIP') as HTMLInputElement)?.value,
+      protocol: (document.getElementById('protocol') as HTMLSelectElement)?.value,
+      service: (document.getElementById('service') as HTMLInputElement)?.value,
+      port: (document.getElementById('port') as HTMLInputElement)?.value,
+      authentication: (document.getElementById('authentication') as HTMLSelectElement)?.value,
+      encryption: (document.getElementById('encryption') as HTMLSelectElement)?.value,
+      classification: (document.getElementById('classification') as HTMLSelectElement)?.value,
+      appCode: (document.getElementById('appCode') as HTMLInputElement)?.value
     };
 
     if (!formData.sourceIP || !formData.destIP || !formData.service || !formData.port) {
@@ -277,40 +278,37 @@ const Index = () => {
       return;
     }
 
-    // Génération du script
-    google.script.run
-      .withSuccessHandler(function(scriptContent) {
-        document.getElementById('output')!.style.display = 'block';
-        document.getElementById('scriptOutput')!.value = scriptContent;
+    // Au lieu d'utiliser google.script.run, utilisons un état local pour le moment
+    // Simulons la génération du script
+    const generatedScriptContent = `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
+-H "Authorization: Bearer <YOUR_TOKEN>" \\
+-H "Content-Type: application/json" \\
+-d '{
+  "source": {
+    "ip": "${formData.sourceIP}",
+    "mask": "255.255.255.0"
+  },
+  "destination": {
+    "ip": "${formData.destIP}"
+  },
+  "service": {
+    "protocol": "${formData.protocol.toUpperCase()}",
+    "port": ${formData.port},
+    "name": "${formData.service}"
+  },
+  "authentication": "${formData.authentication}",
+  "encryption": "${formData.encryption}",
+  "classification": "${formData.classification}",
+  "appCode": "${formData.appCode}"
+}'`;
 
-        // Sauvegarde dans la feuille
-        const saveData = {
-          rowIndex: currentRow,
-          department: department,
-          projectCode: projectCode,
-          email: email,
-          script: scriptContent
-        };
+    setGeneratedScript(generatedScriptContent);
+    setCurrentRow(prev => prev + 1);
 
-        google.script.run
-          .withSuccessHandler(function(response) {
-            if (response.success) {
-              currentRow++;
-              toast({
-                title: "Succès",
-                description: "Script généré et sauvegardé avec succès"
-              });
-            } else {
-              toast({
-                variant: "destructive",
-                title: "Erreur",
-                description: "Erreur lors de la sauvegarde: " + response.message
-              });
-            }
-          })
-          .saveToSheet(saveData);
-      })
-      .generateScript(formData);
+    toast({
+      title: "Succès",
+      description: "Script généré avec succès"
+    });
   };
 
   return (
@@ -600,7 +598,11 @@ const Index = () => {
               className="w-full h-32 p-4 rounded-md font-mono text-sm bg-[#2C3E50] border border-[#BDC3C7]/30 shadow-input focus:border-primary transition-colors text-white"
             />
             <div className="mt-4 flex justify-end">
-              <Button variant="outline" className="text-white hover:bg-white/20 transition-colors">
+              <Button 
+                onClick={() => navigator.clipboard.writeText(generatedScript)}
+                variant="outline" 
+                className="text-white hover:bg-white/20 transition-colors"
+              >
                 Copy script
               </Button>
             </div>
