@@ -137,29 +137,13 @@ const Index = () => {
             appCode: columns[13] || ''
           };
 
-          const validation = validateRow(newRow);
-          newRow.isValid = validation.isValid;
-          newRow.errors = validation.errors;
           newRows.push(newRow);
         }
       });
 
       if (newRows.length > 0) {
         setCsvRows(newRows);
-        const errorCount = newRows.filter(row => !row.isValid).length;
-        toast({
-          title: "Import CSV",
-          description: `${newRows.length} nouvelles lignes ajoutées. ${errorCount} lignes contiennent des erreurs.`
-        });
       }
-    };
-
-    reader.onerror = function() {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Erreur lors de la lecture du fichier"
-      });
     };
 
     reader.readAsText(file);
@@ -180,18 +164,10 @@ const Index = () => {
       errors: []
     };
     setCsvRows(prev => [...prev, emptyRow]);
-    toast({
-      title: "Nouvelle ligne",
-      description: "Une nouvelle ligne a été ajoutée"
-    });
   };
 
   const deleteRow = (index: number) => {
     setCsvRows(prev => prev.filter((_, i) => i !== index));
-    toast({
-      title: "Ligne supprimée",
-      description: "La ligne a été supprimée avec succès"
-    });
   };
 
   const updateRow = (index: number, field: keyof CSVRow, value: string) => {
@@ -216,14 +192,7 @@ const Index = () => {
       return validation.isValid;
     }).slice(0, 5);
 
-    if (validRows.length === 0) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Aucune ligne valide trouvée"
-      });
-      return;
-    }
+    if (validRows.length === 0) return;
 
     const scripts = validRows.map((row, index) => ({
       id: index + 1,
@@ -231,11 +200,6 @@ const Index = () => {
     }));
 
     setGeneratedScripts(scripts);
-    
-    toast({
-      title: "Succès",
-      description: `${scripts.length} script(s) généré(s) avec succès`
-    });
   };
 
   const generateScriptForRow = (row: CSVRow): string => {
