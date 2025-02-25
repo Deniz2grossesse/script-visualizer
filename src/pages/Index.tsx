@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -240,6 +239,78 @@ const Index = () => {
     newRows[index].isValid = validation.isValid;
     newRows[index].errors = validation.errors;
     setCsvRows(newRows);
+  };
+
+  const handleGenerateScript = () => {
+    const department = document.getElementById('department')?.value;
+    const projectCode = document.getElementById('projectCode')?.value;
+    const email = document.getElementById('email')?.value;
+
+    if (!department || !projectCode || !email) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires"
+      });
+      return;
+    }
+
+    // Validation des champs de règle réseau
+    const formData = {
+      sourceIP: document.getElementById('sourceIP')?.value,
+      destIP: document.getElementById('destIP')?.value,
+      protocol: document.getElementById('protocol')?.value,
+      service: document.getElementById('service')?.value,
+      port: document.getElementById('port')?.value,
+      authentication: document.getElementById('authentication')?.value,
+      encryption: document.getElementById('encryption')?.value,
+      classification: document.getElementById('classification')?.value,
+      appCode: document.getElementById('appCode')?.value
+    };
+
+    if (!formData.sourceIP || !formData.destIP || !formData.service || !formData.port) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs de la règle réseau"
+      });
+      return;
+    }
+
+    // Génération du script
+    google.script.run
+      .withSuccessHandler(function(scriptContent) {
+        document.getElementById('output')!.style.display = 'block';
+        document.getElementById('scriptOutput')!.value = scriptContent;
+
+        // Sauvegarde dans la feuille
+        const saveData = {
+          rowIndex: currentRow,
+          department: department,
+          projectCode: projectCode,
+          email: email,
+          script: scriptContent
+        };
+
+        google.script.run
+          .withSuccessHandler(function(response) {
+            if (response.success) {
+              currentRow++;
+              toast({
+                title: "Succès",
+                description: "Script généré et sauvegardé avec succès"
+              });
+            } else {
+              toast({
+                variant: "destructive",
+                title: "Erreur",
+                description: "Erreur lors de la sauvegarde: " + response.message
+              });
+            }
+          })
+          .saveToSheet(saveData);
+      })
+      .generateScript(formData);
   };
 
   return (
@@ -509,6 +580,7 @@ const Index = () => {
             Verify
           </Button>
           <Button 
+            onClick={handleGenerateScript}
             className="bg-[#E67E22] hover:bg-[#D35400] text-white border-none transition-colors flex items-center gap-2"
           >
             Generate Scripts
