@@ -12,8 +12,7 @@ function generateScript(formObject) {
 -H "Content-Type: application/json" \\
 -d '{
   "source": {
-    "ip": "${formObject.sourceIP}",
-    "mask": "255.255.255.0"
+    "ip": "${formObject.sourceIP}"
   },
   "destination": {
     "ip": "${formObject.destIP}"
@@ -33,15 +32,17 @@ function generateScript(formObject) {
 }
 
 function saveToSheet(data) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetSheet.getActiveSpreadsheet();
   var sheet = ss.getActiveSheet();
+  var lastRow = sheet.getLastRow();
+  var newRow = lastRow + 1;
   
   // Sauvegarde dans la feuille de calcul
-  sheet.getRange(data.rowIndex, 1).setValue(data.rowIndex);  // ID
-  sheet.getRange(data.rowIndex, 2).setValue(data.department); // Department
-  sheet.getRange(data.rowIndex, 3).setValue(data.projectCode); // Project Code
-  sheet.getRange(data.rowIndex, 4).setValue(data.email); // Email
-  sheet.getRange(data.rowIndex, 5).setValue(data.script); // Script généré
+  sheet.getRange(newRow, 1).setValue(newRow);  // ID
+  sheet.getRange(newRow, 2).setValue(data.department); // Department
+  sheet.getRange(newRow, 3).setValue(data.projectCode); // Project Code
+  sheet.getRange(newRow, 4).setValue(data.email); // Email
+  sheet.getRange(newRow, 5).setValue(data.script); // Script généré
   
-  return {success: true, message: "Sauvegardé avec succès"};
+  return {success: true, message: "Sauvegardé avec succès", rowId: newRow};
 }

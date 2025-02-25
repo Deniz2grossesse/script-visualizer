@@ -4,128 +4,17 @@
   <head>
     <base target="_top">
     <meta charset="UTF-8">
-    <title>One Click Onboarding</title>
+    <title>Network Rules Generator</title>
     <style>
-      body {
-        font-family: 'Segoe UI', Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-        background-color: #fff;
-      }
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-      h1 {
-        text-align: center;
-        margin-bottom: 40px;
-        color: #333;
-      }
-      .info-box {
-        background-color: #f9fafb;
-        border: 1px solid #e5e7eb;
-        padding: 15px;
-        margin-bottom: 30px;
-        border-radius: 6px;
-      }
-      .mandatory {
-        margin-bottom: 40px;
-      }
-      .form-group {
-        margin-bottom: 20px;
-      }
-      label {
-        display: block;
-        margin-bottom: 8px;
-        color: #374151;
-      }
-      .required {
-        color: #ef4444;
-        margin-left: 4px;
-      }
-      input, select {
-        width: 100%;
-        padding: 8px 12px;
-        border: 1px solid #d1d5db;
-        border-radius: 4px;
-        box-sizing: border-box;
-      }
-      .rules-grid {
-        display: grid;
-        grid-template-columns: repeat(9, 1fr);
-        gap: 15px;
-        align-items: start;
-        margin-bottom: 20px;
-      }
-      .rules-grid > div {
-        position: relative;
-      }
-      .add-button {
-        width: 24px;
-        height: 24px;
-        border: 1px solid #3b82f6;
-        border-radius: 50%;
-        color: #3b82f6;
-        background: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        margin: 8px auto 0;
-        font-size: 18px;
-      }
-      .action-buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 30px;
-      }
-      .btn {
-        padding: 8px 16px;
-        border-radius: 4px;
-        border: 1px solid #d1d5db;
-        background: white;
-        cursor: pointer;
-        font-size: 14px;
-      }
-      .btn-delete {
-        color: #ef4444;
-      }
-      .btn-resume {
-        color: #333;
-      }
-      .btn-verify {
-        color: #3b82f6;
-      }
-      .btn-validate {
-        color: #10b981;
-      }
-      .btn-generate {
-        background: #10b981;
-        color: white;
-        border: none;
-      }
-      .output {
-        margin-top: 30px;
-        display: none;
-      }
-      .script-output {
-        width: 100%;
-        min-height: 100px;
-        margin: 10px 0;
-        padding: 15px;
-        border: 1px solid #d1d5db;
-        border-radius: 4px;
-        font-family: monospace;
-      }
+      /* ... keep existing code (styles) */
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>One Click Onboarding</h1>
+      <h1>Network Rules Generator</h1>
       
       <div class="info-box">
-        These three fields are mandatory, you cannot start entering them without having filled them in.
+        Ces trois champs sont obligatoires, vous ne pouvez pas commencer à les saisir sans les avoir remplis.
       </div>
 
       <div class="mandatory">
@@ -143,169 +32,217 @@
         </div>
       </div>
 
-      <div class="rules-grid">
-        <div>
-          <label>Source IP</label>
-          <input type="text" id="sourceIP" placeholder="IP source">
-          <button class="add-button">+</button>
-        </div>
-        <div>
-          <label>IP Destination</label>
-          <input type="text" id="destIP" placeholder="IP destination">
-          <button class="add-button">+</button>
-        </div>
-        <div>
-          <label>Protocole</label>
-          <select id="protocol">
-            <option value="tcp">TCP</option>
-            <option value="udp">UDP</option>
-            <option value="icmp">ICMP</option>
-          </select>
-          <button class="add-button">+</button>
-        </div>
-        <div>
-          <label>Service</label>
-          <input type="text" id="service" placeholder="Service">
-          <button class="add-button">+</button>
-        </div>
-        <div>
-          <label>Port</label>
-          <input type="number" id="port" placeholder="Port">
-          <button class="add-button">+</button>
-        </div>
-        <div>
-          <label>Authentication</label>
-          <select id="authentication">
-            <option value="none">Select</option>
-            <option value="basic">Basic</option>
-            <option value="oauth">OAuth</option>
-          </select>
-          <button class="add-button">+</button>
-        </div>
-        <div>
-          <label>Flow encryption</label>
-          <select id="encryption">
-            <option value="none">Select</option>
-            <option value="ssl">SSL/TLS</option>
-            <option value="ipsec">IPSec</option>
-          </select>
-          <button class="add-button">+</button>
-        </div>
-        <div>
-          <label>Classification</label>
-          <select id="classification">
-            <option value="public">Select</option>
-            <option value="internal">Internal</option>
-            <option value="confidential">Confidential</option>
-          </select>
-          <button class="add-button">+</button>
-        </div>
-        <div>
-          <label>APP code</label>
-          <input type="text" id="appCode" placeholder="Code (4 chars)" maxlength="4">
-          <button class="add-button">+</button>
+      <div id="rulesContainer">
+        <div class="rules-grid" id="rule-1">
+          <div>
+            <label>Source IP</label>
+            <input type="text" class="sourceIP" placeholder="IP source">
+          </div>
+          <div>
+            <label>IP Destination</label>
+            <input type="text" class="destIP" placeholder="IP destination">
+          </div>
+          <div>
+            <label>Protocole</label>
+            <select class="protocol">
+              <option value="tcp">TCP</option>
+              <option value="udp">UDP</option>
+              <option value="icmp">ICMP</option>
+            </select>
+          </div>
+          <div>
+            <label>Service</label>
+            <input type="text" class="service" placeholder="Service">
+          </div>
+          <div>
+            <label>Port</label>
+            <input type="number" class="port" placeholder="Port">
+          </div>
+          <div>
+            <label>Authentication</label>
+            <select class="authentication">
+              <option value="none">Select</option>
+              <option value="basic">Basic</option>
+              <option value="oauth">OAuth</option>
+            </select>
+          </div>
+          <div>
+            <label>Flow encryption</label>
+            <select class="encryption">
+              <option value="none">Select</option>
+              <option value="ssl">SSL/TLS</option>
+              <option value="ipsec">IPSec</option>
+            </select>
+          </div>
+          <div>
+            <label>Classification</label>
+            <select class="classification">
+              <option value="public">Select</option>
+              <option value="internal">Internal</option>
+              <option value="confidential">Confidential</option>
+            </select>
+          </div>
+          <div>
+            <label>APP code</label>
+            <input type="text" class="appCode" placeholder="Code (4 chars)" maxlength="4">
+          </div>
+          <button class="add-button" onclick="addNewRule()">+</button>
         </div>
       </div>
 
       <div class="action-buttons">
-        <button class="btn btn-delete">Delete</button>
-        <button class="btn btn-resume">Resume Draft</button>
-        <button class="btn btn-verify">Verify</button>
-        <button class="btn btn-validate">Validate</button>
-        <button onclick="validateAndGenerate()" class="btn btn-generate">Generate Scripts</button>
+        <button class="btn btn-delete" onclick="deleteRules()">Delete</button>
+        <button class="btn btn-resume" onclick="resumeDraft()">Resume Draft</button>
+        <button class="btn btn-verify" onclick="verifyRules()">Verify</button>
+        <button class="btn btn-validate" onclick="validateRules()">Validate</button>
+        <button onclick="generateScripts()" class="btn btn-generate">Generate Scripts</button>
       </div>
 
       <div id="output" class="output">
-        <h3>Generated Script</h3>
-        <textarea id="scriptOutput" class="script-output" readonly></textarea>
-        <div class="button-group">
-          <button onclick="copyScript()" class="btn">Copy script</button>
-        </div>
+        <h3>Generated Scripts</h3>
+        <div id="scripts-container"></div>
       </div>
     </div>
 
     <script>
-      let currentRow = 1;
+      let ruleCount = 1;
 
-      function validateAndGenerate() {
-        // Validation des champs obligatoires
-        const department = document.getElementById('department').value;
-        const projectCode = document.getElementById('projectCode').value;
-        const email = document.getElementById('email').value;
+      function validateIP(ip) {
+        const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+        return ipPattern.test(ip);
+      }
 
-        if (!department || !projectCode || !email) {
+      function validatePort(port) {
+        return port > 0 && port < 65536;
+      }
+
+      function addNewRule() {
+        if (ruleCount >= 5) {
+          alert('Maximum 5 rules allowed');
+          return;
+        }
+        
+        ruleCount++;
+        const container = document.getElementById('rulesContainer');
+        const newRule = document.querySelector('.rules-grid').cloneNode(true);
+        newRule.id = 'rule-' + ruleCount;
+        
+        // Clear inputs in the new rule
+        newRule.querySelectorAll('input').forEach(input => input.value = '');
+        newRule.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+        
+        container.appendChild(newRule);
+      }
+
+      function generateScripts() {
+        const mandatory = {
+          department: document.getElementById('department').value,
+          projectCode: document.getElementById('projectCode').value,
+          email: document.getElementById('email').value
+        };
+
+        if (!mandatory.department || !mandatory.projectCode || !mandatory.email) {
           alert('Veuillez remplir tous les champs obligatoires');
           return;
         }
 
-        // Validation des champs de règle réseau
-        const formData = {
-          sourceIP: document.getElementById('sourceIP').value,
-          destIP: document.getElementById('destIP').value,
-          protocol: document.getElementById('protocol').value,
-          service: document.getElementById('service').value,
-          port: document.getElementById('port').value,
-          authentication: document.getElementById('authentication').value,
-          encryption: document.getElementById('encryption').value,
-          classification: document.getElementById('classification').value,
-          appCode: document.getElementById('appCode').value
-        };
+        const rules = [];
+        document.querySelectorAll('.rules-grid').forEach((rule, index) => {
+          const formData = {
+            sourceIP: rule.querySelector('.sourceIP').value,
+            destIP: rule.querySelector('.destIP').value,
+            protocol: rule.querySelector('.protocol').value,
+            service: rule.querySelector('.service').value,
+            port: rule.querySelector('.port').value,
+            authentication: rule.querySelector('.authentication').value,
+            encryption: rule.querySelector('.encryption').value,
+            classification: rule.querySelector('.classification').value,
+            appCode: rule.querySelector('.appCode').value
+          };
 
-        if (!formData.sourceIP || !formData.destIP || !formData.service || !formData.port) {
-          alert('Veuillez remplir tous les champs de la règle réseau');
+          if (formData.sourceIP && formData.destIP && formData.service && formData.port) {
+            if (!validateIP(formData.sourceIP) || !validateIP(formData.destIP)) {
+              alert(`Règle ${index + 1}: Format IP invalide`);
+              return;
+            }
+            if (!validatePort(formData.port)) {
+              alert(`Règle ${index + 1}: Port invalide`);
+              return;
+            }
+            rules.push(formData);
+          }
+        });
+
+        if (rules.length === 0) {
+          alert('Aucune règle valide à générer');
           return;
         }
 
-        // Génération du script
-        google.script.run
-          .withSuccessHandler(function(scriptContent) {
-            document.getElementById('output').style.display = 'block';
-            document.getElementById('scriptOutput').value = scriptContent;
+        const scriptsContainer = document.getElementById('scripts-container');
+        scriptsContainer.innerHTML = '';
 
-            // Sauvegarde dans la feuille
-            const saveData = {
-              rowIndex: currentRow,
-              department: department,
-              projectCode: projectCode,
-              email: email,
-              script: scriptContent
-            };
+        rules.forEach((rule, index) => {
+          google.script.run
+            .withSuccessHandler(function(scriptContent) {
+              const scriptDiv = document.createElement('div');
+              scriptDiv.className = 'script-block';
+              scriptDiv.innerHTML = `
+                <div class="script-header">
+                  <strong>ID: ${index + 1}</strong>
+                  <button onclick="copyScript(this)" class="btn">Copy</button>
+                </div>
+                <textarea readonly class="script-output">${scriptContent}</textarea>
+              `;
+              scriptsContainer.appendChild(scriptDiv);
 
-            google.script.run
-              .withSuccessHandler(function(response) {
-                if (response.success) {
-                  currentRow++;
-                  alert('Script généré et sauvegardé avec succès');
-                } else {
+              // Save to sheet
+              google.script.run.withSuccessHandler(function(response) {
+                if (!response.success) {
                   alert('Erreur lors de la sauvegarde: ' + response.message);
                 }
-              })
-              .saveToSheet(saveData);
-          })
-          .generateScript(formData);
+              }).saveToSheet({
+                ...mandatory,
+                script: scriptContent,
+                rowIndex: index + 1
+              });
+            })
+            .generateScript(rule);
+        });
+
+        document.getElementById('output').style.display = 'block';
       }
 
-      function copyScript() {
-        const scriptOutput = document.getElementById('scriptOutput');
-        scriptOutput.select();
+      function copyScript(button) {
+        const textarea = button.parentElement.nextElementSibling;
+        textarea.select();
         document.execCommand('copy');
         alert('Script copié dans le presse-papier');
       }
 
-      function resetForm() {
-        document.getElementById('department').value = '';
-        document.getElementById('projectCode').value = '';
-        document.getElementById('email').value = '';
-        document.getElementById('sourceIP').value = '';
-        document.getElementById('destIP').value = '';
-        document.getElementById('protocol').value = 'tcp';
-        document.getElementById('service').value = '';
-        document.getElementById('port').value = '';
-        document.getElementById('authentication').value = 'none';
-        document.getElementById('encryption').value = 'none';
-        document.getElementById('classification').value = 'public';
-        document.getElementById('appCode').value = '';
-        document.getElementById('output').style.display = 'none';
+      function deleteRules() {
+        if (confirm('Voulez-vous vraiment supprimer toutes les règles ?')) {
+          const container = document.getElementById('rulesContainer');
+          while (container.children.length > 1) {
+            container.removeChild(container.lastChild);
+          }
+          document.querySelectorAll('input').forEach(input => input.value = '');
+          document.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+          document.getElementById('output').style.display = 'none';
+          ruleCount = 1;
+        }
+      }
+
+      // Fonctions à implémenter plus tard si nécessaire
+      function resumeDraft() {
+        alert('Fonction à implémenter');
+      }
+
+      function verifyRules() {
+        alert('Fonction à implémenter');
+      }
+
+      function validateRules() {
+        alert('Fonction à implémenter');
       }
     </script>
   </body>
