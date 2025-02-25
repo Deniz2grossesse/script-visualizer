@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,51 +10,59 @@
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 20px;
-      background-color: #2C3E50;
-      color: #ECF0F1;
+      background-color: #F5F5F5;
+      color: #333;
     }
     
     .container {
-      max-width: 800px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 30px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     h1 {
       text-align: center;
-      color: white;
+      color: #2C3E50;
       margin-bottom: 30px;
+      font-size: 24px;
+      font-weight: 600;
     }
     
     .alert {
-      background-color: rgba(231, 76, 60, 0.1);
-      border: 1px solid #E74C3C;
-      color: #ECF0F1;
-      padding: 15px;
+      background-color: #FFF5F5;
+      border: 1px solid #FED7D7;
+      color: #333;
+      padding: 16px;
       border-radius: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      font-size: 14px;
     }
     
     .alert-icon {
-      color: #E74C3C;
-      font-size: 20px;
+      color: #E53E3E;
+      font-size: 18px;
     }
     
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
     
     label {
       display: block;
-      margin-bottom: 5px;
-      color: #ECF0F1;
+      margin-bottom: 8px;
+      color: #4A5568;
+      font-size: 14px;
+      font-weight: 500;
     }
     
     .required {
-      color: #E74C3C;
+      color: #E53E3E;
       margin-left: 4px;
     }
     
@@ -61,99 +70,107 @@
     input[type="email"] {
       width: 100%;
       padding: 12px;
-      border: 1px solid #34495E;
-      background-color: rgba(52, 73, 94, 0.5);
-      border-radius: 8px;
-      color: #ECF0F1;
-      font-size: 16px;
+      border: 1px solid #E2E8F0;
+      background-color: #F7FAFC;
+      border-radius: 6px;
+      color: #2D3748;
+      font-size: 14px;
       box-sizing: border-box;
+      transition: all 0.2s;
     }
     
     input[type="text"]:focus,
     input[type="email"]:focus {
       outline: none;
-      border-color: #3498DB;
-      background-color: rgba(52, 73, 94, 0.8);
+      border-color: #4299E1;
+      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+      background-color: white;
     }
     
     .check-icon {
-      color: #2ECC71;
+      color: #48BB78;
       margin-left: 10px;
       display: none;
     }
     
     .button-group {
       display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-      margin-top: 20px;
+      gap: 12px;
+      justify-content: space-between;
+      margin-top: 30px;
+      flex-wrap: wrap;
     }
     
     .action-buttons {
       display: flex;
-      gap: 10px;
-      margin-top: 20px;
-      justify-content: space-between;
+      gap: 12px;
+      margin-top: 30px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
     }
     
     button {
-      padding: 12px 24px;
+      padding: 10px 20px;
       border: none;
-      border-radius: 8px;
-      font-size: 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
       cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    
-    .btn-add {
-      background-color: #2ECC71;
-      color: white;
-    }
-    
-    .btn-import {
-      background-color: #E67E22;
-      color: white;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     
     .btn-delete {
-      background-color: #E74C3C;
-      color: white;
+      background-color: #FEB2B2;
+      color: #C53030;
     }
     
     .btn-resume {
-      background-color: #3498DB;
-      color: white;
+      background-color: #BEE3F8;
+      color: #2B6CB0;
     }
     
     .btn-verify {
-      background-color: #F1C40F;
-      color: #2C3E50;
+      background-color: #F6E05E;
+      color: #744210;
     }
     
     .btn-generate {
-      background-color: #E67E22;
+      background-color: #4299E1;
       color: white;
-      padding-right: 40px;
+      padding-right: 36px;
       position: relative;
     }
     
-    .btn-generate::after {
-      content: "→";
-      position: absolute;
-      right: 20px;
-      top: 50%;
-      transform: translateY(-50%);
+    button:hover {
+      transform: translateY(-1px);
     }
     
-    button:hover {
-      opacity: 0.9;
+    button:active {
+      transform: translateY(0);
     }
     
     .top-buttons {
       display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-bottom: 20px;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+    
+    .left-buttons {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .btn-add {
+      background-color: #48BB78;
+      color: white;
+    }
+    
+    .btn-import {
+      background-color: #ED8936;
+      color: white;
     }
     
     .input-group {
@@ -165,65 +182,123 @@
     .valid-icon {
       position: absolute;
       right: 12px;
-      color: #2ECC71;
+      color: #48BB78;
       display: none;
+      font-size: 18px;
     }
     
     .is-valid .valid-icon {
       display: block;
     }
+    
+    .mandatory-section {
+      max-width: 600px;
+      margin: 0 auto 40px;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+      
+      .button-group,
+      .action-buttons,
+      .top-buttons {
+        flex-direction: column;
+      }
+      
+      button {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>One Click Onboarding</h1>
-    
+    <div class="top-buttons">
+      <div class="left-buttons">
+        <button class="btn-add" onclick="addNewLine()">
+          <span>+</span>
+          Ajouter une ligne
+        </button>
+        <button class="btn-import" onclick="importCSV()">
+          <span>⬆️</span>
+          Importer CSV
+        </button>
+      </div>
+    </div>
+
     <div class="alert">
       <span class="alert-icon">⚠️</span>
       <span>These three fields are mandatory, you cannot start entering them without having filled them in.</span>
     </div>
-    
-    <div class="top-buttons">
-      <button class="btn-add" onclick="addNewLine()">
-        + Ajouter une ligne
-      </button>
-      <button class="btn-import" onclick="importCSV()">
-        ⬆️ Importer CSV
-      </button>
-    </div>
-    
-    <div class="form-group">
-      <label>Department <span class="required">*</span></label>
-      <div class="input-group">
-        <input type="text" id="department" maxlength="4" onchange="validateField('department')" placeholder="Department (1-4 chars)">
-        <span class="valid-icon">✓</span>
+
+    <div class="mandatory-section">
+      <div class="form-group">
+        <label>Department <span class="required">*</span></label>
+        <div class="input-group">
+          <input 
+            type="text" 
+            id="department" 
+            maxlength="4" 
+            onchange="validateField('department')" 
+            placeholder="Department (1-4 chars)"
+          >
+          <span class="valid-icon">✓</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Project/Application Code <span class="required">*</span></label>
+        <div class="input-group">
+          <input 
+            type="text" 
+            id="projectCode" 
+            maxlength="4" 
+            onchange="validateField('projectCode')" 
+            placeholder="Project Code (1-4 chars)"
+          >
+          <span class="valid-icon">✓</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Requester's Email <span class="required">*</span></label>
+        <div class="input-group">
+          <input 
+            type="email" 
+            id="email" 
+            onchange="validateField('email')" 
+            placeholder="Email address"
+          >
+          <span class="valid-icon">✓</span>
+        </div>
       </div>
     </div>
-    
-    <div class="form-group">
-      <label>Project/Application Code <span class="required">*</span></label>
-      <div class="input-group">
-        <input type="text" id="projectCode" maxlength="4" onchange="validateField('projectCode')" placeholder="Project Code (1-4 chars)">
-        <span class="valid-icon">✓</span>
-      </div>
+
+    <div id="rulesContainer">
+      <!-- Les règles seront ajoutées ici dynamiquement -->
     </div>
-    
-    <div class="form-group">
-      <label>Requester's Email <span class="required">*</span></label>
-      <div class="input-group">
-        <input type="email" id="email" onchange="validateField('email')" placeholder="Email address">
-        <span class="valid-icon">✓</span>
-      </div>
-    </div>
-    
+
     <div class="action-buttons">
-      <button class="btn-delete" onclick="deleteForm()">Delete</button>
-      <button class="btn-resume" onclick="resumeDraft()">Resume Draft</button>
-      <button class="btn-verify" onclick="verifyFields()">Verify</button>
-      <button class="btn-generate" onclick="generateScripts()">Generate Scripts</button>
+      <button class="btn-delete" onclick="deleteForm()">
+        <span>🗑️</span>
+        Delete
+      </button>
+      <button class="btn-resume" onclick="resumeDraft()">
+        <span>📄</span>
+        Resume Draft
+      </button>
+      <button class="btn-verify" onclick="verifyFields()">
+        <span>✓</span>
+        Verify
+      </button>
+      <button class="btn-generate" onclick="generateScripts()">
+        Generate Scripts
+      </button>
     </div>
   </div>
-  
+
   <script>
     function validateField(fieldId) {
       const field = document.getElementById(fieldId);
