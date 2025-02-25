@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Copy } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -15,6 +15,7 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 interface FormData {
   department: string;
@@ -159,6 +160,7 @@ const Index = () => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [formErrors, setFormErrors] = useState<FormErrors>(initialFormErrors);
   const [isMainFormEnabled, setIsMainFormEnabled] = useState(false);
+  const [generatedScripts, setGeneratedScripts] = useState<Array<{id: number, script: string}>>([]);
   const [networkRules, setNetworkRules] = useState<NetworkRule[]>([
     {
       id: '1',
@@ -263,6 +265,54 @@ const Index = () => {
         return prevRules;
       }
       return prevRules.filter(rule => rule.id !== ruleId);
+    });
+  };
+
+  const generateScript = (rule: NetworkRule, index: number) => {
+    const scriptTemplate = `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
+  -H "Authorization: Bearer <YOUR_TOKEN>" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "source": {
+      "ip": "${rule.sourceIP}",
+      "mask": "255.255.255.0"
+    },
+    "destination": {
+      "ip": "${rule.destIP}"
+    },
+    "service": {
+      "protocol": "${rule.protocol.toUpperCase()}",
+      "port": ${rule.port},
+      "name": "${rule.service}"
+    }
+  }'`;
+
+    return {
+      id: index + 1,
+      script: scriptTemplate
+    };
+  };
+
+  const handleGenerateAllScripts = () => {
+    const scripts = networkRules.map((rule, index) => {
+      if (!rule.sourceIP || !rule.destIP || !rule.protocol || !rule.port || !rule.service) {
+        toast.error(`La règle ${index + 1} est incomplète`);
+        return null;
+      }
+      return generateScript(rule, index);
+    }).filter((script): script is {id: number, script: string} => script !== null);
+
+    setGeneratedScripts(scripts);
+    if (scripts.length > 0) {
+      toast.success("Scripts générés avec succès");
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success("Script copié dans le presse-papier");
+    }).catch(() => {
+      toast.error("Erreur lors de la copie du script");
     });
   };
 
@@ -536,11 +586,42 @@ const Index = () => {
           <Button onClick={() => toast.success("Entries validated successfully")}>
             Validate
           </Button>
-          <Button onClick={() => toast.success("Script generation started")} variant="default">
-            Generate Script
+          <Button 
+            onClick={handleGenerateAllScripts} 
+            variant="default"
+            className="bg-green-600 hover:bg-green-700"
+          >
+            Generate Scripts
           </Button>
         </div>
       </form>
+
+      {generatedScripts.length > 0 && (
+        <div className="mt-8 space-y-4">
+          {generatedScripts.map((scriptData) => (
+            <div key={scriptData.id} className="flex gap-4 items-start">
+              <div className="flex-shrink-0 w-16 font-medium text-gray-700 mt-2">
+                ID: {scriptData.id}
+              </div>
+              <div className="flex-grow relative">
+                <Textarea
+                  value={scriptData.script}
+                  readOnly
+                  className="min-h-[200px] font-mono text-sm"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={() => copyToClipboard(scriptData.script)}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
