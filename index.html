@@ -4,13 +4,13 @@
 <head>
   <meta charset="UTF-8">
   <base target="_top">
-  <title>One Click Onboarding</title>
+  <title>Network Rules Generator</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Roboto', Arial, sans-serif;
       margin: 0;
       padding: 20px;
-      background-color: #F5F5F5;
+      background: #9b87f5;
       color: #333;
     }
     
@@ -18,25 +18,25 @@
       max-width: 1200px;
       margin: 0 auto;
       padding: 30px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
     }
     
     h1 {
       text-align: center;
-      color: #2C3E50;
+      color: #7E69AB;
       margin-bottom: 30px;
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 600;
     }
     
     .alert {
-      background-color: #FFF5F5;
-      border: 1px solid #FED7D7;
-      color: #333;
+      background-color: #f8f0ff;
+      border: 1px solid #9b87f5;
+      color: #6E59A5;
       padding: 16px;
-      border-radius: 8px;
+      border-radius: 12px;
       margin-bottom: 30px;
       display: flex;
       align-items: center;
@@ -45,7 +45,7 @@
     }
     
     .alert-icon {
-      color: #E53E3E;
+      color: #7E69AB;
       font-size: 18px;
     }
     
@@ -56,13 +56,13 @@
     label {
       display: block;
       margin-bottom: 8px;
-      color: #4A5568;
+      color: #6E59A5;
       font-size: 14px;
       font-weight: 500;
     }
     
     .required {
-      color: #E53E3E;
+      color: #9b87f5;
       margin-left: 4px;
     }
     
@@ -70,10 +70,10 @@
     input[type="email"] {
       width: 100%;
       padding: 12px;
-      border: 1px solid #E2E8F0;
-      background-color: #F7FAFC;
-      border-radius: 6px;
-      color: #2D3748;
+      border: 2px solid #e9e3ff;
+      background-color: #ffffff;
+      border-radius: 10px;
+      color: #6E59A5;
       font-size: 14px;
       box-sizing: border-box;
       transition: all 0.2s;
@@ -82,13 +82,13 @@
     input[type="text"]:focus,
     input[type="email"]:focus {
       outline: none;
-      border-color: #4299E1;
-      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
-      background-color: white;
+      border-color: #9b87f5;
+      box-shadow: 0 0 0 3px rgba(155, 135, 245, 0.15);
+      background-color: #ffffff;
     }
     
     .check-icon {
-      color: #48BB78;
+      color: #9b87f5;
       margin-left: 10px;
       display: none;
     }
@@ -110,9 +110,9 @@
     }
     
     button {
-      padding: 10px 20px;
+      padding: 12px 24px;
       border: none;
-      border-radius: 6px;
+      border-radius: 10px;
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
@@ -120,32 +120,38 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      background: #9b87f5;
+      color: white;
     }
     
     .btn-delete {
-      background-color: #FEB2B2;
-      color: #C53030;
+      background-color: #fff0f0;
+      color: #ff5757;
+      border: 1px solid #ffcece;
     }
     
     .btn-resume {
-      background-color: #BEE3F8;
-      color: #2B6CB0;
+      background-color: #f0f7ff;
+      color: #3b82f6;
+      border: 1px solid #bfdbfe;
     }
     
     .btn-verify {
-      background-color: #F6E05E;
-      color: #744210;
+      background-color: #9b87f5;
+      color: white;
     }
     
     .btn-generate {
-      background-color: #4299E1;
+      background: linear-gradient(45deg, #7E69AB, #9b87f5);
       color: white;
       padding-right: 36px;
       position: relative;
+      box-shadow: 0 4px 15px rgba(155, 135, 245, 0.3);
     }
     
     button:hover {
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(155, 135, 245, 0.2);
     }
     
     button:active {
@@ -164,13 +170,11 @@
     }
     
     .btn-add {
-      background-color: #48BB78;
-      color: white;
+      background: #9b87f5;
     }
     
     .btn-import {
-      background-color: #ED8936;
-      color: white;
+      background: #7E69AB;
     }
     
     .input-group {
@@ -182,7 +186,7 @@
     .valid-icon {
       position: absolute;
       right: 12px;
-      color: #48BB78;
+      color: #9b87f5;
       display: none;
       font-size: 18px;
     }
@@ -194,11 +198,16 @@
     .mandatory-section {
       max-width: 600px;
       margin: 0 auto 40px;
+      padding: 30px;
+      background: #f8f7ff;
+      border-radius: 15px;
+      border: 1px solid #e9e3ff;
     }
     
     @media (max-width: 768px) {
       .container {
         padding: 20px;
+        margin: 10px;
       }
       
       .button-group,
@@ -210,11 +219,17 @@
       button {
         width: 100%;
       }
+      
+      .mandatory-section {
+        padding: 20px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <h1>One Click Onboarding</h1>
+
     <div class="top-buttons">
       <div class="left-buttons">
         <button class="btn-add" onclick="addNewLine()">
