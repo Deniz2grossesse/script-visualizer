@@ -428,56 +428,54 @@
         showLoading();
         console.log("Fichier sélectionné:", file.name);
         const reader = new FileReader();
-        
-        reader.onload = function(e) {
-          console.log("Fichier lu");
-          const content = e.target.result;
-          console.log("Contenu du fichier (premiers caractères):", content.substring(0, 100));
           
-          google.script.run
-            .withSuccessHandler(function(response) {
-              hideLoading();
-              handleCSVSuccess(response);
-            })
-            .withFailureHandler(function(error) {
-              hideLoading();
-              handleError(error);
-            })
-            .importCSV(content);
-        };
-        
-        reader.onerror = function(e) {
-          hideLoading();
-          console.error("Erreur lors de la lecture du fichier:", e);
-          alert("Erreur lors de la lecture du fichier");
-        };
+          reader.onload = function(e) {
+            console.log("Fichier lu");
+            const content = e.target.result;
+            console.log("Contenu du fichier (premiers caractères):", content.substring(0, 100));
+            
+            google.script.run
+              .withSuccessHandler(function(response) {
+                hideLoading();
+                console.log("Réponse du serveur:", response);
+                if (response.success) {
+                  console.log("Données reçues:", response.data);
+                  displayRules(response.data);
+                  alert(response.message);
+                } else {
+                  console.error("Erreur:", response.message);
+                  alert("Erreur: " + response.message);
+                }
+              })
+              .withFailureHandler(function(error) {
+                hideLoading();
+                console.error("Erreur:", error);
+                alert("Erreur lors de l'import: " + error.toString());
+              })
+              .importCSV(content);
+          };
+          
+          reader.onerror = function(e) {
+            hideLoading();
+            console.error("Erreur lors de la lecture du fichier:", e);
+            alert("Erreur lors de la lecture du fichier");
+          };
 
         reader.readAsText(file);
       }
     }
 
-    function handleCSVSuccess(response) {
-      console.log("Réponse de l'import:", response);
-      if (response.success) {
-        currentRules = response.data;
-        displayRules();
-        alert(response.message);
-      } else {
-        alert('Erreur lors de l\'import: ' + response.message);
-      }
-    }
-
-    function displayRules() {
-      console.log("Affichage des règles:", currentRules);
+    function displayRules(rules) {
+      console.log("Affichage des règles:", rules);
       const table = document.getElementById('rulesTable');
       const tbody = table.querySelector('tbody');
       tbody.innerHTML = '';
-      
-      currentRules.forEach((rule, index) => {
+        
+      rules.forEach((rule, index) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><input type="text" value="${rule.sourceIP}" onchange="updateRule(${index}, 'sourceIP', this.value)"></td>
-          <td><input type="text" value="${rule.destIP}" onchange="updateRule(${index}, 'destIP', this.value)"></td>
+          <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)"></td>
+          <td><input type="text" value="${rule.destIP || ''}" onchange="updateRule(${index}, 'destIP', this.value)"></td>
           <td>
             <select onchange="updateRule(${index}, 'protocol', this.value)">
               <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
@@ -485,8 +483,8 @@
               <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
             </select>
           </td>
-          <td><input type="text" value="${rule.service}" onchange="updateRule(${index}, 'service', this.value)"></td>
-          <td><input type="text" value="${rule.port}" onchange="updateRule(${index}, 'port', this.value)"></td>
+          <td><input type="text" value="${rule.service || ''}" onchange="updateRule(${index}, 'service', this.value)"></td>
+          <td><input type="text" value="${rule.port || ''}" onchange="updateRule(${index}, 'port', this.value)"></td>
           <td>
             <select onchange="updateRule(${index}, 'authentication', this.value)">
               <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
@@ -506,11 +504,11 @@
               <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
             </select>
           </td>
-          <td><input type="text" value="${rule.appCode}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
+          <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
         `;
         tbody.appendChild(tr);
       });
-      
+        
       table.style.display = 'table';
     }
 
