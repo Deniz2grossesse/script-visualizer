@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Network, Shield, ArrowRight, Plus, Lock, FileCode, AlertTriangle, Check, X } from "lucide-react";
+import { Network, Shield, ArrowRight, Plus, Lock, FileCode, AlertTriangle, Check, X, Upload } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface FieldError {
   error: boolean;
@@ -19,8 +20,22 @@ interface FormErrors {
   projectCode: FieldError;
 }
 
+interface CSVRow {
+  sourceIP: string;
+  destIP: string;
+  protocol: string;
+  service: string;
+  port: string;
+  authentication: string;
+  flowEncryption: string;
+  classification: string;
+  appCode: string;
+}
+
 const Index = () => {
+  const { toast } = useToast();
   const [generatedScript, setGeneratedScript] = useState('');
+  const [csvRows, setCsvRows] = useState<CSVRow[]>([]);
   const [errors, setErrors] = useState<FormErrors>({
     email: { error: false, message: '' },
     sourceIP: { error: false, message: '' },
@@ -44,30 +59,90 @@ const Index = () => {
     return isValid;
   };
 
-  const validateIP = (ip: string, field: 'sourceIP' | 'destIP'): boolean => {
+  const validateIP = (ip: string): boolean => {
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-    const isValid = ipRegex.test(ip) && ip.split('.').every(num => parseInt(num) >= 0 && parseInt(num) <= 255);
-    setErrors(prev => ({
-      ...prev,
-      [field]: {
-        error: !isValid,
-        message: isValid ? '' : 'Veuillez entrer une adresse IP valide'
-      }
-    }));
-    return isValid;
+    return ipRegex.test(ip) && ip.split('.').every(num => parseInt(num) >= 0 && parseInt(num) <= 255);
   };
 
   const validatePort = (port: string): boolean => {
     const portNum = parseInt(port);
-    const isValid = !isNaN(portNum) && portNum >= 1 && portNum <= 65535;
-    setErrors(prev => ({
-      ...prev,
-      port: {
-        error: !isValid,
-        message: isValid ? '' : 'Veuillez entrer un port valide (1-65535)'
-      }
-    }));
-    return isValid;
+    return !isNaN(portNum) && portNum >= 1 && portNum <= 65535;
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'text/csv') {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Veuillez sélectionner un fichier CSV valide."
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      const lines = text.split('\n');
+      const newRows: CSVRow[] = [];
+      let errorCount = 0;
+
+      lines.forEach((line, index) => {
+        if (line.trim() === '') return;
+
+        const columns = line.split(',').map(col => col.trim());
+        if (columns.length >= 9) {
+          const row = {
+            sourceIP: columns[0],
+            destIP: columns[1],
+            protocol: columns[2],
+            service: columns[3],
+            port: columns[4],
+            authentication: columns[5],
+            flowEncryption: columns[6],
+            classification: columns[7],
+            appCode: columns[8]
+          };
+
+          // Validation des données
+          let isValid = true;
+          if (!validateIP(row.sourceIP) || !validateIP(row.destIP)) {
+            isValid = false;
+          }
+          if (!validatePort(row.port)) {
+            isValid = false;
+          }
+          if (!['tcp', 'udp', 'icmp'].includes(row.protocol.toLowerCase())) {
+            isValid = false;
+          }
+          if (!['yes', 'no'].includes(row.authentication.toLowerCase())) {
+            isValid = false;
+          }
+          if (!['yes', 'no'].includes(row.flowEncryption.toLowerCase())) {
+            isValid = false;
+          }
+          if (!['yellow', 'amber', 'red'].includes(row.classification.toLowerCase())) {
+            isValid = false;
+          }
+
+          if (!isValid) {
+            errorCount++;
+          }
+
+          newRows.push(row);
+        }
+      });
+
+      setCsvRows(newRows);
+      toast({
+        title: "Import CSV",
+        description: `${newRows.length} lignes importées. ${errorCount} lignes contiennent des erreurs.`
+      });
+    };
+
+    reader.readAsText(file);
   };
 
   return (
@@ -78,6 +153,19 @@ const Index = () => {
         <div className="bg-[#2C3E50] border border-[#BDC3C7]/30 rounded-lg p-4 mb-8">
           <AlertTriangle className="inline-block w-5 h-5 mr-2 text-[#E67E22]" />
           <span className="text-[#BDC3C7]">These three fields are mandatory, you cannot start entering them without having filled them in.</span>
+        </div>
+
+        <div className="flex justify-end mb-6">
+          <label className="flex items-center gap-2 cursor-pointer px-4 py-2 bg-[#E67E22] text-white rounded-md hover:bg-[#D35400] transition-colors">
+            <Upload className="w-4 h-4" />
+            Importer CSV
+            <input
+              type="file"
+              accept=".csv"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+          </label>
         </div>
 
         <div className="grid gap-6 max-w-sm mb-10">
@@ -341,6 +429,41 @@ const Index = () => {
             </Button>
           </div>
         </div>
+
+        {csvRows.length > 0 && (
+          <div className="mt-8 overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-[#2C3E50] text-white">
+                  <th className="p-2 text-left">Source IP</th>
+                  <th className="p-2 text-left">IP Destination</th>
+                  <th className="p-2 text-left">Protocole</th>
+                  <th className="p-2 text-left">Service</th>
+                  <th className="p-2 text-left">Port</th>
+                  <th className="p-2 text-left">Authentication</th>
+                  <th className="p-2 text-left">Flow Encryption</th>
+                  <th className="p-2 text-left">Classification</th>
+                  <th className="p-2 text-left">APP Code</th>
+                </tr>
+              </thead>
+              <tbody>
+                {csvRows.map((row, index) => (
+                  <tr key={index} className="border-b border-[#2C3E50] hover:bg-[#2C3E50]/50">
+                    <td className="p-2">{row.sourceIP}</td>
+                    <td className="p-2">{row.destIP}</td>
+                    <td className="p-2">{row.protocol}</td>
+                    <td className="p-2">{row.service}</td>
+                    <td className="p-2">{row.port}</td>
+                    <td className="p-2">{row.authentication}</td>
+                    <td className="p-2">{row.flowEncryption}</td>
+                    <td className="p-2">{row.classification}</td>
+                    <td className="p-2">{row.appCode}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         <div className="flex flex-wrap justify-end gap-3">
           <Button 
