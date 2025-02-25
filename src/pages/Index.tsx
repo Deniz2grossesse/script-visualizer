@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -41,41 +41,9 @@ const Index = () => {
   const [isImporting, setIsImporting] = useState(false);
   const [fileInput, setFileInput] = useState<HTMLInputElement | null>(null);
 
-  React.useEffect(() => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.csv';
-    input.style.display = 'none';
-    input.addEventListener('change', handleImportCSV);
-    document.body.appendChild(input);
-    setFileInput(input);
-    
-    return () => {
-      input.removeEventListener('change', handleImportCSV);
-      input.remove();
-    };
-  }, []);
-
-  const generateScriptForRow = (row: CSVRow): string => {
-    return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
-  -H "Authorization: Bearer <TON_TOKEN>" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "source": {
-      "ip": "${row.sourceIP.split('/')[0]}"
-    },
-    "destination": {
-      "ip": "${row.destIP}"
-    },
-    "service": {
-      "protocol": "${row.protocol.toUpperCase()}",
-      "port": ${row.port}
-    }
-  }'`;
-  };
-
-  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleImportCSV = useCallback((event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
     if (!file || isImporting) return;
 
     setIsImporting(true);
@@ -148,13 +116,46 @@ const Index = () => {
     };
 
     reader.readAsText(file);
+  }, [isImporting, toast]);
+
+  useEffect(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv';
+    input.style.display = 'none';
+    input.addEventListener('change', handleImportCSV);
+    document.body.appendChild(input);
+    setFileInput(input);
+    
+    return () => {
+      input.removeEventListener('change', handleImportCSV);
+      input.remove();
+    };
+  }, [handleImportCSV]);
+
+  const generateScriptForRow = (row: CSVRow): string => {
+    return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
+  -H "Authorization: Bearer <TON_TOKEN>" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "source": {
+      "ip": "${row.sourceIP.split('/')[0]}"
+    },
+    "destination": {
+      "ip": "${row.destIP}"
+    },
+    "service": {
+      "protocol": "${row.protocol.toUpperCase()}",
+      "port": ${row.port}
+    }
+  }'`;
   };
 
-  const triggerFileInput = () => {
+  const triggerFileInput = useCallback(() => {
     if (!isImporting && fileInput) {
       fileInput.click();
     }
-  };
+  }, [isImporting, fileInput]);
 
   const handleAddRow = () => {
     const emptyRow: CSVRow = {
