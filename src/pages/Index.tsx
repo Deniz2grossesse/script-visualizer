@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -118,19 +119,19 @@ const Index = () => {
       const text = e.target?.result as string;
       console.log("Contenu du fichier (premiers caractères):", text.substring(0, 100));
       
-      const lines = text.split('\n');
-      console.log("Nombre total de lignes:", lines.length);
+      const lines = text.split('\n').slice(11); // On commence à la ligne 12
+      console.log("Nombre de lignes après la ligne 11:", lines.length);
       
       let newRows = [...csvRows]; // On garde les lignes existantes
       let errorCount = 0;
 
       lines.forEach((line, index) => {
         if (line.trim() === '') {
-          console.log(`Ligne ${index + 1} vide, ignorée`);
+          console.log(`Ligne ${index + 12} vide, ignorée`);
           return;
         }
 
-        console.log(`Traitement de la ligne ${index + 1}:`, line);
+        console.log(`Traitement de la ligne ${index + 12}:`, line);
         const columns = line.split(',').map(col => col.trim());
         console.log(`Nombre de colonnes trouvées:`, columns.length);
         
@@ -155,14 +156,14 @@ const Index = () => {
           const validation = validateRow(newRow);
           if (!validation.isValid) {
             errorCount++;
-            console.log(`Erreurs de validation pour la ligne ${index + 1}:`, validation.errors);
+            console.log(`Erreurs de validation pour la ligne ${index + 12}:`, validation.errors);
           }
           
           newRow.isValid = validation.isValid;
           newRow.errors = validation.errors;
           newRows.push(newRow);
         } else {
-          console.log(`Ligne ${index + 1} ignorée car pas assez de colonnes`);
+          console.log(`Ligne ${index + 12} ignorée car pas assez de colonnes`);
         }
       });
 
