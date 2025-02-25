@@ -39,6 +39,22 @@ const Index = () => {
   const [generatedScripts, setGeneratedScripts] = useState<{ id: number; script: string }[]>([]);
   const [csvRows, setCsvRows] = useState<CSVRow[]>([]);
   const [isImporting, setIsImporting] = useState(false);
+  const [fileInput, setFileInput] = useState<HTMLInputElement | null>(null);
+
+  React.useEffect(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv';
+    input.style.display = 'none';
+    input.addEventListener('change', handleImportCSV);
+    document.body.appendChild(input);
+    setFileInput(input);
+    
+    return () => {
+      input.removeEventListener('change', handleImportCSV);
+      input.remove();
+    };
+  }, []);
 
   const generateScriptForRow = (row: CSVRow): string => {
     return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
@@ -134,6 +150,12 @@ const Index = () => {
     reader.readAsText(file);
   };
 
+  const triggerFileInput = () => {
+    if (!isImporting && fileInput) {
+      fileInput.click();
+    }
+  };
+
   const handleAddRow = () => {
     const emptyRow: CSVRow = {
       sourceIP: '',
@@ -187,17 +209,15 @@ const Index = () => {
             Ajouter une ligne
           </Button>
           
-          <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 bg-[#E67E22] text-white rounded-md hover:bg-[#D35400] transition-colors ${isImporting ? 'opacity-50 cursor-not-allowed' : ''}`}>
+          <Button
+            type="button"
+            onClick={triggerFileInput}
+            disabled={isImporting}
+            className="flex items-center gap-2 bg-[#E67E22] hover:bg-[#D35400] text-white"
+          >
             <Upload className="w-4 h-4" />
             Importer CSV
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleImportCSV}
-              disabled={isImporting}
-              className="hidden"
-            />
-          </label>
+          </Button>
         </div>
 
         {csvRows.length > 0 && (
