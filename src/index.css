@@ -1,291 +1,94 @@
-/* Styles de base */
-body {
-  font-family: 'Arial', sans-serif;
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%);
-  min-height: 100vh;
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    /* ... keep existing code (variables CSS) */
+  }
 }
 
-.container {
-  max-width: 1200px;
-  margin: 40px auto;
-  padding: 30px;
-  background: #1A1F2C;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-  color: #BDC3C7;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
 }
 
-h1 {
-  color: #F1F1F1;
-  font-size: 2.5em;
-  margin-bottom: 30px;
-  text-align: center;
-  font-weight: 600;
+.form-container {
+  @apply p-6 space-y-8 ml-6;
 }
 
-.info-box {
-  background: rgba(255, 243, 205, 0.1);
-  border: 1px solid #856404;
-  color: #FEF7CD;
-  padding: 15px 20px;
-  border-radius: 8px;
-  margin-bottom: 30px;
-  font-size: 0.95em;
-  line-height: 1.5;
+.mandatory-fields {
+  @apply max-w-2xl;
 }
 
-/* Style des champs de formulaire */
-.form-group {
-  margin-bottom: 25px;
+.mandatory-message {
+  @apply text-sm text-gray-700 p-4 bg-gray-50 rounded-lg border border-gray-200;
 }
 
-label {
-  display: block;
-  margin-bottom: 8px;
-  color: #495057;
-  font-weight: 500;
+.mandatory-fields-container {
+  @apply space-y-4;
 }
 
-.required {
-  color: #dc3545;
-  margin-left: 4px;
+.form-row {
+  @apply flex items-start space-x-4 pb-8 min-w-max relative;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="number"],
-select {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid #2C3E50;
-  border-radius: 8px;
-  font-size: 1em;
-  transition: border-color 0.3s ease;
-  background: #2C3E50;
-  color: #F1F1F1;
+.field-group {
+  @apply flex flex-col items-center gap-2;
 }
 
-input:focus,
-select:focus {
-  outline: none;
-  border-color: #4a90e2;
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+.field-label {
+  @apply text-sm font-medium text-gray-700 whitespace-nowrap;
 }
 
-.rules-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 20px;
-  padding: 25px;
-  background: #2C3E50;
-  border: 2px solid #34495E;
-  border-radius: 12px;
-  margin-bottom: 30px;
+.field-input {
+  @apply h-9 rounded-md border border-gray-200 bg-white px-3 py-1 text-sm shadow-sm transition-colors hover:border-gray-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-400;
 }
 
-/* Style des boutons */
-.action-buttons {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin: 30px 0;
+.field-select {
+  @apply h-9;
 }
 
-.btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.95em;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+/* Largeurs spécifiques pour chaque type de champ */
+.w-ip {
+  width: 150px;
 }
 
-.btn-primary {
-  background: #4a90e2;
-  color: white;
+.w-protocol {
+  width: 120px;
 }
 
-.btn-primary:hover {
-  background: #357abd;
+.w-service {
+  width: 120px;
 }
 
-.btn-delete {
-  background: #dc3545;
-  color: white;
+.w-port {
+  width: 80px;
 }
 
-.btn-delete:hover {
-  background: #c82333;
+.w-select {
+  width: 130px;
 }
 
-.btn-resume {
-  background: #17a2b8;
-  color: white;
+.w-appcode {
+  width: 100px;
 }
 
-.btn-resume:hover {
-  background: #138496;
-}
-
-.btn-verify {
-  background: #ffc107;
-  color: #000;
-}
-
-.btn-verify:hover {
-  background: #e0a800;
-}
-
-.btn-validate {
-  background: #28a745;
-  color: white;
-}
-
-.btn-validate:hover {
-  background: #218838;
-}
-
-.btn-generate {
-  background: #4a90e2;
-  color: white;
-}
-
-.btn-generate:hover {
-  background: #357abd;
-}
-
-/* Style du bouton d'ajout */
 .add-button {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #28a745;
-  color: white;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  margin: 10px auto;
+  @apply mt-1 flex h-6 w-6 items-center justify-center rounded-full border border-blue-500 text-blue-500 hover:bg-blue-50;
 }
 
-.add-button:hover {
-  background: #218838;
-  transform: scale(1.05);
+.action-buttons {
+  @apply flex flex-wrap justify-end gap-4 mt-8;
 }
 
-/* Style de la section output */
-.output {
-  margin-top: 40px;
-  border-top: 2px solid #2C3E50;
-  padding-top: 30px;
-}
-
-.script-block {
-  background: #2C3E50;
-  border: 2px solid #34495E;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  overflow: hidden;
-}
-
-.script-header {
-  background: #34495E;
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.script-output {
-  width: 100%;
-  height: 180px;
-  padding: 20px;
-  border: none;
-  background: #2C3E50;
-  font-family: 'Consolas', monospace;
-  font-size: 0.9em;
-  resize: vertical;
-  color: #F1F1F1;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .container {
-    margin: 20px;
-    padding: 20px;
-  }
-
-  .action-buttons {
-    flex-direction: column;
-  }
-
-  .btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .rules-grid {
-    grid-template-columns: 1fr;
-    padding: 15px;
-  }
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.container {
-  animation: fadeIn 0.5s ease-out;
-}
-
-/* Style des messages d'erreur */
-.error-message {
-  color: #dc3545;
-  font-size: 0.85em;
-  margin-top: 5px;
-}
-
-/* Style des tooltips */
-[data-tooltip] {
-  position: relative;
-  cursor: help;
-}
-
-[data-tooltip]:after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  border-radius: 6px;
-  font-size: 0.85em;
-  white-space: nowrap;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-
-[data-tooltip]:hover:after {
-  opacity: 1;
-  visibility: visible;
+.rule-remove {
+  @apply text-red-500 hover:text-red-600 ml-2 mt-8;
 }
