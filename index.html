@@ -509,51 +509,51 @@
       return code && code.length >= 2 && code.length <= 10;
     }
 
-    function validateRow(row) {
+    function validateRow(rule) {
       let isValid = true;
       let errors = [];
 
-      if (!validateIP(row.sourceIP)) {
+      if (!validateIP(rule.sourceIP)) {
         errors.push("IP source invalide");
         isValid = false;
       }
 
-      if (!validateIP(row.destIP)) {
+      if (!validateIP(rule.destIP)) {
         errors.push("IP destination invalide");
         isValid = false;
       }
 
-      if (!validatePort(row.port)) {
+      if (!validatePort(rule.port)) {
         errors.push("Port invalide (doit être entre 1 et 65535)");
         isValid = false;
       }
 
-      if (!validateService(row.service)) {
+      if (!validateService(rule.service)) {
         errors.push("Service invalide (doit faire entre 2 et 50 caractères)");
         isValid = false;
       }
 
-      if (!validateAppCode(row.appCode)) {
+      if (!validateAppCode(rule.appCode)) {
         errors.push("Code application invalide (doit faire entre 2 et 10 caractères)");
         isValid = false;
       }
 
-      if (!['TCP', 'UDP', 'ICMP'].includes(row.protocol.toUpperCase())) {
+      if (!['TCP', 'UDP', 'ICMP'].includes(rule.protocol?.toUpperCase())) {
         errors.push("Protocole invalide (doit être TCP, UDP ou ICMP)");
         isValid = false;
       }
 
-      if (!['Yes', 'No'].includes(row.authentication)) {
+      if (!['Yes', 'No'].includes(rule.authentication)) {
         errors.push("Authentication invalide (doit être Yes ou No)");
         isValid = false;
       }
 
-      if (!['Yes', 'No'].includes(row.flowEncryption)) {
+      if (!['Yes', 'No'].includes(rule.flowEncryption)) {
         errors.push("Flow Encryption invalide (doit être Yes ou No)");
         isValid = false;
       }
 
-      if (!['Yellow', 'Amber', 'Red'].includes(row.classification)) {
+      if (!['Yellow', 'Amber', 'Red'].includes(rule.classification)) {
         errors.push("Classification invalide (doit être Yellow, Amber ou Red)");
         isValid = false;
       }
@@ -569,9 +569,29 @@
         
       rules.forEach((rule, index) => {
         const validation = validateRow(rule);
+        const currentErrors = [];
+        
+        if (!validateIP(rule.sourceIP)) {
+          currentErrors.push("IP source invalide");
+        }
+        if (!validateIP(rule.destIP)) {
+          currentErrors.push("IP destination invalide");
+        }
+        if (!validatePort(rule.port)) {
+          currentErrors.push("Port invalide (doit être entre 1 et 65535)");
+        }
+        if (!validateService(rule.service)) {
+          currentErrors.push("Service invalide (doit faire entre 2 et 50 caractères)");
+        }
+        if (!validateAppCode(rule.appCode)) {
+          currentErrors.push("Code application invalide (doit faire entre 2 et 10 caractères)");
+        }
+        if (!['TCP', 'UDP', 'ICMP'].includes(rule.protocol?.toUpperCase())) {
+          currentErrors.push("Protocole invalide (doit être TCP, UDP ou ICMP)");
+        }
         
         const tr = document.createElement('tr');
-        if (!validation.isValid) {
+        if (currentErrors.length > 0) {
           tr.className = 'has-error';
         }
         
@@ -611,12 +631,11 @@
 
         tbody.appendChild(tr);
 
-        // Si il y a des erreurs, ajouter une nouvelle ligne pour le message d'erreur
-        if (!validation.isValid) {
+        if (currentErrors.length > 0) {
           const errorRow = document.createElement('tr');
           const errorCell = document.createElement('td');
-          errorCell.colSpan = 9; // Pour que le message prenne toute la largeur
-          errorCell.innerHTML = `<div class="error-message">${validation.errors.join('<br>')}</div>`;
+          errorCell.colSpan = 9;
+          errorCell.innerHTML = `<div class="error-message">${currentErrors.join('<br>')}</div>`;
           errorRow.appendChild(errorCell);
           tbody.appendChild(errorRow);
         }
@@ -626,7 +645,10 @@
     }
 
     function updateRule(index, field, value) {
+      console.log('updateRule called', { index, field, value });
       currentRules[index][field] = value;
+      
+      displayRules(currentRules);
     }
 
     function addNewLine() {
