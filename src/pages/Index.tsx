@@ -135,7 +135,10 @@ const Index = () => {
         const columns = line.split(',').map(col => col.trim());
         console.log(`Nombre de colonnes trouvées:`, columns.length);
         
-        if (columns.length >= 9) {
+        // Vérifier si les colonnes principales contiennent des données
+        const hasRequiredData = columns[3] && columns[6] && columns[7] && columns[8] && columns[9];
+        
+        if (columns.length >= 9 && hasRequiredData) {
           // Normaliser les valeurs de "yes"/"no" et classification
           const authValue = columns[10]?.toLowerCase() === 'yes' ? 'yes' : 'no';
           const encryptValue = columns[11]?.toLowerCase() === 'yes' ? 'yes' : 'no';
@@ -173,7 +176,7 @@ const Index = () => {
           newRow.errors = validation.errors;
           newRows.push(newRow);
         } else {
-          console.log(`Ligne ${index + 12} ignorée car pas assez de colonnes`);
+          console.log(`Ligne ${index + 12} ignorée car pas assez de colonnes ou données manquantes`);
         }
       });
 
