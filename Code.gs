@@ -106,17 +106,34 @@ function generateScripts(formData) {
       };
     }
 
-    // Génération des scripts si toutes les validations sont passées
-    var scripts = {
-      networkRules: generateNetworkRules(formData),
-      accessRules: generateAccessRules(formData),
-      securityPolicies: generateSecurityPolicies(formData)
-    };
+    // Génération des contenus des scripts
+    var networkRulesContent = `# Network rules for ${formData.department}/${formData.projectCode}
+allow_access:
+  - department: ${formData.department}
+  - project: ${formData.projectCode}
+  - requester: ${formData.email}`;
 
-    console.log("Scripts générés avec succès");
+    var accessRulesContent = `# Access rules for ${formData.department}/${formData.projectCode}
+grant_access:
+  - level: standard
+  - department: ${formData.department}
+  - project: ${formData.projectCode}`;
+
+    var securityPoliciesContent = `# Security policies for ${formData.department}/${formData.projectCode}
+security_level: standard
+monitoring: enabled
+logging: enabled
+department: ${formData.department}
+project: ${formData.projectCode}`;
+
+    // Retourne les scripts générés
     return {
       success: true,
-      data: scripts,
+      data: {
+        networkRules: networkRulesContent,
+        accessRules: accessRulesContent,
+        securityPolicies: securityPoliciesContent
+      },
       message: "Scripts générés avec succès"
     };
 
@@ -129,27 +146,66 @@ function generateScripts(formData) {
   }
 }
 
-function generateNetworkRules(data) {
-  return `# Network rules for ${data.department}/${data.projectCode}
-allow_access:
-  - department: ${data.department}
-  - project: ${data.projectCode}
-  - requester: ${data.email}`;
+function deleteForm() {
+  try {
+    var userProperties = PropertiesService.getUserProperties();
+    userProperties.deleteProperty('draft');
+    return { 
+      success: true, 
+      message: "Formulaire supprimé" 
+    };
+  } catch(e) {
+    return { 
+      success: false, 
+      message: "Erreur lors de la suppression: " + e.toString() 
+    };
+  }
 }
 
-function generateAccessRules(data) {
-  return `# Access rules for ${data.department}/${data.projectCode}
-grant_access:
-  - level: standard
-  - department: ${data.department}
-  - project: ${data.projectCode}`;
+function saveDraft(formData) {
+  try {
+    if (!formData) {
+      return { 
+        success: false, 
+        message: "Aucune donnée fournie pour la sauvegarde" 
+      };
+    }
+
+    var userProperties = PropertiesService.getUserProperties();
+    userProperties.setProperty('draft', JSON.stringify(formData));
+    
+    return { 
+      success: true, 
+      message: "Brouillon sauvegardé" 
+    };
+  } catch(e) {
+    return { 
+      success: false, 
+      message: "Erreur lors de la sauvegarde: " + e.toString() 
+    };
+  }
 }
 
-function generateSecurityPolicies(data) {
-  return `# Security policies for ${data.department}/${data.projectCode}
-security_level: standard
-monitoring: enabled
-logging: enabled
-department: ${data.department}
-project: ${data.projectCode}`;
+function getDraft() {
+  try {
+    var userProperties = PropertiesService.getUserProperties();
+    var draft = userProperties.getProperty('draft');
+    
+    if (!draft) {
+      return { 
+        success: false, 
+        message: "Aucun brouillon trouvé" 
+      };
+    }
+    
+    return { 
+      success: true, 
+      data: JSON.parse(draft)
+    };
+  } catch(e) {
+    return { 
+      success: false, 
+      message: "Erreur lors de la récupération: " + e.toString() 
+    };
+  }
 }
