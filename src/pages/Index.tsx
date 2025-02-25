@@ -168,59 +168,48 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="flex gap-6 mb-8 flex-nowrap">
-          <div className="w-[120px] space-y-2">
-            <label className="block text-xs font-medium text-white/70 flex items-center gap-1">
+        <div className="flex gap-4 mb-8">
+          <div className="w-[120px] flex flex-col">
+            <label className="block text-xs font-medium text-white/70 flex items-center gap-1 mb-2 h-5">
               <Network className="w-3 h-3" /> Source IP
             </label>
-            <div className="relative">
-              <Input 
-                placeholder="IP source" 
-                className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white placeholder-white/50 text-sm h-9"
-                onChange={(e) => validateIP(e.target.value, 'sourceIP')}
-              />
-              {errors.sourceIP.error && 
-                <X className="absolute right-2 top-2 h-4 w-4 text-destructive" />
-              }
-            </div>
+            <Input 
+              placeholder="IP source" 
+              className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white placeholder-white/50 text-sm h-9 mb-2"
+              onChange={(e) => validateIP(e.target.value, 'sourceIP')}
+            />
             <Button 
               variant="outline" 
               size="icon" 
-              className="w-6 h-6 rounded-full mx-auto block border-white/30 hover:bg-white/20 transition-colors"
+              className="w-6 h-6 rounded-full self-center border-primary hover:bg-primary/20 transition-colors"
             >
-              <Plus className="h-3 w-3 text-white" />
+              <Plus className="h-3 w-3 text-primary" />
             </Button>
           </div>
 
-          <div className="w-[120px] space-y-2">
-            <label className="block text-xs font-medium text-white/70 flex items-center gap-1">
+          <div className="w-[120px] flex flex-col">
+            <label className="block text-xs font-medium text-white/70 flex items-center gap-1 mb-2 h-5">
               <Network className="w-3 h-3" /> IP Destination
             </label>
-            <div className="relative">
-              <Input 
-                placeholder="IP destination" 
-                className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white placeholder-white/50 text-sm h-9"
-                onChange={(e) => validateIP(e.target.value, 'destIP')}
-              />
-              {errors.destIP.error && 
-                <X className="absolute right-2 top-2 h-4 w-4 text-destructive" />
-              }
-            </div>
+            <Input 
+              placeholder="IP destination" 
+              className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white placeholder-white/50 text-sm h-9 mb-2"
+            />
             <Button 
               variant="outline" 
               size="icon" 
-              className="w-6 h-6 rounded-full mx-auto block border-white/30 hover:bg-white/20 transition-colors"
+              className="w-6 h-6 rounded-full self-center border-primary hover:bg-primary/20 transition-colors"
             >
-              <Plus className="h-3 w-3 text-white" />
+              <Plus className="h-3 w-3 text-primary" />
             </Button>
           </div>
 
-          <div className="w-[120px] space-y-2">
-            <label className="block text-xs font-medium text-white/70 flex items-center gap-1">
+          <div className="w-[120px] flex flex-col">
+            <label className="block text-xs font-medium text-white/70 flex items-center gap-1 mb-2 h-5">
               <Shield className="w-3 h-3" /> Protocol
             </label>
             <Select>
-              <SelectTrigger className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white h-9 text-sm">
+              <SelectTrigger className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white h-9 text-sm mb-2">
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
               <SelectContent>
@@ -232,70 +221,49 @@ const Index = () => {
             <Button 
               variant="outline" 
               size="icon" 
-              className="w-6 h-6 rounded-full mx-auto block border-white/30 hover:bg-white/20 transition-colors"
+              className="w-6 h-6 rounded-full self-center border-primary hover:bg-primary/20 transition-colors"
             >
-              <Plus className="h-3 w-3 text-white" />
+              <Plus className="h-3 w-3 text-primary" />
             </Button>
           </div>
 
-          <div className="w-[120px] space-y-2">
-            <label className="block text-xs font-medium text-white/70">Service</label>
-            <div className="relative">
-              <Input 
-                placeholder="Service"
-                className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white placeholder-white/50 text-sm h-9"
-                onChange={(e) => {
-                  const isValid = e.target.value.length > 0;
-                  setErrors(prev => ({
-                    ...prev,
-                    service: {
-                      error: !isValid,
-                      message: isValid ? '' : 'Service requis'
-                    }
-                  }));
-                }}
-              />
-              {errors.service.error && 
-                <X className="absolute right-2 top-2 h-4 w-4 text-destructive" />
-              }
-            </div>
+          <div className="w-[120px] flex flex-col">
+            <label className="block text-xs font-medium text-white/70 mb-2 h-5">Service</label>
+            <Input 
+              placeholder="Service"
+              className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white placeholder-white/50 text-sm h-9 mb-2"
+            />
             <Button 
               variant="outline" 
               size="icon" 
-              className="w-6 h-6 rounded-full mx-auto block border-white/30 hover:bg-white/20 transition-colors"
+              className="w-6 h-6 rounded-full self-center border-primary hover:bg-primary/20 transition-colors"
             >
-              <Plus className="h-3 w-3 text-white" />
+              <Plus className="h-3 w-3 text-primary" />
             </Button>
           </div>
 
-          <div className="w-[100px] space-y-2">
-            <label className="block text-xs font-medium text-white/70">Port</label>
-            <div className="relative">
-              <Input 
-                type="number" 
-                placeholder="Port"
-                className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white placeholder-white/50 text-sm h-9"
-                onChange={(e) => validatePort(e.target.value)}
-              />
-              {errors.port.error && 
-                <X className="absolute right-2 top-2 h-4 w-4 text-destructive" />
-              }
-            </div>
+          <div className="w-[100px] flex flex-col">
+            <label className="block text-xs font-medium text-white/70 mb-2 h-5">Port</label>
+            <Input 
+              type="number" 
+              placeholder="Port"
+              className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white placeholder-white/50 text-sm h-9 mb-2"
+            />
             <Button 
               variant="outline" 
               size="icon" 
-              className="w-6 h-6 rounded-full mx-auto block border-white/30 hover:bg-white/20 transition-colors"
+              className="w-6 h-6 rounded-full self-center border-primary hover:bg-primary/20 transition-colors"
             >
-              <Plus className="h-3 w-3 text-white" />
+              <Plus className="h-3 w-3 text-primary" />
             </Button>
           </div>
 
-          <div className="w-[130px] space-y-2">
-            <label className="block text-xs font-medium text-white/70 flex items-center gap-1">
+          <div className="w-[130px] flex flex-col">
+            <label className="block text-xs font-medium text-white/70 flex items-center gap-1 mb-2 h-5">
               <Lock className="w-3 h-3" /> Authentication
             </label>
             <Select>
-              <SelectTrigger className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white h-9 text-sm">
+              <SelectTrigger className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white h-9 text-sm mb-2">
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
               <SelectContent>
@@ -307,18 +275,18 @@ const Index = () => {
             <Button 
               variant="outline" 
               size="icon" 
-              className="w-6 h-6 rounded-full mx-auto block border-white/30 hover:bg-white/20 transition-colors"
+              className="w-6 h-6 rounded-full self-center border-primary hover:bg-primary/20 transition-colors"
             >
-              <Plus className="h-3 w-3 text-white" />
+              <Plus className="h-3 w-3 text-primary" />
             </Button>
           </div>
 
-          <div className="w-[130px] space-y-2">
-            <label className="block text-xs font-medium text-white/70 flex items-center gap-1">
+          <div className="w-[130px] flex flex-col">
+            <label className="block text-xs font-medium text-white/70 flex items-center gap-1 mb-2 h-5">
               <Shield className="w-3 h-3" /> Flow encryption
             </label>
             <Select>
-              <SelectTrigger className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white h-9 text-sm">
+              <SelectTrigger className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white h-9 text-sm mb-2">
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
               <SelectContent>
@@ -330,18 +298,18 @@ const Index = () => {
             <Button 
               variant="outline" 
               size="icon" 
-              className="w-6 h-6 rounded-full mx-auto block border-white/30 hover:bg-white/20 transition-colors"
+              className="w-6 h-6 rounded-full self-center border-primary hover:bg-primary/20 transition-colors"
             >
-              <Plus className="h-3 w-3 text-white" />
+              <Plus className="h-3 w-3 text-primary" />
             </Button>
           </div>
 
-          <div className="w-[130px] space-y-2">
-            <label className="block text-xs font-medium text-white/70 flex items-center gap-1">
+          <div className="w-[130px] flex flex-col">
+            <label className="block text-xs font-medium text-white/70 flex items-center gap-1 mb-2 h-5">
               <Shield className="w-3 h-3" /> Classification
             </label>
             <Select>
-              <SelectTrigger className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white h-9 text-sm">
+              <SelectTrigger className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white h-9 text-sm mb-2">
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
               <SelectContent>
@@ -353,27 +321,27 @@ const Index = () => {
             <Button 
               variant="outline" 
               size="icon" 
-              className="w-6 h-6 rounded-full mx-auto block border-white/30 hover:bg-white/20 transition-colors"
+              className="w-6 h-6 rounded-full self-center border-primary hover:bg-primary/20 transition-colors"
             >
-              <Plus className="h-3 w-3 text-white" />
+              <Plus className="h-3 w-3 text-primary" />
             </Button>
           </div>
 
-          <div className="w-[120px] space-y-2">
-            <label className="block text-xs font-medium text-white/70 flex items-center gap-1">
+          <div className="w-[120px] flex flex-col">
+            <label className="block text-xs font-medium text-white/70 flex items-center gap-1 mb-2 h-5">
               <FileCode className="w-3 h-3" /> APP code
             </label>
             <Input 
               placeholder="Code (4 chars)" 
               maxLength={4} 
-              className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white placeholder-white/50 text-sm h-9"
+              className="bg-[#BDC3C7]/20 border-[#BDC3C7]/30 rounded-md shadow-input hover:border-primary/50 focus:border-primary transition-colors text-white placeholder-white/50 text-sm h-9 mb-2"
             />
             <Button 
               variant="outline" 
               size="icon" 
-              className="w-6 h-6 rounded-full mx-auto block border-white/30 hover:bg-white/20 transition-colors"
+              className="w-6 h-6 rounded-full self-center border-primary hover:bg-primary/20 transition-colors"
             >
-              <Plus className="h-3 w-3 text-white" />
+              <Plus className="h-3 w-3 text-primary" />
             </Button>
           </div>
         </div>
