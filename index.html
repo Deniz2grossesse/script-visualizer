@@ -197,23 +197,6 @@
       font-weight: bold;
     }
     
-    .input-group {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-    
-    .valid-icon {
-      position: absolute;
-      right: 12px;
-      color: #2ecc71;
-      display: none;
-    }
-    
-    .is-valid .valid-icon {
-      display: block;
-    }
-    
     .action-buttons {
       display: flex;
       gap: 15px;
@@ -244,40 +227,31 @@
 
     <div class="form-group">
       <label>Department <span class="required">*</span></label>
-      <div class="input-group">
-        <input 
-          type="text" 
-          id="department" 
-          maxlength="4" 
-          placeholder="Department (1-4 chars)"
-        >
-        <span class="valid-icon">✓</span>
-      </div>
+      <input 
+        type="text" 
+        id="department" 
+        maxlength="4" 
+        placeholder="Department (1-4 chars)"
+      >
     </div>
 
     <div class="form-group">
       <label>Project/Application Code <span class="required">*</span></label>
-      <div class="input-group">
-        <input 
-          type="text" 
-          id="projectCode" 
-          maxlength="4" 
-          placeholder="Project code (1-4 chars)"
-        >
-        <span class="valid-icon">✓</span>
-      </div>
+      <input 
+        type="text" 
+        id="projectCode" 
+        maxlength="4" 
+        placeholder="Project code (1-4 chars)"
+      >
     </div>
 
     <div class="form-group">
       <label>Requester's Email <span class="required">*</span></label>
-      <div class="input-group">
-        <input 
-          type="email" 
-          id="email" 
-          placeholder="Email address"
-        >
-        <span class="valid-icon">✓</span>
-      </div>
+      <input 
+        type="email" 
+        id="email" 
+        placeholder="Email address"
+      >
     </div>
 
     <div class="action-buttons">
