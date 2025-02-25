@@ -119,19 +119,19 @@ const Index = () => {
       const text = e.target?.result as string;
       console.log("Contenu du fichier (premiers caractères):", text.substring(0, 100));
       
-      const lines = text.split('\n').slice(11); // On commence à la ligne 12
-      console.log("Nombre de lignes après la ligne 11:", lines.length);
+      const lines = text.split('\n');
+      console.log("Nombre total de lignes:", lines.length);
       
       let newRows = [...csvRows]; // On garde les lignes existantes
       let errorCount = 0;
 
       lines.forEach((line, index) => {
         if (line.trim() === '') {
-          console.log(`Ligne ${index + 12} vide, ignorée`);
+          console.log(`Ligne ${index + 1} vide, ignorée`);
           return;
         }
 
-        console.log(`Traitement de la ligne ${index + 12}:`, line);
+        console.log(`Traitement de la ligne ${index + 1}:`, line);
         const columns = line.split(',').map(col => col.trim());
         console.log(`Nombre de colonnes trouvées:`, columns.length);
         
@@ -153,17 +153,24 @@ const Index = () => {
 
           console.log(`Données extraites pour la nouvelle ligne:`, newRow);
 
-          const validation = validateRow(newRow);
-          if (!validation.isValid) {
-            errorCount++;
-            console.log(`Erreurs de validation pour la ligne ${index + 12}:`, validation.errors);
-          }
+          // Vérifier si la ligne contient des données réelles (pas juste des cellules vides)
+          const hasData = Object.values(newRow).some(value => value.trim() !== '');
           
-          newRow.isValid = validation.isValid;
-          newRow.errors = validation.errors;
-          newRows.push(newRow);
+          if (hasData) {
+            const validation = validateRow(newRow);
+            if (!validation.isValid) {
+              errorCount++;
+              console.log(`Erreurs de validation pour la ligne ${index + 1}:`, validation.errors);
+            }
+            
+            newRow.isValid = validation.isValid;
+            newRow.errors = validation.errors;
+            newRows.push(newRow);
+          } else {
+            console.log(`Ligne ${index + 1} ignorée car vide`);
+          }
         } else {
-          console.log(`Ligne ${index + 12} ignorée car pas assez de colonnes`);
+          console.log(`Ligne ${index + 1} ignorée car pas assez de colonnes`);
         }
       });
 
