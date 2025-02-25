@@ -1,5 +1,5 @@
-
 function doGet() {
+  console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
     .evaluate()
     .setTitle('One Click Onboarding')
@@ -7,8 +7,8 @@ function doGet() {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-// Fonction pour importer un CSV
 function importCSV(csvData) {
+  console.log("importCSV called");
   try {
     console.log("Début de l'import CSV");
     console.log("Type des données reçues:", typeof csvData);
@@ -68,8 +68,8 @@ function importCSV(csvData) {
   }
 }
 
-// Fonction pour sauvegarder un brouillon
 function saveDraft(formData) {
+  console.log("saveDraft called with:", formData);
   try {
     var userProperties = PropertiesService.getUserProperties();
     userProperties.setProperty('draft', JSON.stringify(formData));
@@ -79,8 +79,8 @@ function saveDraft(formData) {
   }
 }
 
-// Fonction pour récupérer un brouillon
 function getDraft() {
+  console.log("getDraft called");
   try {
     var userProperties = PropertiesService.getUserProperties();
     var draft = userProperties.getProperty('draft');
@@ -93,8 +93,8 @@ function getDraft() {
   }
 }
 
-// Fonction pour supprimer le formulaire/brouillon
 function deleteForm() {
+  console.log("deleteForm called");
   try {
     var userProperties = PropertiesService.getUserProperties();
     userProperties.deleteProperty('draft');
@@ -104,7 +104,6 @@ function deleteForm() {
   }
 }
 
-// Fonction pour générer les scripts
 function generateScripts(formData) {
   try {
     var scripts = {

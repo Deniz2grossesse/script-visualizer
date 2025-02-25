@@ -35,6 +35,7 @@ interface CSVRow {
 }
 
 const Index = () => {
+  console.log('Index component rendered');
   const { toast } = useToast();
   const [generatedScripts, setGeneratedScripts] = useState<{ id: number; script: string }[]>([]);
   const [csvRows, setCsvRows] = useState<CSVRow[]>([]);
@@ -50,6 +51,7 @@ const Index = () => {
   });
 
   const validateEmail = (email: string): boolean => {
+    console.log('validateEmail called with:', email);
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const isValid = emailRegex.test(email);
     setErrors(prev => ({
@@ -73,6 +75,7 @@ const Index = () => {
   };
 
   const validateRow = (row: CSVRow): { isValid: boolean; errors: string[] } => {
+    console.log('validateRow called with:', row);
     const errors: string[] = [];
     
     if (!validateIP(row.sourceIP)) {
@@ -101,7 +104,7 @@ const Index = () => {
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("Début du handleFileUpload");
+    console.log("handleFileUpload called", { hasFile: !!event.target.files?.length });
     const file = event.target.files?.[0];
     
     if (!file) {
@@ -119,47 +122,38 @@ const Index = () => {
       const text = e.target?.result as string;
       console.log("Contenu du fichier (premiers caractères):", text.substring(0, 100));
       
-      const lines = text.split('\n').slice(11); // On commence à la ligne 12
+      const lines = text.split('\n').slice(11);
       console.log("Nombre de lignes après la ligne 11:", lines.length);
       
-      let newRows = [...csvRows]; // On garde les lignes existantes
+      let newRows = [...csvRows];
       let errorCount = 0;
 
       lines.forEach((line, index) => {
-        if (line.trim() === '') {
-          console.log(`Ligne ${index + 12} vide, ignorée`);
-          return;
-        }
-
-        console.log(`Traitement de la ligne ${index + 12}:`, line);
+        console.log(`Traitement ligne ${index + 12}:`, line);
         const columns = line.split(',').map(col => col.trim());
         console.log(`Nombre de colonnes trouvées:`, columns.length);
         
-        // Vérifier si les colonnes principales contiennent des données
         const hasRequiredData = columns[3] && columns[6] && columns[7] && columns[8] && columns[9];
         
         if (columns.length >= 9 && hasRequiredData) {
-          // Normaliser les valeurs de "yes"/"no" et classification
           const authValue = columns[10]?.toLowerCase() === 'yes' ? 'yes' : 'no';
           const encryptValue = columns[11]?.toLowerCase() === 'yes' ? 'yes' : 'no';
           let classificationValue = columns[12]?.toLowerCase() || '';
           
-          // Normaliser la classification
           if (!['yellow', 'amber', 'red'].includes(classificationValue)) {
-            classificationValue = 'yellow'; // Valeur par défaut
+            classificationValue = 'yellow';
           }
 
-          // Créer une nouvelle ligne avec les données du CSV
           const newRow: CSVRow = {
-            sourceIP: columns[3] || '', // Colonne D
-            destIP: columns[6] || '', // Colonne G
-            protocol: columns[7] || '', // Colonne H
-            service: columns[8] || '', // Colonne I
-            port: columns[9] || '', // Colonne J
-            authentication: authValue, // Colonne K normalisée
-            flowEncryption: encryptValue, // Colonne L normalisée
-            classification: classificationValue, // Colonne M normalisée
-            appCode: columns[13] || '', // Colonne N
+            sourceIP: columns[3] || '',
+            destIP: columns[6] || '',
+            protocol: columns[7] || '',
+            service: columns[8] || '',
+            port: columns[9] || '',
+            authentication: authValue,
+            flowEncryption: encryptValue,
+            classification: classificationValue,
+            appCode: columns[13] || '',
             isValid: false,
             errors: []
           };
@@ -204,6 +198,7 @@ const Index = () => {
   };
 
   const addEmptyRow = () => {
+    console.log('addEmptyRow called');
     const emptyRow: CSVRow = {
       sourceIP: '',
       destIP: '',
@@ -221,6 +216,7 @@ const Index = () => {
   };
 
   const deleteRow = (index: number) => {
+    console.log('deleteRow called for index:', index);
     const newRows = [...csvRows];
     newRows.splice(index, 1);
     setCsvRows(newRows);
@@ -231,6 +227,7 @@ const Index = () => {
   };
 
   const updateRow = (index: number, field: keyof CSVRow, value: string) => {
+    console.log('updateRow called', { index, field, value });
     const newRows = [...csvRows];
     newRows[index] = {
       ...newRows[index],
@@ -243,6 +240,7 @@ const Index = () => {
   };
 
   const generateScriptForRow = (row: CSVRow, rowIndex: number): string => {
+    console.log('generateScriptForRow called for row:', rowIndex);
     return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
   -H "Authorization: Bearer <TON_TOKEN>" \\
   -H "Content-Type: application/json" \\
@@ -261,12 +259,14 @@ const Index = () => {
   };
 
   const handleGenerateScript = () => {
+    console.log('handleGenerateScript called');
     const validRows = csvRows.filter(row => {
       const validation = validateRow(row);
       return validation.isValid;
-    }).slice(0, 5); // Limite à 5 lignes maximum
+    }).slice(0, 5);
 
     if (validRows.length === 0) {
+      console.log('Aucune ligne valide trouvée');
       toast({
         variant: "destructive",
         title: "Erreur",
