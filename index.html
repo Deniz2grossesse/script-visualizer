@@ -237,6 +237,7 @@
   </div>
 
   <script>
+    // Validation des champs
     function validateField(fieldId) {
       const field = document.getElementById(fieldId);
       const inputGroup = field.parentElement;
@@ -257,13 +258,140 @@
       } else {
         inputGroup.classList.remove('is-valid');
       }
+      return isValid;
     }
     
-    // Add input event listeners
+    // Event listeners pour la validation
     ['department', 'projectCode', 'email'].forEach(fieldId => {
       const field = document.getElementById(fieldId);
       field.addEventListener('input', () => validateField(fieldId));
     });
+
+    // Fonction pour collecter les données du formulaire
+    function getFormData() {
+      return {
+        department: document.getElementById('department').value,
+        projectCode: document.getElementById('projectCode').value,
+        email: document.getElementById('email').value
+      };
+    }
+
+    // Fonction pour importer un CSV
+    function importCSV() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.csv';
+      input.onchange = async (e) => {
+        const file = e.target.files[0];
+        const text = await file.text();
+        google.script.run
+          .withSuccessHandler(onCSVImported)
+          .withFailureHandler(onError)
+          .importCSV(text);
+      };
+      input.click();
+    }
+
+    // Fonction pour ajouter une nouvelle ligne
+    function addNewLine() {
+      // Cette fonction sera implémentée quand la structure de données complète sera définie
+      alert("Fonctionnalité en cours de développement");
+    }
+
+    // Sauvegarde du brouillon
+    function saveDraft() {
+      const formData = getFormData();
+      google.script.run
+        .withSuccessHandler(() => alert("Brouillon sauvegardé"))
+        .withFailureHandler(onError)
+        .saveDraft(formData);
+    }
+
+    // Récupération du brouillon
+    function resumeDraft() {
+      google.script.run
+        .withSuccessHandler(loadDraft)
+        .withFailureHandler(onError)
+        .getDraft();
+    }
+
+    // Chargement des données du brouillon
+    function loadDraft(response) {
+      if (response.success && response.data) {
+        const data = response.data;
+        document.getElementById('department').value = data.department || '';
+        document.getElementById('projectCode').value = data.projectCode || '';
+        document.getElementById('email').value = data.email || '';
+        
+        // Re-validation des champs
+        ['department', 'projectCode', 'email'].forEach(validateField);
+      } else {
+        alert("Aucun brouillon trouvé");
+      }
+    }
+
+    // Suppression du formulaire
+    function deleteForm() {
+      if (confirm("Êtes-vous sûr de vouloir supprimer ce formulaire ?")) {
+        google.script.run
+          .withSuccessHandler(() => {
+            // Réinitialisation des champs
+            document.getElementById('department').value = '';
+            document.getElementById('projectCode').value = '';
+            document.getElementById('email').value = '';
+            ['department', 'projectCode', 'email'].forEach(id => {
+              document.getElementById(id).parentElement.classList.remove('is-valid');
+            });
+            alert("Formulaire supprimé");
+          })
+          .withFailureHandler(onError)
+          .deleteForm();
+      }
+    }
+
+    // Vérification des champs
+    function verifyFields() {
+      const isValid = ['department', 'projectCode', 'email']
+        .every(fieldId => validateField(fieldId));
+      
+      if (isValid) {
+        alert("Tous les champs sont valides");
+      } else {
+        alert("Veuillez corriger les erreurs dans le formulaire");
+      }
+    }
+
+    // Génération des scripts
+    function generateScripts() {
+      const formData = getFormData();
+      google.script.run
+        .withSuccessHandler(onScriptsGenerated)
+        .withFailureHandler(onError)
+        .generateScripts(formData);
+    }
+
+    // Handlers de succès/erreur
+    function onCSVImported(response) {
+      if (response.success) {
+        alert("CSV importé avec succès");
+        // Traitement des données importées
+      } else {
+        alert("Erreur lors de l'import: " + response.message);
+      }
+    }
+
+    function onScriptsGenerated(response) {
+      if (response.success) {
+        alert("Scripts générés avec succès");
+        console.log(response.data);
+      } else {
+        alert("Erreur lors de la génération: " + response.message);
+      }
+    }
+
+    function onError(error) {
+      alert("Une erreur est survenue: " + error.toString());
+    }
   </script>
 </body>
 </html>
