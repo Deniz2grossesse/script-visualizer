@@ -1,3 +1,4 @@
+
 function doGet() {
   return HtmlService.createTemplateFromFile('index')
     .evaluate()
@@ -66,12 +67,7 @@ function importCSV(csvData) {
 }
 
 function generateScripts(formData) {
-  console.log("Exécution de generateScripts");
   try {
-    console.log("Début de la génération des scripts");
-    console.log("Données reçues:", formData);
-
-    // Validation des données requises
     if (!formData || typeof formData !== 'object') {
       return {
         success: false,
@@ -79,7 +75,6 @@ function generateScripts(formData) {
       };
     }
 
-    // Validation des champs obligatoires
     if (!formData.department || !formData.projectCode || !formData.email) {
       return {
         success: false,
@@ -87,7 +82,6 @@ function generateScripts(formData) {
       };
     }
 
-    // Validation du format des données
     if (formData.department.length > 4 || formData.projectCode.length > 4) {
       return {
         success: false,
@@ -95,7 +89,6 @@ function generateScripts(formData) {
       };
     }
 
-    // Validation de l'email
     var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       return {
@@ -104,7 +97,6 @@ function generateScripts(formData) {
       };
     }
 
-    // Génération des contenus des scripts
     var networkRulesContent = `# Network rules for ${formData.department}/${formData.projectCode}
 allow_access:
   - department: ${formData.department}
@@ -124,7 +116,6 @@ logging: enabled
 department: ${formData.department}
 project: ${formData.projectCode}`;
 
-    console.log("Fin de generateScripts avec succès");
     return {
       success: true,
       data: {

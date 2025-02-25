@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <base target="_top">
-  <title>Network Rules Generator</title>
+  <title>One Click Onboarding</title>
   <style>
     body {
       font-family: 'Roboto', Arial, sans-serif;
@@ -326,11 +326,11 @@
     <h1>One Click Onboarding</h1>
 
     <div class="top-buttons">
-      <button class="btn-add" onclick="addNewLine()">
+      <button type="button" class="btn-add" onclick="addNewLine()">
         <span>+</span>
         Ajouter une ligne
       </button>
-      <button class="btn-import" onclick="importCSVFile()">
+      <button type="button" class="btn-import" onclick="importCSVFile()">
         <span>↓</span>
         Importer CSV
       </button>
@@ -392,9 +392,9 @@
     </div>
 
     <div class="action-buttons">
-      <button class="btn-delete" onclick="handleDelete()">Delete</button>
-      <button class="btn-verify" onclick="handleVerify()">Verify</button>
-      <button class="btn-generate" onclick="handleGenerateScripts()">Generate Scripts</button>
+      <button type="button" class="btn-delete" onclick="handleDelete()">Delete</button>
+      <button type="button" class="btn-verify" onclick="handleVerify()">Verify</button>
+      <button type="button" class="btn-generate" onclick="handleGenerateScripts()">Generate Scripts</button>
     </div>
 
     <div id="loadingMessage" class="loading-message">
@@ -404,7 +404,7 @@
 
   <script>
     let currentRules = [];
-
+    
     function showLoading() {
       document.getElementById('loadingMessage').classList.add('visible');
     }
@@ -419,6 +419,7 @@
       input.accept = '.csv';
       
       input.onchange = function(event) {
+        event.preventDefault();
         const file = event.target.files[0];
         if (!file) return;
         
@@ -450,15 +451,12 @@
         alert('Erreur lors de l\'import: ' + response.message);
         return;
       }
-
-      // Mettre à jour uniquement les données et l'affichage du tableau
       currentRules = response.data;
       displayImportedRules();
     }
 
     function handleImportError(error) {
       hideLoading();
-      console.error('Erreur lors de l\'import:', error);
       alert('Une erreur est survenue lors de l\'import: ' + error.toString());
     }
 
@@ -487,17 +485,15 @@
     }
 
     function handleDelete() {
-      if (confirm('Voulez-vous vraiment supprimer toutes les règles ?')) {
-        document.getElementById('department').value = '';
-        document.getElementById('projectCode').value = '';
-        document.getElementById('email').value = '';
-        
-        currentRules = [];
-        
-        document.getElementById('rulesTable').style.display = 'none';
-        
-        document.getElementById('scriptsOutput').style.display = 'none';
-      }
+      const shouldDelete = confirm('Voulez-vous vraiment supprimer toutes les règles ?');
+      if (!shouldDelete) return;
+      
+      document.getElementById('department').value = '';
+      document.getElementById('projectCode').value = '';
+      document.getElementById('email').value = '';
+      currentRules = [];
+      document.getElementById('rulesTable').style.display = 'none';
+      document.getElementById('scriptsOutput').style.display = 'none';
     }
 
     function handleVerify() {
@@ -505,28 +501,24 @@
       const projectCode = document.getElementById('projectCode').value;
       const email = document.getElementById('email').value;
       
-      let isValid = true;
       let errors = [];
 
       if (!department || department.length > 4) {
         errors.push('Le département doit faire entre 1 et 4 caractères');
-        isValid = false;
       }
 
       if (!projectCode || projectCode.length > 4) {
         errors.push('Le code projet doit faire entre 1 et 4 caractères');
-        isValid = false;
       }
 
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         errors.push('Email invalide');
-        isValid = false;
       }
 
-      if (isValid) {
-        alert('Tous les champs sont valides');
-      } else {
+      if (errors.length > 0) {
         alert('Erreurs:\n' + errors.join('\n'));
+      } else {
+        alert('Tous les champs sont valides');
       }
     }
 
@@ -536,7 +528,7 @@
       const email = document.getElementById('email').value;
 
       if (!department || !projectCode || !email) {
-        alert('Veuillez remplir tous les champs obligatoires (département, code projet et email)');
+        alert('Veuillez remplir tous les champs obligatoires');
         return;
       }
 
@@ -549,44 +541,42 @@
 
       google.script.run
         .withSuccessHandler(handleScriptsGenerated)
-        .withFailureHandler(handleError)
+        .withFailureHandler(handleGenerateError)
         .generateScripts(formData);
     }
 
     function handleScriptsGenerated(response) {
-      if (response.success) {
-        const container = document.getElementById('scriptsContainer');
-        container.innerHTML = '';
-        
-        Object.entries(response.data).forEach(([type, script]) => {
-          const scriptBlock = document.createElement('div');
-          scriptBlock.className = 'script-block';
-          scriptBlock.innerHTML = `
-            <h3>${type}</h3>
-            <pre>${script}</pre>
-            <button class="copy-button" onclick="copyScript(this)">Copy</button>
-          `;
-          container.appendChild(scriptBlock);
-        });
-        
-        document.getElementById('scriptsOutput').style.display = 'block';
-      } else {
-        alert('Erreur lors de la génération: ' + response.message);
+      if (!response.success) {
+        alert('Erreur: ' + response.message);
+        return;
       }
-    }
 
-    function copyScript(button) {
-      const scriptText = button.previousElementSibling.textContent;
-      navigator.clipboard.writeText(scriptText).then(() => {
-        alert('Script copié dans le presse-papier');
-      }).catch(err => {
-        console.error('Erreur lors de la copie:', err);
+      const container = document.getElementById('scriptsContainer');
+      container.innerHTML = '';
+      
+      Object.entries(response.data).forEach(([type, script]) => {
+        const scriptBlock = document.createElement('div');
+        scriptBlock.className = 'script-block';
+        scriptBlock.innerHTML = `
+          <h3>${type}</h3>
+          <pre>${script}</pre>
+          <button type="button" class="copy-button" onclick="copyToClipboard(this)">Copy</button>
+        `;
+        container.appendChild(scriptBlock);
       });
+      
+      document.getElementById('scriptsOutput').style.display = 'block';
     }
 
-    function handleError(error) {
-      console.error('Erreur:', error);
-      alert('Une erreur est survenue: ' + error.toString());
+    function handleGenerateError(error) {
+      alert('Erreur lors de la génération: ' + error.toString());
+    }
+
+    function copyToClipboard(button) {
+      const scriptText = button.previousElementSibling.textContent;
+      navigator.clipboard.writeText(scriptText)
+        .then(() => alert('Script copié dans le presse-papier'))
+        .catch(err => console.error('Erreur lors de la copie:', err));
     }
   </script>
 </body>
