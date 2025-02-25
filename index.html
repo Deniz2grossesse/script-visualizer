@@ -336,40 +336,6 @@
       </button>
     </div>
 
-    <div class="alert">
-      <span class="alert-icon">⚠️</span>
-      <span>These three fields are mandatory, you cannot start entering them without having filled them in.</span>
-    </div>
-
-    <div class="form-group">
-      <label>Department <span class="required">*</span></label>
-      <input 
-        type="text" 
-        id="department" 
-        maxlength="4" 
-        placeholder="Department (1-4 chars)"
-      >
-    </div>
-
-    <div class="form-group">
-      <label>Project/Application Code <span class="required">*</span></label>
-      <input 
-        type="text" 
-        id="projectCode" 
-        maxlength="4" 
-        placeholder="Project code (1-4 chars)"
-      >
-    </div>
-
-    <div class="form-group">
-      <label>Requester's Email <span class="required">*</span></label>
-      <input 
-        type="email" 
-        id="email" 
-        placeholder="Email address"
-      >
-    </div>
-
     <table id="rulesTable" class="rules-table" style="display: none;">
       <thead>
         <tr>
@@ -386,17 +352,6 @@
       </thead>
       <tbody></tbody>
     </table>
-
-    <div id="scriptsOutput" class="scripts-output" style="display: none;">
-      <div id="scriptsContainer"></div>
-    </div>
-
-    <div class="action-buttons">
-      <button class="btn-delete" onclick="deleteForm()">Delete</button>
-      <button class="btn-resume" onclick="resumeDraft()">Resume Draft</button>
-      <button class="btn-verify" onclick="verifyFields()">Verify</button>
-      <button class="btn-generate" onclick="generateScripts()">Generate Scripts</button>
-    </div>
 
     <div id="loadingMessage" class="loading-message">
       Fichier en cours de chargement...
@@ -424,51 +379,58 @@
 
     function handleFileSelect(event) {
       const file = event.target.files[0];
-      if (file) {
-        showLoading();
-        console.log("Fichier sélectionné:", file.name);
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-          console.log("Fichier lu");
+      if (!file) return;
+
+      showLoading();
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        try {
           const content = e.target.result;
-          console.log("Contenu du fichier (premiers caractères):", content.substring(0, 100));
+          const lines = content.split('\n').slice(11); // Commence à la ligne 12
+          const newRules = [];
           
-          google.script.run
-            .withSuccessHandler(function(response) {
-              hideLoading();
-              handleCSVSuccess(response);
-            })
-            .withFailureHandler(function(error) {
-              hideLoading();
-              handleError(error);
-            })
-            .importCSV(content);
-        };
-        
-        reader.onerror = function(e) {
+          lines.forEach((line) => {
+            if (line.trim() === '') return;
+            
+            const columns = line.split(',').map(col => col.trim());
+            if (columns.length >= 9) {
+              newRules.push({
+                sourceIP: columns[3] || '',
+                destIP: columns[6] || '',
+                protocol: columns[7] || 'TCP',
+                service: columns[8] || '',
+                port: columns[9] || '',
+                authentication: columns[10]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
+                flowEncryption: columns[11]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
+                classification: columns[12]?.toLowerCase() === 'yellow' ? 'Yellow' : 
+                              columns[12]?.toLowerCase() === 'amber' ? 'Amber' : 
+                              columns[12]?.toLowerCase() === 'red' ? 'Red' : 'Yellow',
+                appCode: columns[13] || ''
+              });
+            }
+          });
+
+          currentRules = newRules;
+          displayRules();
           hideLoading();
-          console.error("Erreur lors de la lecture du fichier:", e);
-          alert("Erreur lors de la lecture du fichier");
-        };
+          alert(`${newRules.length} règles importées avec succès`);
+        } catch (error) {
+          console.error('Erreur lors du traitement du fichier:', error);
+          hideLoading();
+          alert('Erreur lors du traitement du fichier CSV');
+        }
+      };
+      
+      reader.onerror = function() {
+        hideLoading();
+        alert('Erreur lors de la lecture du fichier');
+      };
 
-        reader.readAsText(file);
-      }
-    }
-
-    function handleCSVSuccess(response) {
-      console.log("Réponse de l'import:", response);
-      if (response.success) {
-        currentRules = response.data;
-        displayRules();
-        alert(response.message);
-      } else {
-        alert('Erreur lors de l\'import: ' + response.message);
-      }
+      reader.readAsText(file);
     }
 
     function displayRules() {
-      console.log("Affichage des règles:", currentRules);
       const table = document.getElementById('rulesTable');
       const tbody = table.querySelector('tbody');
       tbody.innerHTML = '';
@@ -531,122 +493,6 @@
         appCode: ''
       });
       displayRules();
-    }
-
-    function deleteForm() {
-      if (confirm('Voulez-vous vraiment supprimer le formulaire ?')) {
-        google.script.run
-          .withSuccessHandler(() => {
-            document.getElementById('department').value = '';
-            document.getElementById('projectCode').value = '';
-            document.getElementById('email').value = '';
-            currentRules = [];
-            document.getElementById('rulesTable').style.display = 'none';
-            document.getElementById('scriptsOutput').style.display = 'none';
-          })
-          .withFailureHandler(handleError)
-          .deleteForm();
-      }
-    }
-
-    function resumeDraft() {
-      google.script.run
-        .withSuccessHandler((response) => {
-          if (response.success && response.data) {
-            const data = response.data;
-            document.getElementById('department').value = data.department || '';
-            document.getElementById('projectCode').value = data.projectCode || '';
-            document.getElementById('email').value = data.email || '';
-            if (data.rules) {
-              currentRules = data.rules;
-              displayRules();
-            }
-          } else {
-            alert('Aucun brouillon trouvé');
-          }
-        })
-        .withFailureHandler(handleError)
-        .getDraft();
-    }
-
-    function verifyFields() {
-      const department = document.getElementById('department').value;
-      const projectCode = document.getElementById('projectCode').value;
-      const email = document.getElementById('email').value;
-      
-      let isValid = true;
-      let errors = [];
-
-      if (!department || department.length > 4) {
-        errors.push('Le département doit faire entre 1 et 4 caractères');
-        isValid = false;
-      }
-
-      if (!projectCode || projectCode.length > 4) {
-        errors.push('Le code projet doit faire entre 1 et 4 caractères');
-        isValid = false;
-      }
-
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        errors.push('Email invalide');
-        isValid = false;
-      }
-
-      if (isValid) {
-        alert('Tous les champs sont valides');
-      } else {
-        alert('Erreurs:\n' + errors.join('\n'));
-      }
-    }
-
-    function generateScripts() {
-      const formData = {
-        department: document.getElementById('department').value,
-        projectCode: document.getElementById('projectCode').value,
-        email: document.getElementById('email').value,
-        rules: currentRules
-      };
-
-      google.script.run
-        .withSuccessHandler(handleScriptsGenerated)
-        .withFailureHandler(handleError)
-        .generateScripts(formData);
-    }
-
-    function handleScriptsGenerated(response) {
-      if (response.success) {
-        const container = document.getElementById('scriptsContainer');
-        container.innerHTML = '';
-        
-        Object.entries(response.data).forEach(([type, script]) => {
-          const scriptBlock = document.createElement('div');
-          scriptBlock.className = 'script-block';
-          scriptBlock.innerHTML = `
-            <h3>${type}</h3>
-            <pre>${script}</pre>
-            <button class="copy-button" onclick="copyScript(this)">Copy</button>
-          `;
-          container.appendChild(scriptBlock);
-        });
-        
-        document.getElementById('scriptsOutput').style.display = 'block';
-      } else {
-        alert('Erreur lors de la génération: ' + response.message);
-      }
-    }
-
-    function copyScript(button) {
-      const scriptText = button.previousElementSibling.textContent;
-      navigator.clipboard.writeText(scriptText).then(() => {
-        alert('Script copié dans le presse-papier');
-      }).catch(err => {
-        console.error('Erreur lors de la copie:', err);
-      });
-    }
-
-    function handleError(error) {
-      console.error('Erreur:', error);
-      alert('Une erreur est survenue: ' + error.toString());
     }
   </script>
 </body>
