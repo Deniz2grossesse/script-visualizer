@@ -1,9 +1,9 @@
+
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Network, Shield, ArrowRight, Plus, Lock, FileCode, AlertTriangle, Check, X, Upload, Trash2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 interface FieldError {
   error: boolean;
@@ -35,28 +35,8 @@ interface CSVRow {
 }
 
 const Index = () => {
-  const { toast } = useToast();
-  const [generatedScripts, setGeneratedScripts] = useState<{ id: number; script: string }[]>([]);
   const [csvRows, setCsvRows] = useState<CSVRow[]>([]);
   const [isImporting, setIsImporting] = useState(false);
-
-  const generateScriptForRow = (row: CSVRow): string => {
-    return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
-  -H "Authorization: Bearer <TON_TOKEN>" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "source": {
-      "ip": "${row.sourceIP.split('/')[0]}"
-    },
-    "destination": {
-      "ip": "${row.destIP}"
-    },
-    "service": {
-      "protocol": "${row.protocol.toUpperCase()}",
-      "port": ${row.port}
-    }
-  }'`;
-  };
 
   const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -68,14 +48,7 @@ const Index = () => {
     reader.onload = (e) => {
       try {
         const text = e.target?.result as string;
-        if (!text) {
-          toast({
-            title: "Erreur",
-            description: "Le fichier est vide",
-            variant: "destructive"
-          });
-          return;
-        }
+        if (!text) return;
 
         const lines = text.split('\n').slice(11);
         const newRows: CSVRow[] = [];
@@ -104,19 +77,9 @@ const Index = () => {
           if (shouldUpdate) {
             setCsvRows(newRows);
           }
-        } else {
-          toast({
-            title: "Information",
-            description: "Aucune règle valide trouvée dans le fichier",
-          });
         }
       } catch (error) {
         console.error('Erreur lors du parsing du CSV:', error);
-        toast({
-          title: "Erreur",
-          description: "Erreur lors de la lecture du fichier",
-          variant: "destructive"
-        });
       } finally {
         setIsImporting(false);
       }
@@ -124,46 +87,9 @@ const Index = () => {
 
     reader.onerror = () => {
       setIsImporting(false);
-      toast({
-        title: "Erreur",
-        description: "Erreur lors de la lecture du fichier",
-        variant: "destructive"
-      });
     };
 
     reader.readAsText(file);
-  };
-
-  const handleAddRow = () => {
-    const emptyRow: CSVRow = {
-      sourceIP: '',
-      destIP: '',
-      protocol: 'tcp',
-      service: '',
-      port: '',
-      authentication: 'no',
-      flowEncryption: 'no',
-      classification: 'yellow',
-      appCode: ''
-    };
-    setCsvRows(prev => [...prev, emptyRow]);
-  };
-
-  const handleGenerateScripts = () => {
-    const validRows = csvRows.slice(0, 5);
-    if (validRows.length === 0) {
-      toast({
-        title: "Information",
-        description: "Aucune règle à générer",
-      });
-      return;
-    }
-
-    const scripts = validRows.map((row, index) => ({
-      id: index + 1,
-      script: generateScriptForRow(row)
-    }));
-    setGeneratedScripts(scripts);
   };
 
   return (
@@ -179,15 +105,13 @@ const Index = () => {
         <div className="flex justify-end gap-4 mb-6">
           <Button 
             type="button"
-            onClick={handleAddRow}
-            disabled={isImporting}
             className="flex items-center gap-2 bg-[#2ECC71] hover:bg-[#27AE60] text-white"
           >
             <Plus className="w-4 h-4" />
             Ajouter une ligne
           </Button>
           
-          <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 bg-[#E67E22] text-white rounded-md hover:bg-[#D35400] transition-colors ${isImporting ? 'opacity-50 cursor-not-allowed' : ''}`}>
+          <label className="flex items-center gap-2 cursor-pointer px-4 py-2 bg-[#E67E22] text-white rounded-md hover:bg-[#D35400] transition-colors">
             <Upload className="w-4 h-4" />
             Importer CSV
             <input
@@ -341,9 +265,6 @@ const Index = () => {
                       <Button
                         type="button"
                         variant="ghost"
-                        onClick={() => {
-                          setCsvRows(prev => prev.filter((_, i) => i !== index));
-                        }}
                         className="h-8 w-8 p-0 text-red-500 hover:text-red-400 hover:bg-red-500/20"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -359,39 +280,12 @@ const Index = () => {
         <div className="flex justify-end gap-3 mt-4">
           <Button 
             type="button"
-            onClick={handleGenerateScripts}
-            disabled={csvRows.length === 0 || isImporting}
             className="bg-[#E67E22] hover:bg-[#D35400] text-white border-none transition-colors flex items-center gap-2"
           >
             Generate Scripts
             <ArrowRight className="w-4 h-4" />
           </Button>
         </div>
-
-        {generatedScripts.length > 0 && (
-          <div className="mt-8 bg-white/10 rounded-lg p-6">
-            <h3 className="text-xl font-medium mb-4 flex items-center gap-2">
-              <FileCode className="w-5 h-5" />
-              Generated Scripts
-            </h3>
-            <div className="space-y-4">
-              {generatedScripts.map(({ id, script }) => (
-                <div key={id} className="flex items-start gap-4">
-                  <div className="bg-[#2C3E50] rounded-md px-3 py-2 text-white whitespace-nowrap">
-                    ID: {id}
-                  </div>
-                  <div className="flex-1">
-                    <textarea
-                      value={script}
-                      readOnly
-                      className="w-full h-48 p-4 rounded-md font-mono text-sm bg-[#2C3E50] border border-[#BDC3C7]/30 shadow-input focus:border-primary transition-colors text-white"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
