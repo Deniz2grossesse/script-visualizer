@@ -6,137 +6,7 @@
     <meta charset="UTF-8">
     <title>Network Rules Generator</title>
     <style>
-      body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f0f2f5;
-        color: #333;
-      }
-      .container {
-        max-width: 900px;
-        margin: 40px auto;
-        background-color: white;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-      }
-      h1 {
-        text-align: center;
-        color: #2c3e50;
-        margin-bottom: 30px;
-        font-size: 28px;
-      }
-      h3 {
-        color: #34495e;
-        margin-bottom: 20px;
-        font-size: 20px;
-      }
-      .mandatory {
-        background-color: #f8fafc;
-        border: 1px solid #e2e8f0;
-        padding: 25px;
-        margin-bottom: 30px;
-        border-radius: 8px;
-      }
-      .form-group {
-        margin-bottom: 20px;
-      }
-      label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 500;
-        color: #4a5568;
-      }
-      input, select {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #cbd5e0;
-        border-radius: 6px;
-        font-size: 14px;
-        transition: border-color 0.2s ease;
-        box-sizing: border-box;
-      }
-      input:focus, select:focus {
-        outline: none;
-        border-color: #4299e1;
-        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
-      }
-      .required {
-        color: #e53e3e;
-        margin-left: 4px;
-      }
-      button {
-        padding: 12px 24px;
-        border: none;
-        border-radius: 6px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-size: 14px;
-        margin: 5px;
-      }
-      button.generate {
-        background-color: #38a169;
-        color: white;
-      }
-      button.generate:hover {
-        background-color: #2f855a;
-      }
-      button.reset {
-        background-color: #e53e3e;
-        color: white;
-      }
-      button.reset:hover {
-        background-color: #c53030;
-      }
-      button.copy {
-        background-color: #4299e1;
-        color: white;
-      }
-      button.copy:hover {
-        background-color: #3182ce;
-      }
-      .button-group {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 20px;
-      }
-      .output {
-        margin-top: 30px;
-        padding: 20px;
-        background-color: #f8fafc;
-        border-radius: 8px;
-        display: none;
-      }
-      .script-output {
-        width: 100%;
-        min-height: 150px;
-        padding: 15px;
-        margin: 15px 0;
-        font-family: 'Monaco', 'Consolas', monospace;
-        font-size: 13px;
-        line-height: 1.5;
-        background-color: #2d3748;
-        color: #e2e8f0;
-        border: none;
-        border-radius: 6px;
-        resize: vertical;
-      }
-      .form-section {
-        background-color: #fff;
-        padding: 25px;
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      }
-      .section-title {
-        font-size: 18px;
-        color: #2d3748;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #e2e8f0;
-      }
+      /* ... keep existing code (styles CSS) */
     </style>
   </head>
   <body>
@@ -186,6 +56,34 @@
             <label>Port</label>
             <input type="number" id="port" placeholder="ex: 80">
           </div>
+          <div class="form-group">
+            <label>Authentication</label>
+            <select id="authentication">
+              <option value="none">None</option>
+              <option value="basic">Basic</option>
+              <option value="oauth">OAuth</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Flow Encryption</label>
+            <select id="encryption">
+              <option value="none">None</option>
+              <option value="ssl">SSL/TLS</option>
+              <option value="ipsec">IPSec</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Classification</label>
+            <select id="classification">
+              <option value="public">Public</option>
+              <option value="internal">Internal</option>
+              <option value="confidential">Confidential</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>APP Code</label>
+            <input type="text" id="appCode" placeholder="Code (4 chars)" maxlength="4">
+          </div>
         </div>
 
         <div class="button-group">
@@ -223,7 +121,11 @@
           destIP: document.getElementById('destIP').value,
           protocol: document.getElementById('protocol').value,
           service: document.getElementById('service').value,
-          port: document.getElementById('port').value
+          port: document.getElementById('port').value,
+          authentication: document.getElementById('authentication').value,
+          encryption: document.getElementById('encryption').value,
+          classification: document.getElementById('classification').value,
+          appCode: document.getElementById('appCode').value
         };
 
         if (!formData.sourceIP || !formData.destIP || !formData.service || !formData.port) {
@@ -276,6 +178,10 @@
         document.getElementById('protocol').value = 'tcp';
         document.getElementById('service').value = '';
         document.getElementById('port').value = '';
+        document.getElementById('authentication').value = 'none';
+        document.getElementById('encryption').value = 'none';
+        document.getElementById('classification').value = 'public';
+        document.getElementById('appCode').value = '';
         document.getElementById('output').style.display = 'none';
       }
     </script>

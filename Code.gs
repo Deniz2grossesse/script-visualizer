@@ -22,7 +22,11 @@ function generateScript(formObject) {
     "protocol": "${formObject.protocol.toUpperCase()}",
     "port": ${formObject.port},
     "name": "${formObject.service}"
-  }
+  },
+  "authentication": "${formObject.authentication}",
+  "encryption": "${formObject.encryption}",
+  "classification": "${formObject.classification}",
+  "appCode": "${formObject.appCode}"
 }'`;
 
   return scriptTemplate;
