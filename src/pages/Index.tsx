@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -100,29 +101,40 @@ const Index = () => {
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("Début du handleFileUpload");
     const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (file.type !== 'text/csv') {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Veuillez sélectionner un fichier CSV valide."
-      });
+    
+    if (!file) {
+      console.log("Pas de fichier sélectionné");
       return;
     }
 
+    console.log("Type du fichier:", file.type);
+    console.log("Nom du fichier:", file.name);
+
     const reader = new FileReader();
+    
     reader.onload = (e) => {
+      console.log("FileReader onload déclenché");
       const text = e.target?.result as string;
+      console.log("Contenu du fichier (premiers caractères):", text.substring(0, 100));
+      
       const lines = text.split('\n').slice(11); // On commence à la ligne 12
+      console.log("Nombre de lignes après la ligne 11:", lines.length);
+      
       const newRows: CSVRow[] = [];
       let errorCount = 0;
 
       lines.forEach((line, index) => {
-        if (line.trim() === '') return;
+        if (line.trim() === '') {
+          console.log(`Ligne ${index + 12} vide, ignorée`);
+          return;
+        }
 
+        console.log(`Traitement de la ligne ${index + 12}:`, line);
         const columns = line.split(',').map(col => col.trim());
+        console.log(`Nombre de colonnes trouvées:`, columns.length);
+        
         if (columns.length >= 9) {
           const row = {
             sourceIP: columns[3], // Colonne D
@@ -136,9 +148,12 @@ const Index = () => {
             appCode: columns[13], // Colonne N
           };
 
+          console.log(`Données extraites de la ligne:`, row);
+
           const validation = validateRow(row);
           if (!validation.isValid) {
             errorCount++;
+            console.log(`Erreurs de validation pour la ligne ${index + 12}:`, validation.errors);
           }
 
           newRows.push({
@@ -146,8 +161,13 @@ const Index = () => {
             isValid: validation.isValid,
             errors: validation.errors
           });
+        } else {
+          console.log(`Ligne ${index + 12} ignorée car pas assez de colonnes`);
         }
       });
+
+      console.log(`Total des lignes traitées:`, newRows.length);
+      console.log(`Nombre d'erreurs trouvées:`, errorCount);
 
       setCsvRows(newRows);
       toast({
@@ -156,6 +176,16 @@ const Index = () => {
       });
     };
 
+    reader.onerror = (error) => {
+      console.error("Erreur lors de la lecture du fichier:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la lecture du fichier."
+      });
+    };
+
+    console.log("Début de la lecture du fichier");
     reader.readAsText(file);
   };
 
