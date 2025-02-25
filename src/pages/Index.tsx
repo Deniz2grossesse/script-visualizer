@@ -155,59 +155,6 @@ const validateRequired = (value: string) => {
   return "";
 };
 
-const generateScript = async (rule: NetworkRule, scriptNumber: number) => {
-  const scriptTemplate = `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
-  -H "Authorization: Bearer <YOUR_TOKEN>" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "source": {
-      "ip": "${rule.sourceIP}",
-      "mask": "255.255.255.0"
-    },
-    "destination": {
-      "ip": "${rule.destIP}"
-    },
-    "service": {
-      "protocol": "${rule.protocol.toUpperCase()}",
-      "port": ${rule.port}
-    }
-  }'`;
-
-  try {
-    const APPS_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
-    
-    const response = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        scriptNumber: scriptNumber,
-        scriptContent: scriptTemplate
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error("Erreur lors de l'enregistrement dans Google Sheets");
-    }
-
-    toast.success("Script généré et enregistré avec succès");
-  } catch (error) {
-    console.error("Erreur:", error);
-    toast.error("Erreur lors de la génération du script");
-  }
-};
-
-const handleGenerateAllScripts = () => {
-  networkRules.forEach((rule, index) => {
-    if (!rule.sourceIP || !rule.destIP || !rule.protocol || !rule.port) {
-      toast.error(`La règle ${index + 1} est incomplète`);
-      return;
-    }
-    generateScript(rule, index + 1);
-  });
-};
-
 const Index = () => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [formErrors, setFormErrors] = useState<FormErrors>(initialFormErrors);
@@ -589,12 +536,8 @@ const Index = () => {
           <Button onClick={() => toast.success("Entries validated successfully")}>
             Validate
           </Button>
-          <Button 
-            onClick={handleGenerateAllScripts} 
-            variant="default"
-            className="bg-green-600 hover:bg-green-700"
-          >
-            Generate Scripts
+          <Button onClick={() => toast.success("Script generation started")} variant="default">
+            Generate Script
           </Button>
         </div>
       </form>
