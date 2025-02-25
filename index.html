@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -98,7 +97,6 @@
       gap: 12px;
       justify-content: space-between;
       margin-top: 30px;
-      flex-wrap: wrap;
     }
     
     .action-buttons {
@@ -106,7 +104,6 @@
       gap: 12px;
       margin-top: 30px;
       justify-content: flex-end;
-      flex-wrap: wrap;
     }
     
     button {
@@ -116,12 +113,12 @@
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
-      transition: all 0.2s;
       display: flex;
       align-items: center;
       gap: 8px;
       background: #9b87f5;
       color: white;
+      width: fit-content;
     }
     
     .btn-delete {
@@ -146,16 +143,6 @@
       color: white;
       padding-right: 36px;
       position: relative;
-      box-shadow: 0 4px 15px rgba(155, 135, 245, 0.3);
-    }
-    
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(155, 135, 245, 0.2);
-    }
-    
-    button:active {
-      transform: translateY(0);
     }
     
     .top-buttons {
@@ -202,27 +189,6 @@
       background: #f8f7ff;
       border-radius: 15px;
       border: 1px solid #e9e3ff;
-    }
-    
-    @media (max-width: 768px) {
-      .container {
-        padding: 20px;
-        margin: 10px;
-      }
-      
-      .button-group,
-      .action-buttons,
-      .top-buttons {
-        flex-direction: column;
-      }
-      
-      button {
-        width: 100%;
-      }
-      
-      .mandatory-section {
-        padding: 20px;
-      }
     }
   </style>
 </head>
