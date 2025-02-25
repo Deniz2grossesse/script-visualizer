@@ -38,103 +38,6 @@ const Index = () => {
   const { toast } = useToast();
   const [generatedScripts, setGeneratedScripts] = useState<{ id: number; script: string }[]>([]);
   const [csvRows, setCsvRows] = useState<CSVRow[]>([]);
-  const [errors, setErrors] = useState<FormErrors>({
-    email: { error: false, message: '' },
-    sourceIP: { error: false, message: '' },
-    destIP: { error: false, message: '' },
-    service: { error: false, message: '' },
-    port: { error: false, message: '' },
-    department: { error: false, message: '' },
-    projectCode: { error: false, message: '' },
-  });
-
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const isValid = emailRegex.test(email);
-    setErrors(prev => ({
-      ...prev,
-      email: {
-        error: !isValid,
-        message: isValid ? '' : 'Veuillez entrer un email valide'
-      }
-    }));
-    return isValid;
-  };
-
-  const validateIP = (ip: string): boolean => {
-    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-    return ipRegex.test(ip) && ip.split('.').every(num => parseInt(num) >= 0 && parseInt(num) <= 255);
-  };
-
-  const validatePort = (port: string): boolean => {
-    const portNum = parseInt(port);
-    return !isNaN(portNum) && portNum >= 1 && portNum <= 65535;
-  };
-
-  const validateRow = (row: CSVRow): { isValid: boolean; errors: string[] } => {
-    const errors: string[] = [];
-    
-    if (!validateIP(row.sourceIP)) {
-      errors.push("IP source invalide");
-    }
-    if (!validateIP(row.destIP)) {
-      errors.push("IP destination invalide");
-    }
-    if (!validatePort(row.port)) {
-      errors.push("Port invalide");
-    }
-    if (!['tcp', 'udp', 'icmp'].includes(row.protocol.toLowerCase())) {
-      errors.push("Protocole invalide");
-    }
-    if (!['yes', 'no'].includes(row.authentication.toLowerCase())) {
-      errors.push("Authentication doit être 'yes' ou 'no'");
-    }
-    if (!['yes', 'no'].includes(row.flowEncryption.toLowerCase())) {
-      errors.push("Flow encryption doit être 'yes' ou 'no'");
-    }
-    if (!['yellow', 'amber', 'red'].includes(row.classification.toLowerCase())) {
-      errors.push("Classification invalide");
-    }
-
-    return { isValid: errors.length === 0, errors };
-  };
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files?.length) return;
-    const file = event.target.files[0];
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-      const lines = text.split('\n').slice(11);
-      const newRows: CSVRow[] = [];
-
-      lines.forEach((line) => {
-        if (line.trim() === '') return;
-
-        const columns = line.split(',').map(col => col.trim());
-        if (columns.length >= 9) {
-          newRows.push({
-            sourceIP: columns[3] || '',
-            destIP: columns[6] || '',
-            protocol: columns[7] || '',
-            service: columns[8] || '',
-            port: columns[9] || '',
-            authentication: 'no',
-            flowEncryption: 'no',
-            classification: 'yellow',
-            appCode: columns[13] || ''
-          });
-        }
-      });
-
-      if (newRows.length > 0) {
-        setCsvRows(newRows);
-      }
-    };
-
-    reader.readAsText(file);
-  };
 
   const generateScriptForRow = (row: CSVRow): string => {
     return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
@@ -171,15 +74,13 @@ const Index = () => {
               const emptyRow: CSVRow = {
                 sourceIP: '',
                 destIP: '',
-                protocol: '',
+                protocol: 'tcp',
                 service: '',
                 port: '',
-                authentication: '',
-                flowEncryption: '',
-                classification: '',
-                appCode: '',
-                isValid: false,
-                errors: []
+                authentication: 'no',
+                flowEncryption: 'no',
+                classification: 'yellow',
+                appCode: ''
               };
               setCsvRows(prev => [...prev, emptyRow]);
             }}
@@ -188,101 +89,53 @@ const Index = () => {
             <Plus className="w-4 h-4" />
             Ajouter une ligne
           </Button>
+          
           <label className="flex items-center gap-2 cursor-pointer px-4 py-2 bg-[#E67E22] text-white rounded-md hover:bg-[#D35400] transition-colors">
             <Upload className="w-4 h-4" />
             Importer CSV
             <input
               type="file"
               accept=".csv"
-              onChange={handleFileUpload}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                  const text = e.target?.result as string;
+                  const lines = text.split('\n').slice(11);
+                  const newRows: CSVRow[] = [];
+
+                  lines.forEach((line) => {
+                    if (line.trim() === '') return;
+
+                    const columns = line.split(',').map(col => col.trim());
+                    if (columns.length >= 9) {
+                      newRows.push({
+                        sourceIP: columns[3] || '',
+                        destIP: columns[6] || '',
+                        protocol: 'tcp',
+                        service: columns[8] || '',
+                        port: columns[9] || '',
+                        authentication: 'no',
+                        flowEncryption: 'no',
+                        classification: 'yellow',
+                        appCode: columns[13] || ''
+                      });
+                    }
+                  });
+
+                  if (newRows.length > 0) {
+                    setCsvRows(newRows);
+                  }
+                };
+
+                reader.readAsText(file);
+              }}
               className="hidden"
             />
           </label>
         </div>
-
-        <div>
-            <label className="block text-sm font-medium mb-2 text-white">
-              Department <span className="text-destructive">*</span>
-            </label>
-            <div className="relative">
-              <Input 
-                placeholder="Department (1-4 chars)" 
-                maxLength={4}
-                className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-white/50 pr-10 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
-                onChange={(e) => {
-                  const isValid = e.target.value.length >= 1 && e.target.value.length <= 4;
-                  setErrors(prev => ({
-                    ...prev,
-                    department: {
-                      error: !isValid,
-                      message: isValid ? '' : 'Entre 1 et 4 caractères requis'
-                    }
-                  }));
-                }}
-              />
-              {errors.department.error ? (
-                <X className="absolute right-3 top-2.5 h-5 w-5 text-destructive" />
-              ) : errors.department.message === '' ? (
-                <Check className="absolute right-3 top-2.5 h-5 w-5 text-green-500" />
-              ) : null}
-            </div>
-            {errors.department.error && (
-              <p className="text-destructive text-sm mt-1">{errors.department.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Project/Application Code <span className="text-destructive">*</span>
-            </label>
-            <div className="relative">
-              <Input 
-                placeholder="Project code (1-4 chars)" 
-                maxLength={4}
-                className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-[#BDC3C7]/50 pr-10 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
-                onChange={(e) => {
-                  const isValid = e.target.value.length >= 1 && e.target.value.length <= 4;
-                  setErrors(prev => ({
-                    ...prev,
-                    projectCode: {
-                      error: !isValid,
-                      message: isValid ? '' : 'Entre 1 et 4 caractères requis'
-                    }
-                  }));
-                }}
-              />
-              {errors.projectCode.error ? (
-                <X className="absolute right-3 top-2.5 h-5 w-5 text-destructive" />
-              ) : errors.projectCode.message === '' ? (
-                <Check className="absolute right-3 top-2.5 h-5 w-5 text-green-500" />
-              ) : null}
-            </div>
-            {errors.projectCode.error && (
-              <p className="text-destructive text-sm mt-1">{errors.projectCode.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Requester's Email <span className="text-destructive">*</span>
-            </label>
-            <div className="relative">
-              <Input 
-                type="email" 
-                placeholder="Email address"
-                className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-[#BDC3C7]/50 pr-10 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
-                onChange={(e) => validateEmail(e.target.value)}
-              />
-              {errors.email.error ? (
-                <X className="absolute right-3 top-2.5 h-5 w-5 text-destructive" />
-              ) : errors.email.message === '' ? (
-                <Check className="absolute right-3 top-2.5 h-5 w-5 text-green-500" />
-              ) : null}
-            </div>
-            {errors.email.error && (
-              <p className="text-destructive text-sm mt-1">{errors.email.message}</p>
-            )}
-          </div>
 
         {csvRows.length > 0 && (
           <div className="mt-8 overflow-x-auto">
@@ -291,7 +144,7 @@ const Index = () => {
                 <tr className="bg-[#2C3E50] text-white">
                   <th className="p-2 text-left">Source IP</th>
                   <th className="p-2 text-left">IP Destination</th>
-                  <th className="p-2 text-left">Protocole</th>
+                  <th className="p-2 text-left">Protocol</th>
                   <th className="p-2 text-left">Service</th>
                   <th className="p-2 text-left">Port</th>
                   <th className="p-2 text-left">Authentication</th>
@@ -303,7 +156,7 @@ const Index = () => {
               </thead>
               <tbody>
                 {csvRows.map((row, index) => (
-                  <tr key={index} className={`border-b border-[#2C3E50] hover:bg-[#2C3E50]/50 ${!row.isValid ? 'bg-red-900/20' : ''}`}>
+                  <tr key={index} className="border-b border-[#2C3E50] hover:bg-[#2C3E50]/50">
                     <td className="p-2">
                       <Input
                         value={row.sourceIP}
@@ -327,11 +180,11 @@ const Index = () => {
                       />
                     </td>
                     <td className="p-2">
-                      <Select value={row.protocol} onChange={(e) => {
-                          const newRows = [...csvRows];
-                          newRows[index] = { ...row, protocol: e.target.value };
-                          setCsvRows(newRows);
-                        }}>
+                      <Select defaultValue={row.protocol} onValueChange={(value) => {
+                        const newRows = [...csvRows];
+                        newRows[index] = { ...row, protocol: value };
+                        setCsvRows(newRows);
+                      }}>
                         <SelectTrigger className="h-8">
                           <SelectValue />
                         </SelectTrigger>
@@ -365,11 +218,11 @@ const Index = () => {
                       />
                     </td>
                     <td className="p-2">
-                      <Select value={row.authentication} onChange={(e) => {
-                          const newRows = [...csvRows];
-                          newRows[index] = { ...row, authentication: e.target.value };
-                          setCsvRows(newRows);
-                        }}>
+                      <Select defaultValue={row.authentication} onValueChange={(value) => {
+                        const newRows = [...csvRows];
+                        newRows[index] = { ...row, authentication: value };
+                        setCsvRows(newRows);
+                      }}>
                         <SelectTrigger className="h-8">
                           <SelectValue />
                         </SelectTrigger>
@@ -380,11 +233,11 @@ const Index = () => {
                       </Select>
                     </td>
                     <td className="p-2">
-                      <Select value={row.flowEncryption} onChange={(e) => {
-                          const newRows = [...csvRows];
-                          newRows[index] = { ...row, flowEncryption: e.target.value };
-                          setCsvRows(newRows);
-                        }}>
+                      <Select defaultValue={row.flowEncryption} onValueChange={(value) => {
+                        const newRows = [...csvRows];
+                        newRows[index] = { ...row, flowEncryption: value };
+                        setCsvRows(newRows);
+                      }}>
                         <SelectTrigger className="h-8">
                           <SelectValue />
                         </SelectTrigger>
@@ -395,11 +248,11 @@ const Index = () => {
                       </Select>
                     </td>
                     <td className="p-2">
-                      <Select value={row.classification} onChange={(e) => {
-                          const newRows = [...csvRows];
-                          newRows[index] = { ...row, classification: e.target.value };
-                          setCsvRows(newRows);
-                        }}>
+                      <Select defaultValue={row.classification} onValueChange={(value) => {
+                        const newRows = [...csvRows];
+                        newRows[index] = { ...row, classification: value };
+                        setCsvRows(newRows);
+                      }}>
                         <SelectTrigger className="h-8">
                           <SelectValue />
                         </SelectTrigger>
@@ -437,40 +290,21 @@ const Index = () => {
                 ))}
               </tbody>
             </table>
-            {csvRows.some(row => !row.isValid) && (
-              <div className="mt-4 p-4 bg-red-900/20 rounded-md">
-                <h3 className="text-red-500 font-semibold mb-2">Erreurs de validation :</h3>
-                <ul className="list-disc list-inside space-y-1">
-                  {csvRows.map((row, index) => 
-                    row.errors && row.errors.length > 0 && (
-                      <li key={index} className="text-red-400">
-                        Ligne {index + 1}: {row.errors.join(', ')}
-                      </li>
-                    )
-                  )}
-                </ul>
-              </div>
-            )}
           </div>
         )}
 
-        <div className="flex flex-wrap justify-end gap-3 mt-4">
+        <div className="flex justify-end gap-3 mt-4">
           <Button 
             type="button"
             onClick={() => {
-              const validRows = csvRows.filter(row => {
-                const validation = validateRow(row);
-                return validation.isValid;
-              }).slice(0, 5);
-
-              if (validRows.length === 0) return;
-
-              const scripts = validRows.map((row, index) => ({
-                id: index + 1,
-                script: generateScriptForRow(row)
-              }));
-
-              setGeneratedScripts(scripts);
+              const validRows = csvRows.slice(0, 5);
+              if (validRows.length > 0) {
+                const scripts = validRows.map((row, index) => ({
+                  id: index + 1,
+                  script: generateScriptForRow(row)
+                }));
+                setGeneratedScripts(scripts);
+              }
             }}
             className="bg-[#E67E22] hover:bg-[#D35400] text-white border-none transition-colors flex items-center gap-2"
           >
