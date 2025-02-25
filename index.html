@@ -326,11 +326,11 @@
     <h1>One Click Onboarding</h1>
 
     <div class="top-buttons">
-      <button type="button" class="btn-add" onclick="onAddNewLine()">
+      <button type="button" class="btn-add">
         <span>+</span>
         Ajouter une ligne
       </button>
-      <button type="button" class="btn-import" onclick="onImportCSV()">
+      <button type="button" class="btn-import">
         <span>↓</span>
         Importer CSV
       </button>
@@ -392,9 +392,9 @@
     </div>
 
     <div class="action-buttons">
-      <button type="button" class="btn-delete" onclick="onDelete()">Delete</button>
-      <button type="button" class="btn-verify" onclick="onVerify()">Verify</button>
-      <button type="button" class="btn-generate" onclick="onGenerateScripts()">Generate Scripts</button>
+      <button type="button" class="btn-delete">Delete</button>
+      <button type="button" class="btn-verify">Verify</button>
+      <button type="button" class="btn-generate">Generate Scripts</button>
     </div>
 
     <div id="loadingMessage" class="loading-message">
@@ -496,6 +496,8 @@
       const deleteButton = document.querySelector('.btn-delete');
       const verifyButton = document.querySelector('.btn-verify');
       const generateButton = document.querySelector('.btn-generate');
+      const addButton = document.querySelector('.btn-add');
+      const importButton = document.querySelector('.btn-import');
       
       // Créer un input file caché
       const fileInput = document.createElement('input');
@@ -504,13 +506,37 @@
       fileInput.style.display = 'none';
       fileInput.addEventListener('change', handleFileInput);
       document.body.appendChild(fileInput);
+
+      // Gestionnaire pour le bouton d'ajout
+      if (addButton) {
+        addButton.addEventListener('click', function() {
+          if (isProcessing) return;
+          
+          const emptyRule = {
+            sourceIP: '',
+            destIP: '',
+            protocol: 'TCP',
+            service: '',
+            port: '',
+            authentication: 'No',
+            flowEncryption: 'No',
+            classification: 'Yellow',
+            appCode: ''
+          };
+          
+          currentRules.push(emptyRule);
+          displayRules();
+        });
+      }
       
-      // Remplacer l'ancien onImportCSV par une fonction qui déclenche le file input
-      window.onImportCSV = function() {
-        if (!isProcessing) {
-          fileInput.click();
-        }
-      };
+      // Gestionnaire pour le bouton d'import
+      if (importButton) {
+        importButton.addEventListener('click', function() {
+          if (!isProcessing) {
+            fileInput.click();
+          }
+        });
+      }
 
       if (deleteButton) {
         deleteButton.addEventListener('click', function() {
@@ -615,26 +641,6 @@
         });
       }
     });
-
-    function onAddNewLine(event) {
-      if (event) event.preventDefault();
-      if (isProcessing) return;
-      
-      const emptyRule = {
-        sourceIP: '',
-        destIP: '',
-        protocol: 'TCP',
-        service: '',
-        port: '',
-        authentication: 'No',
-        flowEncryption: 'No',
-        classification: 'Yellow',
-        appCode: ''
-      };
-      
-      currentRules.push(emptyRule);
-      displayRules();
-    }
 
     function onCopyScript(button) {
       if (!button || !button.previousElementSibling) return;
