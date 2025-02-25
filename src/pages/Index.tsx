@@ -36,7 +36,7 @@ interface CSVRow {
 
 const Index = () => {
   const { toast } = useToast();
-  const [generatedScript, setGeneratedScript] = useState('');
+  const [generatedScripts, setGeneratedScripts] = useState<{ id: number; script: string }[]>([]);
   const [csvRows, setCsvRows] = useState<CSVRow[]>([]);
   const [currentRow, setCurrentRow] = useState(1);
   const [errors, setErrors] = useState<FormErrors>({
@@ -242,50 +242,49 @@ const Index = () => {
     setCsvRows(newRows);
   };
 
-  const handleGenerateScript = () => {
-    const currentRowData = csvRows[currentRow - 1];
-    
-    if (!currentRowData) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Aucune ligne sélectionnée"
-      });
-      return;
-    }
-
-    if (!validateIP(currentRowData.sourceIP) || !validateIP(currentRowData.destIP) || 
-        !validatePort(currentRowData.port) || !currentRowData.service) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "La ligne contient des erreurs de validation"
-      });
-      return;
-    }
-
-    const generatedScriptContent = `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
+  const generateScriptForRow = (row: CSVRow, rowIndex: number): string => {
+    return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
   -H "Authorization: Bearer <TON_TOKEN>" \\
   -H "Content-Type: application/json" \\
   -d '{
     "source": {
-      "ip": "${currentRowData.sourceIP.split('/')[0]}",
-      "mask": "255.255.255.248"
+      "ip": "${row.sourceIP.split('/')[0]}"
     },
     "destination": {
-      "ip": "${currentRowData.destIP}"
+      "ip": "${row.destIP}"
     },
     "service": {
-      "protocol": "${currentRowData.protocol.toUpperCase()}",
-      "port": ${currentRowData.port}
+      "protocol": "${row.protocol.toUpperCase()}",
+      "port": ${row.port}
     }
   }'`;
+  };
 
-    setGeneratedScript(generatedScriptContent);
+  const handleGenerateScript = () => {
+    const validRows = csvRows.filter(row => {
+      const validation = validateRow(row);
+      return validation.isValid;
+    }).slice(0, 5); // Limite à 5 lignes maximum
+
+    if (validRows.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Aucune ligne valide trouvée"
+      });
+      return;
+    }
+
+    const scripts = validRows.map((row, index) => ({
+      id: index + 1,
+      script: generateScriptForRow(row, index)
+    }));
+
+    setGeneratedScripts(scripts);
     
     toast({
       title: "Succès",
-      description: "Script généré avec succès"
+      description: `${scripts.length} script(s) généré(s) avec succès`
     });
   };
 
@@ -564,30 +563,36 @@ const Index = () => {
           </Button>
         </div>
 
-        {generatedScript && (
+        {generatedScripts.length > 0 && (
           <div className="mt-8 bg-white/10 rounded-lg p-6">
             <h3 className="text-xl font-medium mb-4 flex items-center gap-2">
               <FileCode className="w-5 h-5" />
-              Generated Script
+              Generated Scripts
             </h3>
-            <div className="flex items-start gap-4">
-              <div className="bg-[#2C3E50] rounded-md px-3 py-2 text-white">
-                ID: {currentRow}
-              </div>
-              <textarea
-                value={generatedScript}
-                readOnly
-                className="flex-1 h-48 p-4 rounded-md font-mono text-sm bg-[#2C3E50] border border-[#BDC3C7]/30 shadow-input focus:border-primary transition-colors text-white"
-              />
-            </div>
-            <div className="mt-4 flex justify-end">
-              <Button 
-                onClick={() => navigator.clipboard.writeText(generatedScript)}
-                variant="outline" 
-                className="text-white hover:bg-white/20 transition-colors"
-              >
-                Copy script
-              </Button>
+            <div className="space-y-4">
+              {generatedScripts.map(({ id, script }) => (
+                <div key={id} className="flex items-start gap-4">
+                  <div className="bg-[#2C3E50] rounded-md px-3 py-2 text-white whitespace-nowrap">
+                    ID: {id}
+                  </div>
+                  <div className="flex-1">
+                    <textarea
+                      value={script}
+                      readOnly
+                      className="w-full h-48 p-4 rounded-md font-mono text-sm bg-[#2C3E50] border border-[#BDC3C7]/30 shadow-input focus:border-primary transition-colors text-white"
+                    />
+                    <div className="mt-2 flex justify-end">
+                      <Button 
+                        onClick={() => navigator.clipboard.writeText(script)}
+                        variant="outline" 
+                        className="text-white hover:bg-white/20 transition-colors"
+                      >
+                        Copy script
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
