@@ -174,17 +174,16 @@ const generateScript = async (rule: NetworkRule, scriptNumber: number) => {
   }'`;
 
   try {
-    const SHEET_ID = "YOUR_SHEET_ID";
-    const API_KEY = "YOUR_API_KEY";
+    const APPS_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
     
-    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/A${scriptNumber}:B${scriptNumber}:append?valueInputOption=RAW`, {
+    const response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        values: [[scriptNumber, scriptTemplate]]
+        scriptNumber: scriptNumber,
+        scriptContent: scriptTemplate
       })
     });
 
