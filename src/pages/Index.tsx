@@ -242,49 +242,82 @@ const Index = () => {
     setCsvRows(newRows);
   };
 
-  const generateScriptForRow = (row: CSVRow, rowIndex: number): string => {
+  const generateScriptForRow = (row: CSVRow): string => {
+    if (!row.sourceIP || !row.destIP || !row.protocol || !row.port) {
+      return '';
+    }
+
+    // Nettoyage des valeurs avant utilisation
+    const sourceIP = row.sourceIP.split('/')[0].trim();
+    const destIP = row.destIP.trim();
+    const protocol = row.protocol.toUpperCase().trim();
+    const port = row.port.trim();
+
     return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
   -H "Authorization: Bearer <TON_TOKEN>" \\
   -H "Content-Type: application/json" \\
   -d '{
     "source": {
-      "ip": "${row.sourceIP.split('/')[0]}"
+      "ip": "${sourceIP}"
     },
     "destination": {
-      "ip": "${row.destIP}"
+      "ip": "${destIP}"
     },
     "service": {
-      "protocol": "${row.protocol.toUpperCase()}",
-      "port": ${row.port}
+      "protocol": "${protocol}",
+      "port": ${port}
     }
   }'`;
   };
 
   const handleGenerateScript = () => {
+    if (csvRows.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Aucune ligne à traiter. Veuillez d'abord importer ou ajouter des données."
+      });
+      return;
+    }
+
+    // Valider les lignes avant génération
     const validRows = csvRows.filter(row => {
       const validation = validateRow(row);
       return validation.isValid;
-    }).slice(0, 5); // Limite à 5 lignes maximum
+    });
 
     if (validRows.length === 0) {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Aucune ligne valide trouvée"
+        description: "Aucune ligne valide trouvée. Veuillez corriger les erreurs avant de générer les scripts."
       });
       return;
     }
 
-    const scripts = validRows.map((row, index) => ({
+    // Limiter à 5 scripts maximum
+    const rowsToProcess = validRows.slice(0, 5);
+    
+    const scripts = rowsToProcess.map((row, index) => ({
       id: index + 1,
-      script: generateScriptForRow(row, index)
-    }));
+      script: generateScriptForRow(row)
+    })).filter(script => script.script !== '');
+
+    if (scripts.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de générer des scripts valides avec les données fournies."
+      });
+      return;
+    }
 
     setGeneratedScripts(scripts);
     
     toast({
       title: "Succès",
-      description: `${scripts.length} script(s) généré(s) avec succès`
+      description: `${scripts.length} script(s) généré(s) avec succès`,
+      duration: 3000,
     });
   };
 
