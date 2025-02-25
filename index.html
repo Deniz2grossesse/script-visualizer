@@ -1,438 +1,305 @@
-
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <base target="_top">
-  <title>Network Rules Generator</title>
+  <title>One Click Onboarding</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%);
-      min-height: 100vh;
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: 40px auto;
-      padding: 30px;
-      background: #2C3E50;
-      border-radius: 12px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-    }
-
-    h1 {
-      color: white;
-      font-size: 2.5em;
-      margin-bottom: 30px;
-      text-align: center;
-      font-weight: 600;
-    }
-
-    .info-box {
-      background: #34495E;
-      border: 1px solid #456789;
+      padding: 20px;
+      background-color: #2C3E50;
       color: #ECF0F1;
-      padding: 15px 20px;
-      border-radius: 8px;
-      margin-bottom: 30px;
-      font-size: 0.95em;
-      line-height: 1.5;
     }
-
-    .mandatory {
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    h1 {
+      text-align: center;
+      color: white;
       margin-bottom: 30px;
     }
-
-    .form-group {
-      margin-bottom: 15px;
-      background: #34495E;
-      border: 1px solid #456789;
+    
+    .alert {
+      background-color: rgba(231, 76, 60, 0.1);
+      border: 1px solid #E74C3C;
+      color: #ECF0F1;
       padding: 15px;
       border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-
+    
+    .alert-icon {
+      color: #E74C3C;
+      font-size: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
     label {
       display: block;
       margin-bottom: 5px;
       color: #ECF0F1;
-      font-weight: 500;
     }
-
+    
     .required {
       color: #E74C3C;
       margin-left: 4px;
     }
-
+    
     input[type="text"],
-    input[type="email"],
-    input[type="number"],
-    select {
+    input[type="email"] {
       width: 100%;
       padding: 12px;
-      border: 1px solid #456789;
+      border: 1px solid #34495E;
+      background-color: rgba(52, 73, 94, 0.5);
       border-radius: 8px;
-      font-size: 1em;
-      background: #3A5875;
       color: #ECF0F1;
-      transition: border-color 0.3s ease;
+      font-size: 16px;
+      box-sizing: border-box;
     }
-
-    input::placeholder {
-      color: #8FA3B5;
-    }
-
-    input:focus,
-    select:focus {
+    
+    input[type="text"]:focus,
+    input[type="email"]:focus {
       outline: none;
       border-color: #3498DB;
-      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-      background: #3E618F;
+      background-color: rgba(52, 73, 94, 0.8);
     }
-
-    .rules-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 20px;
-      padding: 25px;
-      background: #34495E;
-      border: 1px solid #456789;
-      border-radius: 12px;
-      margin-bottom: 30px;
+    
+    .check-icon {
+      color: #2ECC71;
+      margin-left: 10px;
+      display: none;
     }
-
-    .btn {
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: space-between;
+    }
+    
+    button {
       padding: 12px 24px;
       border: none;
       border-radius: 8px;
-      font-size: 0.95em;
-      font-weight: 600;
+      font-size: 16px;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: background-color 0.3s;
     }
-
-    .btn-primary {
-      background: #3498DB;
+    
+    .btn-add {
+      background-color: #2ECC71;
       color: white;
     }
-
-    .btn-primary:hover {
-      background: #2980B9;
+    
+    .btn-import {
+      background-color: #E67E22;
+      color: white;
     }
-
+    
     .btn-delete {
-      background: #E74C3C;
+      background-color: #E74C3C;
       color: white;
     }
-
+    
     .btn-resume {
-      background: #27AE60;
+      background-color: #3498DB;
       color: white;
     }
-
+    
     .btn-verify {
-      background: #F1C40F;
+      background-color: #F1C40F;
       color: #2C3E50;
     }
-
+    
     .btn-generate {
-      background: #3498DB;
+      background-color: #E67E22;
       color: white;
+      padding-right: 40px;
+      position: relative;
     }
-
-    .action-buttons {
+    
+    .btn-generate::after {
+      content: "→";
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    button:hover {
+      opacity: 0.9;
+    }
+    
+    .top-buttons {
       display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin: 30px 0;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-bottom: 20px;
     }
-
-    .add-button {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #27AE60;
-      color: white;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
+    
+    .input-group {
+      position: relative;
       display: flex;
       align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
     }
-
-    .add-button:hover {
-      background: #219A52;
-      transform: scale(1.05);
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        margin: 20px;
-        padding: 20px;
-      }
-
-      .action-buttons {
-        flex-direction: column;
-      }
-
-      .btn {
-        width: 100%;
-      }
-
-      .rules-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    #output {
+    
+    .valid-icon {
+      position: absolute;
+      right: 12px;
+      color: #2ECC71;
       display: none;
     }
-
-    .script-block {
-      background: #34495E;
-      border: 1px solid #456789;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      padding: 15px;
-    }
-
-    .script-header {
-      background: #2C3E50;
-      padding: 15px;
-      border-radius: 8px 8px 0 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: white;
-    }
-
-    .script-output {
-      width: 100%;
-      height: 150px;
-      padding: 10px;
-      border: none;
-      background: #2C3E50;
-      color: white;
-      font-family: monospace;
-      resize: vertical;
-      border-radius: 0 0 8px 8px;
+    
+    .is-valid .valid-icon {
+      display: block;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Network Rules Generator</h1>
+    <h1>One Click Onboarding</h1>
     
-    <div class="info-box">
-      <strong>Note:</strong> Les champs marqués d'un astérisque (*) sont obligatoires.
+    <div class="alert">
+      <span class="alert-icon">⚠️</span>
+      <span>These three fields are mandatory, you cannot start entering them without having filled them in.</span>
     </div>
-
-    <div class="mandatory">
-      <div class="form-group">
-        <label>Department <span class="required">*</span></label>
-        <input type="text" id="department" maxlength="4" required>
-      </div>
-
-      <div class="form-group">
-        <label>Project/Application Code <span class="required">*</span></label>
-        <input type="text" id="projectCode" maxlength="4" required>
-      </div>
-
-      <div class="form-group">
-        <label>Requester's Email <span class="required">*</span></label>
-        <input type="email" id="email" required>
+    
+    <div class="top-buttons">
+      <button class="btn-add" onclick="addNewLine()">
+        + Ajouter une ligne
+      </button>
+      <button class="btn-import" onclick="importCSV()">
+        ⬆️ Importer CSV
+      </button>
+    </div>
+    
+    <div class="form-group">
+      <label>Department <span class="required">*</span></label>
+      <div class="input-group">
+        <input type="text" id="department" maxlength="4" onchange="validateField('department')" placeholder="Department (1-4 chars)">
+        <span class="valid-icon">✓</span>
       </div>
     </div>
-
-    <div id="rulesContainer" class="rules-grid">
-      <!-- Les règles seront ajoutées ici dynamiquement -->
+    
+    <div class="form-group">
+      <label>Project/Application Code <span class="required">*</span></label>
+      <div class="input-group">
+        <input type="text" id="projectCode" maxlength="4" onchange="validateField('projectCode')" placeholder="Project Code (1-4 chars)">
+        <span class="valid-icon">✓</span>
+      </div>
     </div>
-
+    
+    <div class="form-group">
+      <label>Requester's Email <span class="required">*</span></label>
+      <div class="input-group">
+        <input type="email" id="email" onchange="validateField('email')" placeholder="Email address">
+        <span class="valid-icon">✓</span>
+      </div>
+    </div>
+    
     <div class="action-buttons">
-      <button class="btn add-button" onclick="addRule()">+</button>
-      <button class="btn btn-delete" onclick="deleteRules()">Delete</button>
-      <button class="btn btn-resume" onclick="resumeDraft()">Resume Draft</button>
-      <button class="btn btn-verify" onclick="verifyRules()">Verify</button>
-      <button class="btn btn-generate" onclick="generateScripts()">Generate Scripts</button>
-    </div>
-
-    <div id="output">
-      <!-- Les scripts générés seront affichés ici -->
+      <button class="btn-delete" onclick="deleteForm()">Delete</button>
+      <button class="btn-resume" onclick="resumeDraft()">Resume Draft</button>
+      <button class="btn-verify" onclick="verifyFields()">Verify</button>
+      <button class="btn-generate" onclick="generateScripts()">Generate Scripts</button>
     </div>
   </div>
-
+  
   <script>
-    let rules = [];
-
-    function addRule() {
-      const rule = {
-        sourceIP: '',
-        destIP: '',
-        protocol: 'tcp',
-        service: '',
-        port: '',
-        authentication: 'no',
-        encryption: 'no',
-        classification: 'yellow'
-      };
-      rules.push(rule);
-      refreshRulesDisplay();
-    }
-
-    function createRuleElement(rule, index) {
-      const ruleDiv = document.createElement('div');
-      ruleDiv.className = 'rule';
-      ruleDiv.innerHTML = `
-        <div class="form-group">
-          <label>Source IP</label>
-          <input type="text" value="${rule.sourceIP}" onchange="updateRule(${index}, 'sourceIP', this.value)">
-        </div>
-        <div class="form-group">
-          <label>Destination IP</label>
-          <input type="text" value="${rule.destIP}" onchange="updateRule(${index}, 'destIP', this.value)">
-        </div>
-        <div class="form-group">
-          <label>Protocol</label>
-          <select onchange="updateRule(${index}, 'protocol', this.value)">
-            <option value="tcp" ${rule.protocol === 'tcp' ? 'selected' : ''}>TCP</option>
-            <option value="udp" ${rule.protocol === 'udp' ? 'selected' : ''}>UDP</option>
-            <option value="icmp" ${rule.protocol === 'icmp' ? 'selected' : ''}>ICMP</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Service</label>
-          <input type="text" value="${rule.service}" onchange="updateRule(${index}, 'service', this.value)">
-        </div>
-        <div class="form-group">
-          <label>Port</label>
-          <input type="number" min="1" max="65535" value="${rule.port}" onchange="updateRule(${index}, 'port', this.value)">
-        </div>
-      `;
-      return ruleDiv;
-    }
-
-    function refreshRulesDisplay() {
-      const container = document.getElementById('rulesContainer');
-      container.innerHTML = '';
-      rules.forEach((rule, index) => {
-        container.appendChild(createRuleElement(rule, index));
-      });
-    }
-
-    function updateRule(index, field, value) {
-      rules[index][field] = value;
-    }
-
-    function verifyRules() {
-      const department = document.getElementById('department').value;
-      const projectCode = document.getElementById('projectCode').value;
-      const email = document.getElementById('email').value;
-
-      if (!department || !projectCode || !email) {
-        alert('Veuillez remplir tous les champs obligatoires');
-        return;
+    function validateField(fieldId) {
+      const field = document.getElementById(fieldId);
+      const inputGroup = field.parentElement;
+      let isValid = false;
+      
+      switch(fieldId) {
+        case 'department':
+        case 'projectCode':
+          isValid = field.value.length > 0 && field.value.length <= 4;
+          break;
+        case 'email':
+          isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value);
+          break;
       }
-
-      // Vérification basique des règles
-      let hasErrors = false;
-      rules.forEach((rule, index) => {
-        if (!validateIP(rule.sourceIP)) {
-          alert(`Règle ${index + 1}: IP source invalide`);
-          hasErrors = true;
-        }
-        if (!validateIP(rule.destIP)) {
-          alert(`Règle ${index + 1}: IP destination invalide`);
-          hasErrors = true;
-        }
-        if (!validatePort(rule.port)) {
-          alert(`Règle ${index + 1}: Port invalide`);
-          hasErrors = true;
+      
+      if (isValid) {
+        inputGroup.classList.add('is-valid');
+      } else {
+        inputGroup.classList.remove('is-valid');
+      }
+      
+      return isValid;
+    }
+    
+    function verifyFields() {
+      const fields = ['department', 'projectCode', 'email'];
+      let allValid = true;
+      
+      fields.forEach(field => {
+        if (!validateField(field)) {
+          allValid = false;
         }
       });
-
-      if (!hasErrors) {
-        alert('Toutes les règles sont valides');
+      
+      if (allValid) {
+        alert('All fields are valid!');
+      } else {
+        alert('Please check all mandatory fields');
       }
     }
-
-    function validateIP(ip) {
-      const pattern = /^(\d{1,3}\.){3}\d{1,3}$/;
-      if (!pattern.test(ip)) return false;
-      return ip.split('.').every(num => {
-        const n = parseInt(num);
-        return n >= 0 && n <= 255;
-      });
+    
+    function addNewLine() {
+      // Implémenter l'ajout de nouvelle ligne
+      console.log('Adding new line...');
     }
-
-    function validatePort(port) {
-      const n = parseInt(port);
-      return n > 0 && n < 65536;
+    
+    function importCSV() {
+      // Implémenter l'import CSV
+      console.log('Importing CSV...');
     }
-
+    
+    function deleteForm() {
+      if (confirm('Are you sure you want to delete all entries?')) {
+        document.getElementById('department').value = '';
+        document.getElementById('projectCode').value = '';
+        document.getElementById('email').value = '';
+        document.querySelectorAll('.input-group').forEach(group => {
+          group.classList.remove('is-valid');
+        });
+      }
+    }
+    
+    function resumeDraft() {
+      // Implémenter la reprise du brouillon
+      console.log('Resuming draft...');
+    }
+    
     function generateScripts() {
-      const department = document.getElementById('department').value;
-      const projectCode = document.getElementById('projectCode').value;
-      const email = document.getElementById('email').value;
-
-      if (!department || !projectCode || !email) {
-        alert('Veuillez remplir tous les champs obligatoires');
+      if (!verifyFields()) {
+        alert('Please fill all mandatory fields correctly before generating scripts');
         return;
       }
-
-      const output = document.getElementById('output');
-      output.innerHTML = '';
-      output.style.display = 'block';
-
-      rules.forEach((rule, index) => {
-        const scriptTemplate = generateScriptTemplate(rule);
-        const scriptBlock = document.createElement('div');
-        scriptBlock.className = 'script-block';
-        scriptBlock.innerHTML = `
-          <div class="script-header">
-            <span>Script ${index + 1}</span>
-          </div>
-          <textarea class="script-output" readonly>${scriptTemplate}</textarea>
-        `;
-        output.appendChild(scriptBlock);
-      });
+      // Implémenter la génération des scripts
+      console.log('Generating scripts...');
     }
-
-    function generateScriptTemplate(rule) {
-      return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
--H "Authorization: Bearer <YOUR_TOKEN>" \\
--H "Content-Type: application/json" \\
--d '{
-  "source": {
-    "ip": "${rule.sourceIP}"
-  },
-  "destination": {
-    "ip": "${rule.destIP}"
-  },
-  "service": {
-    "protocol": "${rule.protocol.toUpperCase()}",
-    "port": ${rule.port},
-    "name": "${rule.service}"
-  },
-  "authentication": "${rule.authentication}",
-  "encryption": "${rule.encryption}",
-  "classification": "${rule.classification}"
-}'`;
-    }
-
-    function deleteRules() {
-      if (confirm('Êtes-vous sûr de vouloir supprimer toutes les règles ?')) {
-        rules = [];
-        refreshRulesDisplay();
-        document.getElementById('output').style.display = 'none';
-      }
-    }
-
-    // Ajouter une première règle au chargement
-    window.onload = addRule;
   </script>
 </body>
 </html>
