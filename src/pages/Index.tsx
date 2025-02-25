@@ -243,68 +243,46 @@ const Index = () => {
   };
 
   const handleGenerateScript = () => {
-    const department = (document.getElementById('department') as HTMLInputElement)?.value;
-    const projectCode = (document.getElementById('projectCode') as HTMLInputElement)?.value;
-    const email = (document.getElementById('email') as HTMLInputElement)?.value;
-
-    if (!department || !projectCode || !email) {
+    const currentRowData = csvRows[currentRow - 1];
+    
+    if (!currentRowData) {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Veuillez remplir tous les champs obligatoires"
+        description: "Aucune ligne sélectionnée"
       });
       return;
     }
 
-    // Validation des champs de règle réseau
-    const formData = {
-      sourceIP: (document.getElementById('sourceIP') as HTMLInputElement)?.value,
-      destIP: (document.getElementById('destIP') as HTMLInputElement)?.value,
-      protocol: (document.getElementById('protocol') as HTMLSelectElement)?.value,
-      service: (document.getElementById('service') as HTMLInputElement)?.value,
-      port: (document.getElementById('port') as HTMLInputElement)?.value,
-      authentication: (document.getElementById('authentication') as HTMLSelectElement)?.value,
-      encryption: (document.getElementById('encryption') as HTMLSelectElement)?.value,
-      classification: (document.getElementById('classification') as HTMLSelectElement)?.value,
-      appCode: (document.getElementById('appCode') as HTMLInputElement)?.value
-    };
-
-    if (!formData.sourceIP || !formData.destIP || !formData.service || !formData.port) {
+    if (!validateIP(currentRowData.sourceIP) || !validateIP(currentRowData.destIP) || 
+        !validatePort(currentRowData.port) || !currentRowData.service) {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Veuillez remplir tous les champs de la règle réseau"
+        description: "La ligne contient des erreurs de validation"
       });
       return;
     }
 
-    // Au lieu d'utiliser google.script.run, utilisons un état local pour le moment
-    // Simulons la génération du script
     const generatedScriptContent = `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
--H "Authorization: Bearer <YOUR_TOKEN>" \\
--H "Content-Type: application/json" \\
--d '{
-  "source": {
-    "ip": "${formData.sourceIP}",
-    "mask": "255.255.255.0"
-  },
-  "destination": {
-    "ip": "${formData.destIP}"
-  },
-  "service": {
-    "protocol": "${formData.protocol.toUpperCase()}",
-    "port": ${formData.port},
-    "name": "${formData.service}"
-  },
-  "authentication": "${formData.authentication}",
-  "encryption": "${formData.encryption}",
-  "classification": "${formData.classification}",
-  "appCode": "${formData.appCode}"
-}'`;
+  -H "Authorization: Bearer <TON_TOKEN>" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "source": {
+      "ip": "${currentRowData.sourceIP.split('/')[0]}",
+      "mask": "255.255.255.248"
+    },
+    "destination": {
+      "ip": "${currentRowData.destIP}"
+    },
+    "service": {
+      "protocol": "${currentRowData.protocol.toUpperCase()}",
+      "port": ${currentRowData.port}
+    }
+  }'`;
 
     setGeneratedScript(generatedScriptContent);
-    setCurrentRow(prev => prev + 1);
-
+    
     toast({
       title: "Succès",
       description: "Script généré avec succès"
@@ -592,11 +570,16 @@ const Index = () => {
               <FileCode className="w-5 h-5" />
               Generated Script
             </h3>
-            <textarea
-              value={generatedScript}
-              readOnly
-              className="w-full h-32 p-4 rounded-md font-mono text-sm bg-[#2C3E50] border border-[#BDC3C7]/30 shadow-input focus:border-primary transition-colors text-white"
-            />
+            <div className="flex items-start gap-4">
+              <div className="bg-[#2C3E50] rounded-md px-3 py-2 text-white">
+                ID: {currentRow}
+              </div>
+              <textarea
+                value={generatedScript}
+                readOnly
+                className="flex-1 h-48 p-4 rounded-md font-mono text-sm bg-[#2C3E50] border border-[#BDC3C7]/30 shadow-input focus:border-primary transition-colors text-white"
+              />
+            </div>
             <div className="mt-4 flex justify-end">
               <Button 
                 onClick={() => navigator.clipboard.writeText(generatedScript)}
