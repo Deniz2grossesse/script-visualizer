@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -153,22 +152,15 @@ const Index = () => {
 
           console.log(`Données extraites pour la nouvelle ligne:`, newRow);
 
-          // Vérifier si la ligne contient des données réelles (pas juste des cellules vides)
-          const hasData = Object.values(newRow).some(value => value.trim() !== '');
-          
-          if (hasData) {
-            const validation = validateRow(newRow);
-            if (!validation.isValid) {
-              errorCount++;
-              console.log(`Erreurs de validation pour la ligne ${index + 1}:`, validation.errors);
-            }
-            
-            newRow.isValid = validation.isValid;
-            newRow.errors = validation.errors;
-            newRows.push(newRow);
-          } else {
-            console.log(`Ligne ${index + 1} ignorée car vide`);
+          const validation = validateRow(newRow);
+          if (!validation.isValid) {
+            errorCount++;
+            console.log(`Erreurs de validation pour la ligne ${index + 1}:`, validation.errors);
           }
+          
+          newRow.isValid = validation.isValid;
+          newRow.errors = validation.errors;
+          newRows.push(newRow);
         } else {
           console.log(`Ligne ${index + 1} ignorée car pas assez de colonnes`);
         }
