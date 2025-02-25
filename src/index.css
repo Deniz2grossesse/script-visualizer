@@ -1,4 +1,3 @@
-
 /* Styles de base */
 body {
   font-family: 'Arial', sans-serif;
@@ -45,7 +44,7 @@ h1 {
 label {
   display: block;
   margin-bottom: 8px;
-  color: #BDC3C7;
+  color: #495057;
   font-weight: 500;
 }
 
