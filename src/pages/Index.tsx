@@ -16,34 +16,22 @@ const Index = () => {
         </div>
 
         <div className="flex justify-end gap-4 mb-6">
-          <Button 
-            type="button"
-            className="flex items-center gap-2 bg-[#2ECC71] hover:bg-[#27AE60] text-white"
-            onClick={() => {}} // Bouton complètement inactif
-          >
+          <div className="flex items-center gap-2 px-4 py-2 bg-[#2ECC71] hover:bg-[#27AE60] text-white rounded-md transition-colors cursor-not-allowed opacity-50">
             <Plus className="w-4 h-4" />
             Ajouter une ligne
-          </Button>
+          </div>
           
-          <label className="flex items-center gap-2 cursor-pointer px-4 py-2 bg-[#E67E22] text-white rounded-md hover:bg-[#D35400] transition-colors">
+          <div className="flex items-center gap-2 px-4 py-2 bg-[#E67E22] text-white rounded-md cursor-not-allowed opacity-50">
             <Upload className="w-4 h-4" />
             Importer CSV
-            <input
-              type="file"
-              accept=".csv"
-              className="hidden"
-            />
-          </label>
+          </div>
         </div>
 
         <div className="flex justify-end gap-3 mt-4">
-          <Button 
-            type="button"
-            className="bg-[#E67E22] hover:bg-[#D35400] text-white border-none transition-colors flex items-center gap-2"
-          >
+          <div className="flex items-center gap-2 px-4 py-2 bg-[#E67E22] text-white rounded-md cursor-not-allowed opacity-50">
             Generate Scripts
             <ArrowRight className="w-4 h-4" />
-          </Button>
+          </div>
         </div>
       </div>
     </div>
