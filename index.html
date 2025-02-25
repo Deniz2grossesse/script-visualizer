@@ -330,7 +330,7 @@
         <span>+</span>
         Ajouter une ligne
       </button>
-      <button class="btn-import" onclick="handleCSVImport()">
+      <button class="btn-import" onclick="importCSVFile()">
         <span>↓</span>
         Importer CSV
       </button>
@@ -413,6 +413,79 @@
       document.getElementById('loadingMessage').classList.remove('visible');
     }
 
+    function importCSVFile() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.csv';
+      
+      input.onchange = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        showLoading();
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          const content = e.target.result;
+          google.script.run
+            .withSuccessHandler(handleImportSuccess)
+            .withFailureHandler(handleImportError)
+            .importCSV(content);
+        };
+        
+        reader.onerror = function() {
+          hideLoading();
+          alert('Erreur lors de la lecture du fichier');
+        };
+        
+        reader.readAsText(file);
+      };
+      
+      input.click();
+    }
+
+    function handleImportSuccess(response) {
+      hideLoading();
+      if (!response.success) {
+        alert('Erreur lors de l\'import: ' + response.message);
+        return;
+      }
+
+      // Mettre à jour uniquement les données et l'affichage du tableau
+      currentRules = response.data;
+      displayImportedRules();
+    }
+
+    function handleImportError(error) {
+      hideLoading();
+      console.error('Erreur lors de l\'import:', error);
+      alert('Une erreur est survenue lors de l\'import: ' + error.toString());
+    }
+
+    function displayImportedRules() {
+      const table = document.getElementById('rulesTable');
+      const tbody = table.querySelector('tbody');
+      tbody.innerHTML = '';
+      
+      currentRules.forEach(rule => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><input type="text" value="${rule.sourceIP}" readonly></td>
+          <td><input type="text" value="${rule.destIP}" readonly></td>
+          <td><input type="text" value="${rule.protocol}" readonly></td>
+          <td><input type="text" value="${rule.service}" readonly></td>
+          <td><input type="text" value="${rule.port}" readonly></td>
+          <td><input type="text" value="${rule.authentication}" readonly></td>
+          <td><input type="text" value="${rule.flowEncryption}" readonly></td>
+          <td><input type="text" value="${rule.classification}" readonly></td>
+          <td><input type="text" value="${rule.appCode}" readonly></td>
+        `;
+        tbody.appendChild(tr);
+      });
+      
+      table.style.display = 'table';
+    }
+
     function handleDelete() {
       if (confirm('Voulez-vous vraiment supprimer toutes les règles ?')) {
         document.getElementById('department').value = '';
@@ -425,68 +498,6 @@
         
         document.getElementById('scriptsOutput').style.display = 'none';
       }
-    }
-
-    function handleCSVImport() {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.csv';
-      input.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (file) {
-          showLoading();
-          const reader = new FileReader();
-          
-          reader.onload = (e) => {
-            const content = e.target.result;
-            google.script.run
-              .withSuccessHandler((response) => {
-                hideLoading();
-                if (response.success) {
-                  currentRules = response.data;
-                  const table = document.getElementById('rulesTable');
-                  const tbody = table.querySelector('tbody');
-                  tbody.innerHTML = '';
-                  
-                  currentRules.forEach((rule) => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                      <td><input type="text" value="${rule.sourceIP}" readonly></td>
-                      <td><input type="text" value="${rule.destIP}" readonly></td>
-                      <td><input type="text" value="${rule.protocol}" readonly></td>
-                      <td><input type="text" value="${rule.service}" readonly></td>
-                      <td><input type="text" value="${rule.port}" readonly></td>
-                      <td><input type="text" value="${rule.authentication}" readonly></td>
-                      <td><input type="text" value="${rule.flowEncryption}" readonly></td>
-                      <td><input type="text" value="${rule.classification}" readonly></td>
-                      <td><input type="text" value="${rule.appCode}" readonly></td>
-                    `;
-                    tbody.appendChild(tr);
-                  });
-                  
-                  table.style.display = 'table';
-                } else {
-                  alert('Erreur lors de l\'import: ' + response.message);
-                }
-              })
-              .withFailureHandler((error) => {
-                hideLoading();
-                console.error('Erreur:', error);
-                alert('Une erreur est survenue lors de l\'import: ' + error.toString());
-              })
-              .importCSV(content);
-          };
-          
-          reader.onerror = (error) => {
-            hideLoading();
-            console.error('Erreur lors de la lecture du fichier:', error);
-            alert('Erreur lors de la lecture du fichier');
-          };
-
-          reader.readAsText(file);
-        }
-      });
-      input.click();
     }
 
     function handleVerify() {
@@ -542,101 +553,6 @@
         .generateScripts(formData);
     }
 
-    function importCSV() {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.csv';
-      input.addEventListener('change', handleFileSelect);
-      input.click();
-    }
-
-    function handleFileSelect(event) {
-      const file = event.target.files[0];
-      if (file) {
-        showLoading();
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-          const content = e.target.result;
-          
-          google.script.run
-            .withSuccessHandler(function(response) {
-              hideLoading();
-              handleCSVSuccess(response);
-            })
-            .withFailureHandler(function(error) {
-              hideLoading();
-              handleError(error);
-            })
-            .importCSV(content);
-        };
-        
-        reader.onerror = function(e) {
-          hideLoading();
-          console.error("Erreur lors de la lecture du fichier:", e);
-          alert("Erreur lors de la lecture du fichier");
-        };
-
-        reader.readAsText(file);
-      }
-    }
-
-    function handleCSVSuccess(response) {
-      if (response.success) {
-        currentRules = response.data;
-        displayRules();
-        alert(response.message);
-      } else {
-        alert('Erreur lors de l\'import: ' + response.message);
-      }
-    }
-
-    function displayRules() {
-      const table = document.getElementById('rulesTable');
-      const tbody = table.querySelector('tbody');
-      tbody.innerHTML = '';
-      
-      currentRules.forEach((rule, index) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><input type="text" value="${rule.sourceIP}" onchange="updateRule(${index}, 'sourceIP', this.value)"></td>
-          <td><input type="text" value="${rule.destIP}" onchange="updateRule(${index}, 'destIP', this.value)"></td>
-          <td>
-            <select onchange="updateRule(${index}, 'protocol', this.value)">
-              <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
-              <option value="UDP" ${rule.protocol === 'UDP' ? 'selected' : ''}>UDP</option>
-              <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
-            </select>
-          </td>
-          <td><input type="text" value="${rule.service}" onchange="updateRule(${index}, 'service', this.value)"></td>
-          <td><input type="text" value="${rule.port}" onchange="updateRule(${index}, 'port', this.value)"></td>
-          <td>
-            <select onchange="updateRule(${index}, 'authentication', this.value)">
-              <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
-              <option value="No" ${rule.authentication === 'No' ? 'selected' : ''}>No</option>
-            </select>
-          </td>
-          <td>
-            <select onchange="updateRule(${index}, 'flowEncryption', this.value)">
-              <option value="Yes" ${rule.flowEncryption === 'Yes' ? 'selected' : ''}>Yes</option>
-              <option value="No" ${rule.flowEncryption === 'No' ? 'selected' : ''}>No</option>
-            </select>
-          </td>
-          <td>
-            <select onchange="updateRule(${index}, 'classification', this.value)">
-              <option value="Yellow" ${rule.classification === 'Yellow' ? 'selected' : ''}>Yellow</option>
-              <option value="Amber" ${rule.classification === 'Amber' ? 'selected' : ''}>Amber</option>
-              <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
-            </select>
-          </td>
-          <td><input type="text" value="${rule.appCode}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
-        `;
-        tbody.appendChild(tr);
-      });
-      
-      table.style.display = 'table';
-    }
-
     function handleScriptsGenerated(response) {
       if (response.success) {
         const container = document.getElementById('scriptsContainer');
@@ -657,25 +573,6 @@
       } else {
         alert('Erreur lors de la génération: ' + response.message);
       }
-    }
-
-    function updateRule(index, field, value) {
-      currentRules[index][field] = value;
-    }
-
-    function addNewLine() {
-      currentRules.push({
-        sourceIP: '',
-        destIP: '',
-        protocol: 'TCP',
-        service: '',
-        port: '',
-        authentication: 'No',
-        flowEncryption: 'No',
-        classification: 'Yellow',
-        appCode: ''
-      });
-      displayRules();
     }
 
     function copyScript(button) {
