@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,33 +10,35 @@
       font-family: 'Roboto', Arial, sans-serif;
       margin: 0;
       padding: 20px;
-      background: #9b87f5;
-      color: #333;
+      background: #2c3e50;
+      color: #fff;
     }
     
     .container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 30px;
-      background: #ffffff;
-      border-radius: 15px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+      background: #2c3e50;
+      border-radius: 8px;
     }
     
     h1 {
       text-align: center;
-      color: #7E69AB;
+      color: #ffffff;
       margin-bottom: 30px;
       font-size: 28px;
-      font-weight: 600;
+      font-weight: 500;
+      background: #2c3e50;
+      padding: 20px;
+      border-radius: 8px;
     }
     
     .alert {
-      background-color: #f8f0ff;
-      border: 1px solid #9b87f5;
-      color: #6E59A5;
+      background-color: #BDC3C7;
+      border: 1px solid #f39c12;
+      color: #ffffff;
       padding: 16px;
-      border-radius: 12px;
+      border-radius: 6px;
       margin-bottom: 30px;
       display: flex;
       align-items: center;
@@ -44,7 +47,7 @@
     }
     
     .alert-icon {
-      color: #7E69AB;
+      color: #f39c12;
       font-size: 18px;
     }
     
@@ -55,13 +58,13 @@
     label {
       display: block;
       margin-bottom: 8px;
-      color: #6E59A5;
+      color: #ffffff;
       font-size: 14px;
       font-weight: 500;
     }
     
     .required {
-      color: #9b87f5;
+      color: #f39c12;
       margin-left: 4px;
     }
     
@@ -69,25 +72,23 @@
     input[type="email"] {
       width: 100%;
       padding: 12px;
-      border: 2px solid #e9e3ff;
-      background-color: #ffffff;
-      border-radius: 10px;
-      color: #6E59A5;
+      border: 1px solid #BDC3C7;
+      background-color: #34495E;
+      border-radius: 6px;
+      color: #ffffff;
       font-size: 14px;
       box-sizing: border-box;
-      transition: all 0.2s;
     }
     
     input[type="text"]:focus,
     input[type="email"]:focus {
       outline: none;
-      border-color: #9b87f5;
-      box-shadow: 0 0 0 3px rgba(155, 135, 245, 0.15);
-      background-color: #ffffff;
+      border-color: #E67E22;
+      background-color: #34495E;
     }
     
     .check-icon {
-      color: #9b87f5;
+      color: #2ecc71;
       margin-left: 10px;
       display: none;
     }
@@ -109,40 +110,32 @@
     button {
       padding: 12px 24px;
       border: none;
-      border-radius: 10px;
+      border-radius: 6px;
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 8px;
-      background: #9b87f5;
       color: white;
       width: fit-content;
     }
     
     .btn-delete {
-      background-color: #fff0f0;
-      color: #ff5757;
-      border: 1px solid #ffcece;
+      background-color: #e74c3c;
     }
     
     .btn-resume {
-      background-color: #f0f7ff;
-      color: #3b82f6;
-      border: 1px solid #bfdbfe;
+      background-color: #bdc3c7;
+      color: #2c3e50;
     }
     
     .btn-verify {
-      background-color: #9b87f5;
-      color: white;
+      background-color: #3498db;
     }
     
     .btn-generate {
-      background: linear-gradient(45deg, #7E69AB, #9b87f5);
-      color: white;
-      padding-right: 36px;
-      position: relative;
+      background-color: #e67e22;
     }
     
     .top-buttons {
@@ -157,11 +150,11 @@
     }
     
     .btn-add {
-      background: #9b87f5;
+      background: #2ecc71;
     }
     
     .btn-import {
-      background: #7E69AB;
+      background: #f39c12;
     }
     
     .input-group {
@@ -173,7 +166,7 @@
     .valid-icon {
       position: absolute;
       right: 12px;
-      color: #9b87f5;
+      color: #2ecc71;
       display: none;
       font-size: 18px;
     }
@@ -183,12 +176,25 @@
     }
     
     .mandatory-section {
-      max-width: 600px;
+      max-width: 800px;
       margin: 0 auto 40px;
       padding: 30px;
-      background: #f8f7ff;
-      border-radius: 15px;
-      border: 1px solid #e9e3ff;
+      background: #34495E;
+      border-radius: 8px;
+      border: 1px solid #BDC3C7;
+    }
+    
+    footer {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      padding: 10px;
+      background: #000;
+      color: #fff;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
   </style>
 </head>
@@ -210,7 +216,7 @@
     </div>
 
     <div class="alert">
-      <span class="alert-icon">⚠️</span>
+      <span class="alert-icon">🔶</span>
       <span>These three fields are mandatory, you cannot start entering them without having filled them in.</span>
     </div>
 
@@ -225,7 +231,7 @@
             onchange="validateField('department')" 
             placeholder="Department (1-4 chars)"
           >
-          <span class="valid-icon">✓</span>
+          <span class="valid-icon">✅</span>
         </div>
       </div>
 
@@ -239,7 +245,7 @@
             onchange="validateField('projectCode')" 
             placeholder="Project Code (1-4 chars)"
           >
-          <span class="valid-icon">✓</span>
+          <span class="valid-icon">✅</span>
         </div>
       </div>
 
@@ -252,7 +258,7 @@
             onchange="validateField('email')" 
             placeholder="Email address"
           >
-          <span class="valid-icon">✓</span>
+          <span class="valid-icon">✅</span>
         </div>
       </div>
     </div>
@@ -279,6 +285,11 @@
       </button>
     </div>
   </div>
+
+  <footer>
+    <span>❤️</span>
+    Edit with Lovable
+  </footer>
 
   <script>
     function validateField(fieldId) {
