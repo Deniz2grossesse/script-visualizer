@@ -265,9 +265,8 @@ const Index = () => {
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                <SelectItem value="basic">Basic</SelectItem>
-                <SelectItem value="oauth">OAuth</SelectItem>
+                <SelectItem value="yes">YES</SelectItem>
+                <SelectItem value="no">NON</SelectItem>
               </SelectContent>
             </Select>
             <Button 
@@ -288,9 +287,8 @@ const Index = () => {
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                <SelectItem value="ssl">SSL/TLS</SelectItem>
-                <SelectItem value="ipsec">IPSec</SelectItem>
+                <SelectItem value="yes">YES</SelectItem>
+                <SelectItem value="no">NON</SelectItem>
               </SelectContent>
             </Select>
             <Button 
@@ -311,9 +309,9 @@ const Index = () => {
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="public">Public</SelectItem>
-                <SelectItem value="internal">Internal</SelectItem>
-                <SelectItem value="confidential">Confidential</SelectItem>
+                <SelectItem value="yellow">YELLOW</SelectItem>
+                <SelectItem value="amber">AMBER</SelectItem>
+                <SelectItem value="red">RED</SelectItem>
               </SelectContent>
             </Select>
             <Button 
