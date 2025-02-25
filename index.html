@@ -425,58 +425,68 @@
 
     function handleFileSelect(event) {
       const file = event.target.files[0];
-      if (file) {
-        showLoading();
-        console.log("Fichier sélectionné:", file.name);
-        const reader = new FileReader();
-          
-          reader.onload = function(e) {
-            console.log("Fichier lu");
-            const content = e.target.result;
-            console.log("Contenu du fichier (premiers caractères):", content.substring(0, 100));
-            
-            google.script.run
-              .withSuccessHandler(function(response) {
-                hideLoading();
-                console.log("Réponse du serveur:", response);
-                if (response.success) {
-                  console.log("Données reçues:", response.data);
-                  displayRules(response.data);
-                  alert(response.message);
-                } else {
-                  console.error("Erreur:", response.message);
-                  alert("Erreur: " + response.message);
-                }
-              })
-              .withFailureHandler(function(error) {
-                hideLoading();
-                console.error("Erreur:", error);
-                alert("Erreur lors de l'import: " + error.toString());
-              })
-              .importCSV(content);
-          };
-          
-          reader.onerror = function(e) {
-            hideLoading();
-            console.error("Erreur lors de la lecture du fichier:", e);
-            alert("Erreur lors de la lecture du fichier");
-          };
+      if (!file) return;
 
-        reader.readAsText(file);
-      }
+      showLoading();
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        try {
+          const content = e.target.result;
+          const lines = content.split('\n').slice(11); // Commence à la ligne 12
+          const newRules = [];
+          
+          lines.forEach((line) => {
+            if (line.trim() === '') return;
+            
+            const columns = line.split(',').map(col => col.trim());
+            if (columns.length >= 9) {
+              newRules.push({
+                sourceIP: columns[3] || '',
+                destIP: columns[6] || '',
+                protocol: columns[7] || 'TCP',
+                service: columns[8] || '',
+                port: columns[9] || '',
+                authentication: columns[10]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
+                flowEncryption: columns[11]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
+                classification: columns[12]?.toLowerCase() === 'yellow' ? 'Yellow' : 
+                              columns[12]?.toLowerCase() === 'amber' ? 'Amber' : 
+                              columns[12]?.toLowerCase() === 'red' ? 'Red' : 'Yellow',
+                appCode: columns[13] || ''
+              });
+            }
+          });
+
+          // Mise à jour uniquement des données et de l'affichage du tableau
+          currentRules = newRules;
+          displayImportedRules(newRules);
+          hideLoading();
+          alert(`${newRules.length} règles importées avec succès`);
+        } catch (error) {
+          console.error('Erreur lors du traitement du fichier:', error);
+          hideLoading();
+          alert('Erreur lors du traitement du fichier CSV');
+        }
+      };
+      
+      reader.onerror = function() {
+        hideLoading();
+        alert('Erreur lors de la lecture du fichier');
+      };
+
+      reader.readAsText(file);
     }
 
-    function displayRules(rules) {
-      console.log("Affichage des règles:", rules);
+    function displayImportedRules(rules) {
       const table = document.getElementById('rulesTable');
       const tbody = table.querySelector('tbody');
       tbody.innerHTML = '';
-        
+      
       rules.forEach((rule, index) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)"></td>
-          <td><input type="text" value="${rule.destIP || ''}" onchange="updateRule(${index}, 'destIP', this.value)"></td>
+          <td><input type="text" value="${rule.sourceIP}" onchange="updateRule(${index}, 'sourceIP', this.value)"></td>
+          <td><input type="text" value="${rule.destIP}" onchange="updateRule(${index}, 'destIP', this.value)"></td>
           <td>
             <select onchange="updateRule(${index}, 'protocol', this.value)">
               <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
@@ -484,8 +494,8 @@
               <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
             </select>
           </td>
-          <td><input type="text" value="${rule.service || ''}" onchange="updateRule(${index}, 'service', this.value)"></td>
-          <td><input type="text" value="${rule.port || ''}" onchange="updateRule(${index}, 'port', this.value)"></td>
+          <td><input type="text" value="${rule.service}" onchange="updateRule(${index}, 'service', this.value)"></td>
+          <td><input type="text" value="${rule.port}" onchange="updateRule(${index}, 'port', this.value)"></td>
           <td>
             <select onchange="updateRule(${index}, 'authentication', this.value)">
               <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
@@ -505,11 +515,11 @@
               <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
             </select>
           </td>
-          <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
+          <td><input type="text" value="${rule.appCode}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
         `;
         tbody.appendChild(tr);
       });
-        
+      
       table.style.display = 'table';
     }
 
@@ -529,43 +539,23 @@
         classification: 'Yellow',
         appCode: ''
       });
-      displayRules(currentRules);
+      displayImportedRules(currentRules);
     }
 
     function deleteForm() {
       if (confirm('Voulez-vous vraiment supprimer le formulaire ?')) {
-        google.script.run
-          .withSuccessHandler(() => {
-            document.getElementById('department').value = '';
-            document.getElementById('projectCode').value = '';
-            document.getElementById('email').value = '';
-            currentRules = [];
-            document.getElementById('rulesTable').style.display = 'none';
-            document.getElementById('scriptsOutput').style.display = 'none';
-          })
-          .withFailureHandler(handleError)
-          .deleteForm();
+        document.getElementById('department').value = '';
+        document.getElementById('projectCode').value = '';
+        document.getElementById('email').value = '';
+        currentRules = [];
+        document.getElementById('rulesTable').style.display = 'none';
+        document.getElementById('scriptsOutput').style.display = 'none';
       }
     }
 
     function resumeDraft() {
-      google.script.run
-        .withSuccessHandler((response) => {
-          if (response.success && response.data) {
-            const data = response.data;
-            document.getElementById('department').value = data.department || '';
-            document.getElementById('projectCode').value = data.projectCode || '';
-            document.getElementById('email').value = data.email || '';
-            if (data.rules) {
-              currentRules = data.rules;
-              displayRules(currentRules);
-            }
-          } else {
-            alert('Aucun brouillon trouvé');
-          }
-        })
-        .withFailureHandler(handleError)
-        .getDraft();
+      // Cette fonction sera implémentée plus tard
+      alert('Fonctionnalité en cours de développement');
     }
 
     function verifyFields() {
@@ -599,42 +589,51 @@
     }
 
     function generateScripts() {
-      const formData = {
-        department: document.getElementById('department').value,
-        projectCode: document.getElementById('projectCode').value,
-        email: document.getElementById('email').value,
-        rules: currentRules
-      };
+      if (currentRules.length === 0) {
+        alert('Aucune règle à traiter. Veuillez d\'abord importer ou ajouter des données.');
+        return;
+      }
 
-      google.script.run
-        .withSuccessHandler((response) => {
-          if (response.success) {
-            const container = document.getElementById('scriptsContainer');
-            container.innerHTML = '';
-            
-            Object.entries(response.data).forEach(([type, script]) => {
-              const scriptBlock = document.createElement('div');
-              scriptBlock.className = 'script-block';
-              scriptBlock.innerHTML = `
-                <h3>${type}</h3>
-                <pre>${script}</pre>
-                <button class="copy-button" onclick="copyScript(this)">Copy</button>
-              `;
-              container.appendChild(scriptBlock);
-            });
-            
-            document.getElementById('scriptsOutput').style.display = 'block';
-          } else {
-            alert('Erreur lors de la génération: ' + response.message);
-          }
-        })
-        .withFailureHandler(handleError)
-        .generateScripts(formData);
+      const scriptsContainer = document.getElementById('scriptsContainer');
+      scriptsContainer.innerHTML = '';
+
+      currentRules.slice(0, 5).forEach((rule, index) => {
+        const script = generateScriptForRule(rule);
+        if (script) {
+          const scriptBlock = document.createElement('div');
+          scriptBlock.className = 'script-block';
+          scriptBlock.innerHTML = `
+            <h3>Script ${index + 1}</h3>
+            <pre>${script}</pre>
+            <button class="copy-button" onclick="copyScript(this)">Copy</button>
+          `;
+          scriptsContainer.appendChild(scriptBlock);
+        }
+      });
+
+      document.getElementById('scriptsOutput').style.display = 'block';
     }
 
-    function handleError(error) {
-      console.error('Erreur:', error);
-      alert('Une erreur est survenue: ' + error.toString());
+    function generateScriptForRule(rule) {
+      if (!rule.sourceIP || !rule.destIP || !rule.protocol || !rule.port) {
+        return null;
+      }
+
+      return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
+  -H "Authorization: Bearer <TON_TOKEN>" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "source": {
+      "ip": "${rule.sourceIP.split('/')[0]}"
+    },
+    "destination": {
+      "ip": "${rule.destIP}"
+    },
+    "service": {
+      "protocol": "${rule.protocol.toUpperCase()}",
+      "port": ${rule.port}
+    }
+  }'`;
     }
 
     function copyScript(button) {
@@ -643,6 +642,7 @@
         alert('Script copié dans le presse-papier');
       }).catch(err => {
         console.error('Erreur lors de la copie:', err);
+        alert('Erreur lors de la copie du script');
       });
     }
   </script>
