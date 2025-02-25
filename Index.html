@@ -6,7 +6,185 @@
     <meta charset="UTF-8">
     <title>Network Rules Generator</title>
     <style>
-      /* ... keep existing code (styles) */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f5f5f5;
+      }
+      
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 20px;
+      }
+
+      .info-box {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        color: #495057;
+      }
+
+      .mandatory {
+        margin-bottom: 30px;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        color: #495057;
+      }
+
+      .required {
+        color: red;
+      }
+
+      input[type="text"],
+      input[type="email"],
+      input[type="number"],
+      select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+      }
+
+      .rules-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+      }
+
+      .add-button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 10px;
+      }
+
+      .add-button:hover {
+        background-color: #218838;
+      }
+
+      .action-buttons {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.2s;
+      }
+
+      .btn-delete {
+        background-color: #dc3545;
+        color: white;
+      }
+
+      .btn-delete:hover {
+        background-color: #c82333;
+      }
+
+      .btn-resume {
+        background-color: #17a2b8;
+        color: white;
+      }
+
+      .btn-resume:hover {
+        background-color: #138496;
+      }
+
+      .btn-verify {
+        background-color: #ffc107;
+        color: #212529;
+      }
+
+      .btn-verify:hover {
+        background-color: #e0a800;
+      }
+
+      .btn-validate {
+        background-color: #28a745;
+        color: white;
+      }
+
+      .btn-validate:hover {
+        background-color: #218838;
+      }
+
+      .btn-generate {
+        background-color: #007bff;
+        color: white;
+      }
+
+      .btn-generate:hover {
+        background-color: #0056b3;
+      }
+
+      .output {
+        margin-top: 30px;
+        display: none;
+      }
+
+      .script-block {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        padding: 15px;
+      }
+
+      .script-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .script-output {
+        width: 100%;
+        height: 150px;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background-color: #fff;
+        font-family: monospace;
+        resize: vertical;
+      }
     </style>
   </head>
   <body>
