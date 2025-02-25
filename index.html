@@ -3,9 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <base target="_top">
-  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="pragma" content="no-cache">
-  <meta http-equiv="expires" content="0">
   <title>Network Rules Generator</title>
   <style>
     body {
@@ -279,85 +276,48 @@
       font-family: monospace;
     }
 
-    .copy-btn {
+    .copy-button {
+      margin-top: 10px;
+      padding: 8px 16px;
       background-color: #3498db;
       color: white;
       border: none;
       border-radius: 4px;
-      padding: 4px 8px;
       cursor: pointer;
-      margin-right: 8px;
-      font-size: 12px;
     }
 
-    .copy-btn:hover {
+    .copy-button:hover {
       background-color: #2980b9;
-    }
-
-    .delete-row-btn {
-      background-color: #e74c3c;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 4px 8px;
-      cursor: pointer;
-      font-size: 12px;
-    }
-
-    .delete-row-btn:hover {
-      background-color: #c0392b;
-    }
-
-    .scripts-container {
-      margin-top: 20px;
-      background-color: #2B3E50;
-      padding: 15px;
-      border-radius: 6px;
-    }
-
-    .script-item {
-      background-color: #34495E;
-      padding: 15px;
-      margin-bottom: 15px;
-      border-radius: 4px;
-      position: relative;
-    }
-
-    .script-content {
-      white-space: pre;
-      font-family: monospace;
-      color: #fff;
-      background-color: #1A1F2C;
-      padding: 15px;
-      border-radius: 4px;
-      margin-top: 10px;
-      overflow-x: auto;
     }
 
     .error-message {
       color: #e74c3c;
       margin-top: 5px;
       font-size: 12px;
-      background-color: rgba(0, 0, 0, 0.1);
-      padding: 8px 12px;
-      border-radius: 4px;
-      margin-bottom: 8px;
-      border-left: 3px solid #e74c3c;
-      width: 100%;
-      box-sizing: border-box;
     }
 
-    .rules-table td {
-      position: relative;
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      vertical-align: top;
+    .success-message {
+      color: #2ecc71;
+      margin-top: 5px;
+      font-size: 12px;
     }
 
-    tr.has-error {
-      padding-bottom: 40px;
-      margin-bottom: 10px;
+    .loading-message {
+      display: none;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 20px;
+      border-radius: 5px;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      text-align: center;
+    }
+
+    .loading-message.visible {
+      display: block;
     }
   </style>
 </head>
@@ -413,7 +373,6 @@
     <table id="rulesTable" class="rules-table" style="display: none;">
       <thead>
         <tr>
-          <th>Actions</th>
           <th>Source IP</th>
           <th>IP Destination</th>
           <th>Protocol</th>
@@ -423,13 +382,14 @@
           <th>Flow Encryption</th>
           <th>Classification</th>
           <th>APP Code</th>
-          <th>Actions</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
 
-    <div id="scriptsOutput" class="scripts-container" style="display: none;"></div>
+    <div id="scriptsOutput" class="scripts-output" style="display: none;">
+      <div id="scriptsContainer"></div>
+    </div>
 
     <div class="action-buttons">
       <button class="btn-delete" onclick="deleteForm()">Delete</button>
@@ -438,33 +398,13 @@
       <button class="btn-generate" onclick="generateScripts()">Generate Scripts</button>
     </div>
 
+    <div id="loadingMessage" class="loading-message">
+      Fichier en cours de chargement...
+    </div>
   </div>
 
   <script>
     let currentRules = [];
-    
-    // Ajout d'un timestamp aux appels google.script.run
-    function addTimestamp(fn) {
-      return function() {
-        const timestamp = new Date().getTime();
-        console.log('Appel avec timestamp:', timestamp);
-        const args = Array.from(arguments);
-        if (typeof args[0] === 'object') {
-          args[0]._timestamp = timestamp;
-        }
-        return fn.apply(this, args);
-      }
-    }
-
-    // Wrapper pour les appels google.script.run
-    const scriptRun = {
-      withSuccessHandler: function(callback) {
-        return google.script.run.withSuccessHandler(callback);
-      },
-      withFailureHandler: function(callback) {
-        return google.script.run.withFailureHandler(callback);
-      }
-    };
 
     function showLoading() {
       document.getElementById('loadingMessage').classList.add('visible');
@@ -486,270 +426,43 @@
       const file = event.target.files[0];
       if (file) {
         showLoading();
-        console.log("Fichier sélectionné:", file.name);
         const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          const content = e.target.result;
           
-          reader.onload = function(e) {
-            console.log("Fichier lu");
-            const content = e.target.result;
-            console.log("Contenu du fichier (premiers caractères):", content.substring(0, 100));
-            
-            scriptRun.withSuccessHandler(function(response) {
-                hideLoading();
-                console.log("Réponse du serveur:", response);
-                if (response.success) {
-                  console.log("Données reçues:", response.data);
-                  displayRules(response.data);
-                  alert(response.message);
-                } else {
-                  console.error("Erreur:", response.message);
-                  alert("Erreur: " + response.message);
-                }
-              })
-              .withFailureHandler(function(error) {
-                hideLoading();
-                console.error("Erreur:", error);
-                alert("Erreur lors de l'import: " + error.toString());
-              })
-              .importCSV(content + '?t=' + new Date().getTime());
-          };
-          
-          reader.onerror = function(e) {
-            hideLoading();
-            console.error("Erreur lors de la lecture du fichier:", e);
-            alert("Erreur lors de la lecture du fichier");
-          };
+          // Appel à la fonction Google Apps Script
+          google.script.run
+            .withSuccessHandler(function(response) {
+              hideLoading();
+              if (response.success) {
+                currentRules = response.data;
+                displayRules(currentRules);
+                alert(response.message);
+              } else {
+                alert(response.message || "Erreur lors de l'import");
+              }
+            })
+            .withFailureHandler(function(error) {
+              hideLoading();
+              console.error("Erreur:", error);
+              alert("Erreur lors de l'import du fichier");
+            })
+            .handleFileSelect(content);
+        };
+        
+        reader.onerror = function(e) {
+          hideLoading();
+          console.error("Erreur lors de la lecture du fichier:", e);
+          alert("Erreur lors de la lecture du fichier");
+        };
 
         reader.readAsText(file);
       }
     }
 
-    // Fonction de validation d'une adresse IP
-    function validateIP(ip) {
-      const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
-      if (!ipPattern.test(ip)) return false;
-      return ip.split('.').every(num => {
-        const n = parseInt(num);
-        return n >= 0 && n <= 255;
-      });
-    }
-
-    // Fonction de validation d'un port
-    function validatePort(port) {
-      const portNum = parseInt(port);
-      return !isNaN(portNum) && portNum >= 1 && portNum <= 65535;
-    }
-
-    // Fonction de validation d'un service
-    function validateService(service) {
-      return service && service.length >= 2 && service.length <= 50;
-    }
-
-    // Fonction de validation d'un code d'application
-    function validateAppCode(code) {
-      return code && code.length >= 2 && code.length <= 10;
-    }
-
-    function validateRow(rule) {
-      let isValid = true;
-      let errors = [];
-
-      if (!validateIP(rule.sourceIP)) {
-        errors.push("IP source invalide");
-        isValid = false;
-      }
-
-      if (!validateIP(rule.destIP)) {
-        errors.push("IP destination invalide");
-        isValid = false;
-      }
-
-      if (!validatePort(rule.port)) {
-        errors.push("Port invalide (doit être entre 1 et 65535)");
-        isValid = false;
-      }
-
-      if (!validateService(rule.service)) {
-        errors.push("Service invalide (doit faire entre 2 et 50 caractères)");
-        isValid = false;
-      }
-
-      if (!validateAppCode(rule.appCode)) {
-        errors.push("Code application invalide (doit faire entre 2 et 10 caractères)");
-        isValid = false;
-      }
-
-      if (!['TCP', 'UDP', 'ICMP'].includes(rule.protocol?.toUpperCase())) {
-        errors.push("Protocole invalide (doit être TCP, UDP ou ICMP)");
-        isValid = false;
-      }
-
-      if (!['Yes', 'No'].includes(rule.authentication)) {
-        errors.push("Authentication invalide (doit être Yes ou No)");
-        isValid = false;
-      }
-
-      if (!['Yes', 'No'].includes(rule.flowEncryption)) {
-        errors.push("Flow Encryption invalide (doit être Yes ou No)");
-        isValid = false;
-      }
-
-      if (!['Yellow', 'Amber', 'Red'].includes(rule.classification)) {
-        errors.push("Classification invalide (doit être Yellow, Amber ou Red)");
-        isValid = false;
-      }
-
-      return { isValid, errors };
-    }
-
-    function displayRules(rules) {
-      console.log("Affichage des règles:", rules);
-      const table = document.getElementById('rulesTable');
-      const tbody = table.querySelector('tbody');
-      tbody.innerHTML = '';
-        
-      rules.forEach((rule, index) => {
-        const validation = validateRow(rule);
-        const currentErrors = [];
-        
-        if (!validateIP(rule.sourceIP)) {
-          currentErrors.push("IP source invalide");
-        }
-        if (!validateIP(rule.destIP)) {
-          currentErrors.push("IP destination invalide");
-        }
-        if (!validatePort(rule.port)) {
-          currentErrors.push("Port invalide (doit être entre 1 et 65535)");
-        }
-        if (!validateService(rule.service)) {
-          currentErrors.push("Service invalide (doit faire entre 2 et 50 caractères)");
-        }
-        if (!validateAppCode(rule.appCode)) {
-          currentErrors.push("Code application invalide (doit faire entre 2 et 10 caractères)");
-        }
-        if (!['TCP', 'UDP', 'ICMP'].includes(rule.protocol?.toUpperCase())) {
-          currentErrors.push("Protocole invalide (doit être TCP, UDP ou ICMP)");
-        }
-        
-        const tr = document.createElement('tr');
-        if (currentErrors.length > 0) {
-          tr.className = 'has-error';
-        }
-        
-        tr.innerHTML = `
-          <td>
-            <button class="copy-btn" onclick="copyGeneratedScript(${index})">Copy</button>
-          </td>
-          <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)" class="${!validateIP(rule.sourceIP) ? 'border-red-500' : ''}"></td>
-          <td><input type="text" value="${rule.destIP || ''}" onchange="updateRule(${index}, 'destIP', this.value)" class="${!validateIP(rule.destIP) ? 'border-red-500' : ''}"></td>
-          <td>
-            <select onchange="updateRule(${index}, 'protocol', this.value)">
-              <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
-              <option value="UDP" ${rule.protocol === 'UDP' ? 'selected' : ''}>UDP</option>
-              <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
-            </select>
-          </td>
-          <td><input type="text" value="${rule.service || ''}" onchange="updateRule(${index}, 'service', this.value)" class="${!validateService(rule.service) ? 'border-red-500' : ''}"></td>
-          <td><input type="text" value="${rule.port || ''}" onchange="updateRule(${index}, 'port', this.value)" class="${!validatePort(rule.port) ? 'border-red-500' : ''}"></td>
-          <td>
-            <select onchange="updateRule(${index}, 'authentication', this.value)">
-              <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
-              <option value="No" ${rule.authentication === 'No' ? 'selected' : ''}>No</option>
-            </select>
-          </td>
-          <td>
-            <select onchange="updateRule(${index}, 'flowEncryption', this.value)">
-              <option value="Yes" ${rule.flowEncryption === 'Yes' ? 'selected' : ''}>Yes</option>
-              <option value="No" ${rule.flowEncryption === 'No' ? 'selected' : ''}>No</option>
-            </select>
-          </td>
-          <td>
-            <select onchange="updateRule(${index}, 'classification', this.value)">
-              <option value="Yellow" ${rule.classification === 'Yellow' ? 'selected' : ''}>Yellow</option>
-              <option value="Amber" ${rule.classification === 'Amber' ? 'selected' : ''}>Amber</option>
-              <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
-            </select>
-          </td>
-          <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)" class="${!validateAppCode(rule.appCode) ? 'border-red-500' : ''}"></td>
-          <td>
-            <button class="delete-row-btn" onclick="deleteRow(${index})">Delete</button>
-          </td>
-        `;
-
-        tbody.appendChild(tr);
-
-        if (currentErrors.length > 0) {
-          const errorRow = document.createElement('tr');
-          const errorCell = document.createElement('td');
-          errorCell.colSpan = 11;
-          errorCell.innerHTML = `<div class="error-message">${currentErrors.join('<br>')}</div>`;
-          errorRow.appendChild(errorCell);
-          tbody.appendChild(errorRow);
-        }
-      });
-        
-      table.style.display = 'table';
-      updateGeneratedScripts();
-    }
-
-    function deleteRow(index) {
-      currentRules.splice(index, 1);
-      displayRules(currentRules);
-    }
-
-    function generateScriptForRow(row) {
-      return `curl -k -X POST "https://<securetrack-url>/api/query" \\
--H "Content-Type: application/json" \\
--H "Authorization: Bearer <your_api_token>" \\
--d '{
-  "source": "${row.sourceIP}",
-  "destination": "${row.destIP}",
-  "protocol": "${row.protocol?.toUpperCase()}",
-  "port": "${row.port}",
-  "service": "${row.service}"
-}'`;
-    }
-
-    function updateGeneratedScripts() {
-      const scriptsOutput = document.getElementById('scriptsOutput');
-      scriptsOutput.innerHTML = '';
-      
-      if (currentRules.length > 0) {
-        scriptsOutput.style.display = 'block';
-        
-        currentRules.forEach((rule, index) => {
-          const scriptDiv = document.createElement('div');
-          scriptDiv.className = 'script-item';
-          
-          const script = generateScriptForRow(rule);
-          scriptDiv.innerHTML = `
-            <div class="script-content">${script}</div>
-          `;
-          
-          scriptsOutput.appendChild(scriptDiv);
-        });
-      } else {
-        scriptsOutput.style.display = 'none';
-      }
-    }
-
-    function copyGeneratedScript(index) {
-      const script = generateScriptForRow(currentRules[index]);
-      navigator.clipboard.writeText(script)
-        .then(() => {
-          alert('Script copié dans le presse-papier');
-        })
-        .catch(err => {
-          console.error('Erreur lors de la copie:', err);
-          alert('Erreur lors de la copie du script');
-        });
-    }
-
     function updateRule(index, field, value) {
-      console.log('updateRule called', { index, field, value });
       currentRules[index][field] = value;
-      
-      displayRules(currentRules);
     }
 
     function addNewLine() {
@@ -879,6 +592,114 @@
       }).catch(err => {
         console.error('Erreur lors de la copie:', err);
       });
+    }
+
+    function displayRules(rules) {
+      const table = document.getElementById('rulesTable');
+      const tbody = table.querySelector('tbody');
+      tbody.innerHTML = ''; // Clear existing rows
+
+      rules.forEach((rule, index) => {
+        const row = tbody.insertRow();
+
+        // Source IP
+        let cell = row.insertCell();
+        let input = document.createElement('input');
+        input.type = 'text';
+        input.value = rule.sourceIP;
+        input.onchange = function() { updateRule(index, 'sourceIP', this.value); };
+        cell.appendChild(input);
+
+        // Destination IP
+        cell = row.insertCell();
+        input = document.createElement('input');
+        input.type = 'text';
+        input.value = rule.destIP;
+        input.onchange = function() { updateRule(index, 'destIP', this.value); };
+        cell.appendChild(input);
+
+        // Protocol
+        cell = row.insertCell();
+        let select = document.createElement('select');
+        select.onchange = function() { updateRule(index, 'protocol', this.value); };
+        let options = ['TCP', 'UDP', 'ICMP'];
+        options.forEach(option => {
+          let opt = document.createElement('option');
+          opt.value = option;
+          opt.text = option;
+          if (rule.protocol === option) opt.selected = true;
+          select.appendChild(opt);
+        });
+        cell.appendChild(select);
+
+        // Service
+        cell = row.insertCell();
+        input = document.createElement('input');
+        input.type = 'text';
+        input.value = rule.service;
+        input.onchange = function() { updateRule(index, 'service', this.value); };
+        cell.appendChild(input);
+
+        // Port
+        cell = row.insertCell();
+        input = document.createElement('input');
+        input.type = 'text';
+        input.value = rule.port;
+        input.onchange = function() { updateRule(index, 'port', this.value); };
+        cell.appendChild(input);
+
+        // Authentication
+        cell = row.insertCell();
+        select = document.createElement('select');
+        select.onchange = function() { updateRule(index, 'authentication', this.value); };
+        options = ['Yes', 'No'];
+        options.forEach(option => {
+          let opt = document.createElement('option');
+          opt.value = option;
+          opt.text = option;
+          if (rule.authentication === option) opt.selected = true;
+          select.appendChild(opt);
+        });
+        cell.appendChild(select);
+
+        // Flow Encryption
+        cell = row.insertCell();
+        select = document.createElement('select');
+        select.onchange = function() { updateRule(index, 'flowEncryption', this.value); };
+        options = ['Yes', 'No'];
+        options.forEach(option => {
+          let opt = document.createElement('option');
+          opt.value = option;
+          opt.text = option;
+          if (rule.flowEncryption === option) opt.selected = true;
+          select.appendChild(opt);
+        });
+        cell.appendChild(select);
+
+        // Classification
+        cell = row.insertCell();
+        select = document.createElement('select');
+        select.onchange = function() { updateRule(index, 'classification', this.value); };
+        options = ['Yellow', 'Amber', 'Red'];
+        options.forEach(option => {
+          let opt = document.createElement('option');
+          opt.value = option;
+          opt.text = option;
+          if (rule.classification === option) opt.selected = true;
+          select.appendChild(opt);
+        });
+        cell.appendChild(select);
+
+        // App Code
+        cell = row.insertCell();
+        input = document.createElement('input');
+        input.type = 'text';
+        input.value = rule.appCode;
+        input.onchange = function() { updateRule(index, 'appCode', this.value); };
+        cell.appendChild(input);
+      });
+
+      table.style.display = 'table'; // Show the table
     }
   </script>
 </body>

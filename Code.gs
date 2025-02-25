@@ -44,9 +44,11 @@ function importCSV(csvData) {
           protocol: row[7] || 'TCP',
           service: row[8] || '',
           port: row[9] || '',
-          authentication: row[10] || 'No',
-          flowEncryption: row[11] || 'No',
-          classification: row[12] || 'Yellow',
+          authentication: row[10]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
+          flowEncryption: row[11]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
+          classification: row[12]?.toLowerCase() === 'yellow' ? 'Yellow' : 
+                        row[12]?.toLowerCase() === 'amber' ? 'Amber' : 
+                        row[12]?.toLowerCase() === 'red' ? 'Red' : 'Yellow',
           appCode: row[13] || ''
         };
         console.log("Ligne traitée:", processedRow);
@@ -75,94 +77,5 @@ function importCSV(csvData) {
       success: false, 
       message: "Erreur lors de l'import: " + e.toString() 
     };
-  }
-}
-
-function generateScripts(rows) {
-  console.log("generateScripts called with rows:", JSON.stringify(rows));
-  if (!rows || !Array.isArray(rows)) {
-    return {
-      success: false,
-      message: "Format de données invalide"
-    };
-  }
-
-  try {
-    var scripts = rows.map(function(row) {
-      return generateScriptForRow(row);
-    });
-
-    return {
-      success: true,
-      data: scripts,
-      message: scripts.length + " scripts générés avec succès"
-    };
-  } catch(e) {
-    console.error("Erreur lors de la génération:", e.toString());
-    return { 
-      success: false, 
-      message: "Erreur lors de la génération: " + e.toString() 
-    };
-  }
-}
-
-function generateScriptForRow(row) {
-  return `curl -X POST "https://<securetrack-url>/api/query" \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer <your_api_token>" \\
-  -d '{
-    "source": "${row.sourceIP}",
-    "destination": "${row.destIP}",
-    "protocol": "${row.protocol.toUpperCase()}",
-    "port": "${row.port}",
-    "service": "${row.service}"
-  }'`;
-}
-
-function saveDraft(formData) {
-  console.log("saveDraft called with data:", JSON.stringify(formData));
-  if (!formData) {
-    return {
-      success: false,
-      message: "Données manquantes"
-    };
-  }
-  
-  try {
-    var userProperties = PropertiesService.getUserProperties();
-    userProperties.setProperty('draft', JSON.stringify(formData));
-    return { success: true, message: "Brouillon sauvegardé" };
-  } catch(e) {
-    console.error("Erreur saveDraft:", e.toString());
-    return { success: false, message: "Erreur lors de la sauvegarde: " + e.toString() };
-  }
-}
-
-function getDraft() {
-  console.log("getDraft called");
-  try {
-    var userProperties = PropertiesService.getUserProperties();
-    var draft = userProperties.getProperty('draft');
-    if (!draft) {
-      console.log("Aucun brouillon trouvé");
-      return { success: false, message: "Aucun brouillon trouvé" };
-    }
-    console.log("Brouillon récupéré:", draft);
-    return { success: true, data: JSON.parse(draft) };
-  } catch(e) {
-    console.error("Erreur getDraft:", e.toString());
-    return { success: false, message: "Erreur lors de la récupération: " + e.toString() };
-  }
-}
-
-function deleteForm() {
-  console.log("deleteForm called");
-  try {
-    var userProperties = PropertiesService.getUserProperties();
-    userProperties.deleteProperty('draft');
-    return { success: true, message: "Formulaire supprimé" };
-  } catch(e) {
-    console.error("Erreur deleteForm:", e.toString());
-    return { success: false, message: "Erreur lors de la suppression: " + e.toString() };
   }
 }
