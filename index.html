@@ -297,30 +297,26 @@
       color: #e74c3c;
       margin-top: 5px;
       font-size: 12px;
+      background-color: rgba(0, 0, 0, 0.1);
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      border-left: 3px solid #e74c3c;
+      width: 100%;
+      box-sizing: border-box;
     }
 
-    .success-message {
-      color: #2ecc71;
-      margin-top: 5px;
-      font-size: 12px;
+    .rules-table td {
+      position: relative;
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      vertical-align: top;
     }
 
-    .loading-message {
-      display: none;
-      background: rgba(0, 0, 0, 0.7);
-      color: white;
-      padding: 20px;
-      border-radius: 5px;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 1000;
-      text-align: center;
-    }
-
-    .loading-message.visible {
-      display: block;
+    tr.has-error {
+      padding-bottom: 40px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -576,10 +572,12 @@
         
       rules.forEach((rule, index) => {
         const validation = validateRow(rule);
-        const rowClass = validation.isValid ? '' : 'bg-red-100';
         
         const tr = document.createElement('tr');
-        tr.className = rowClass;
+        if (!validation.isValid) {
+          tr.className = 'has-error';
+        }
+        
         tr.innerHTML = `
           <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)" class="${!validateIP(rule.sourceIP) ? 'border-red-500' : ''}"></td>
           <td><input type="text" value="${rule.destIP || ''}" onchange="updateRule(${index}, 'destIP', this.value)" class="${!validateIP(rule.destIP) ? 'border-red-500' : ''}"></td>
@@ -614,14 +612,17 @@
           <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)" class="${!validateAppCode(rule.appCode) ? 'border-red-500' : ''}"></td>
         `;
 
-        if (!validation.isValid) {
-          const errorDiv = document.createElement('div');
-          errorDiv.className = 'error-message';
-          errorDiv.textContent = validation.errors.join(', ');
-          tr.appendChild(errorDiv);
-        }
-
         tbody.appendChild(tr);
+
+        // Si il y a des erreurs, ajouter une nouvelle ligne pour le message d'erreur
+        if (!validation.isValid) {
+          const errorRow = document.createElement('tr');
+          const errorCell = document.createElement('td');
+          errorCell.colSpan = 9; // Pour que le message prenne toute la largeur
+          errorCell.innerHTML = `<div class="error-message">${validation.errors.join('<br>')}</div>`;
+          errorRow.appendChild(errorCell);
+          tbody.appendChild(errorRow);
+        }
       });
         
       table.style.display = 'table';
