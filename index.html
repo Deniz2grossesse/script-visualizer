@@ -44,7 +44,7 @@
     }
     
     .alert-icon {
-      color: #f39c12;
+      color: #9b87f5;
     }
     
     .form-group {
@@ -62,7 +62,7 @@
     }
     
     .required {
-      color: #f39c12;
+      color: #9b87f5;
       margin-left: 4px;
     }
     
@@ -70,7 +70,7 @@
     input[type="email"] {
       width: 100%;
       padding: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(155, 135, 245, 0.3);
       background-color: #2B3E50;
       border-radius: 6px;
       color: #ffffff;
@@ -82,7 +82,7 @@
     input[type="text"]:focus,
     input[type="email"]:focus {
       outline: none;
-      border-color: #3498db;
+      border-color: #9b87f5;
       background-color: #34495E;
     }
     
@@ -117,7 +117,7 @@
     }
     
     .btn-add {
-      background-color: #2ECC71;
+      background-color: #9b87f5;
       color: white;
       display: flex;
       align-items: center;
@@ -133,11 +133,11 @@
     }
     
     .btn-add:hover {
-      background-color: #27AE60;
+      background-color: #7E69AB;
     }
     
     .btn-import {
-      background-color: #E67E22;
+      background-color: #6E59A5;
       color: white;
       display: flex;
       align-items: center;
@@ -152,47 +152,47 @@
     }
     
     .btn-import:hover {
-      background-color: #D35400;
+      background-color: #5A478A;
     }
     
     .btn-delete {
       background-color: transparent;
-      color: #ff4757;
-      border: 2px solid #ff4757;
+      color: #ea384c;
+      border: 2px solid #ea384c;
       padding: 12px 35px;
     }
     
     .btn-delete:hover {
-      background-color: #ff4757;
+      background-color: #ea384c;
       color: white;
     }
     
     .btn-resume {
       background-color: transparent;
-      color: #fff;
-      border: 2px solid #666;
+      color: #9b87f5;
+      border: 2px solid #9b87f5;
       padding: 12px 35px;
     }
     
     .btn-resume:hover {
-      background-color: #666;
+      background-color: #9b87f5;
       color: white;
     }
     
     .btn-verify {
       background-color: transparent;
-      color: #3498db;
-      border: 2px solid #3498db;
+      color: #D6BCFA;
+      border: 2px solid #D6BCFA;
       padding: 12px 35px;
     }
     
     .btn-verify:hover {
-      background-color: #3498db;
-      color: white;
+      background-color: #D6BCFA;
+      color: #1A1F2C;
     }
     
     .btn-generate {
-      background-color: #F08B32;
+      background-color: #9b87f5;
       color: white;
       padding: 12px 60px 12px 35px;
       position: relative;
@@ -200,7 +200,21 @@
     }
     
     .btn-generate:hover {
-      background-color: #E67E22;
+      background-color: #7E69AB;
+    }
+    
+    .btn-save {
+      background-color: #8B5CF6;
+      color: white;
+      padding: 12px 35px;
+      border-radius: 25px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-save:hover {
+      background-color: #7C3AED;
     }
     
     .btn-generate::after {
@@ -218,6 +232,26 @@
       margin-top: 40px;
     }
 
+    .delete-row-btn {
+      background: none;
+      border: none;
+      color: #ea384c;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .delete-row-btn:hover {
+      color: #E53E3E;
+    }
+
+    .delete-row-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
     .rules-table {
       width: 100%;
       margin-top: 20px;
@@ -228,7 +262,7 @@
     .rules-table td {
       padding: 12px;
       text-align: left;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid rgba(155, 135, 245, 0.2);
     }
 
     .rules-table th {
@@ -238,7 +272,7 @@
     }
 
     .rules-table tbody tr:hover {
-      background-color: rgba(52, 152, 219, 0.1);
+      background-color: rgba(155, 135, 245, 0.1);
     }
 
     .rules-table td input,
@@ -246,97 +280,26 @@
       width: 100%;
       padding: 8px;
       background-color: #34495E;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(155, 135, 245, 0.3);
       border-radius: 4px;
       color: #fff;
     }
 
-    .scripts-container {
-      margin-top: 20px;
-      background-color: #2B3E50;
-      padding: 15px;
-      border-radius: 6px;
-      display: none;
-    }
-
-    .script-item {
-      background-color: #34495E;
-      padding: 15px;
-      margin-bottom: 15px;
-      border-radius: 4px;
-      position: relative;
-    }
-
-    .script-content {
-      white-space: pre;
-      font-family: monospace;
-      color: #fff;
-      background-color: #1A1F2C;
-      padding: 15px;
-      border-radius: 4px;
-      margin-bottom: 10px;
-      overflow-x: auto;
-    }
-
-    .script-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .copy-btn {
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 8px 16px;
-      cursor: pointer;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .copy-btn:hover {
-      background-color: #2980b9;
-    }
-
-    .delete-row-btn {
-      background: none;
-      border: none;
-      color: #e74c3c;
-      cursor: pointer;
-      padding: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .delete-row-btn:hover {
-      color: #c0392b;
-    }
-
-    .delete-row-btn svg {
-      width: 20px;
-      height: 20px;
+    .rules-table td input:focus,
+    .rules-table td select:focus {
+      border-color: #9b87f5;
+      outline: none;
     }
 
     .error-message {
-      color: #e74c3c;
-      margin-top: 5px;
+      color: #ea384c;
       font-size: 12px;
-    }
-
-    .success-message {
-      color: #2ecc71;
-      margin-top: 5px;
-      font-size: 12px;
+      margin-top: 4px;
     }
 
     .loading-message {
       display: none;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(26, 31, 44, 0.9);
       color: white;
       padding: 20px;
       border-radius: 5px;
@@ -346,6 +309,7 @@
       transform: translate(-50%, -50%);
       z-index: 1000;
       text-align: center;
+      border: 1px solid rgba(155, 135, 245, 0.3);
     }
 
     .loading-message.visible {
@@ -353,7 +317,7 @@
     }
 
     .btn-save {
-      background-color: #27ae60;
+      background-color: #8B5CF6;
       color: white;
       border: none;
       border-radius: 25px;
@@ -368,7 +332,7 @@
     }
 
     .btn-save:hover {
-      background-color: #219a52;
+      background-color: #7C3AED;
     }
 
     .btn-save svg {
