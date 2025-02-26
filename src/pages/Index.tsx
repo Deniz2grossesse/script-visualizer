@@ -50,6 +50,7 @@ const Index = () => {
     department: { error: false, message: '' },
     projectCode: { error: false, message: '' },
   });
+  const [headerLines, setHeaderLines] = useState<string[][]>([]);
 
   useEffect(() => {
     console.log('Index component mounted');
@@ -128,82 +129,44 @@ const Index = () => {
     const reader = new FileReader();
     
     reader.onload = (e) => {
-      console.log("FileReader onload déclenché");
       const text = e.target?.result as string;
-      console.log("Contenu du fichier (premiers caractères):", text.substring(0, 100));
-      
-      const lines = text.split('\n').slice(11);
-      console.log("Nombre de lignes après la ligne 11:", lines.length);
-      
-      let newRows = [...csvRows];
-      let errorCount = 0;
-
-      lines.forEach((line, index) => {
-        console.log(`Traitement ligne ${index + 12}:`, line);
-        const columns = line.split(',').map(col => col.trim());
-        console.log(`Nombre de colonnes trouvées:`, columns.length);
-        
-        const hasRequiredData = columns[3] && columns[6] && columns[7] && columns[8] && columns[9];
-        
-        if (columns.length >= 9 && hasRequiredData) {
-          const authValue = columns[10]?.toLowerCase() === 'yes' ? 'yes' : 'no';
-          const encryptValue = columns[11]?.toLowerCase() === 'yes' ? 'yes' : 'no';
-          let classificationValue = columns[12]?.toLowerCase() || '';
-          
-          if (!['yellow', 'amber', 'red'].includes(classificationValue)) {
-            classificationValue = 'yellow';
+      google.script.run
+        .withSuccessHandler((response) => {
+          if (response.success) {
+            setCsvRows(response.data);
+            setHeaderLines(response.headerLines || []);
+            toast({
+              title: "Import réussi",
+              description: response.message
+            });
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Erreur",
+              description: response.message
+            });
           }
-
-          const newRow: CSVRow = {
-            sourceIP: columns[3] || '',
-            destIP: columns[6] || '',
-            protocol: columns[7] || '',
-            service: columns[8] || '',
-            port: columns[9] || '',
-            authentication: authValue,
-            flowEncryption: encryptValue,
-            classification: classificationValue,
-            appCode: columns[13] || '',
-            isValid: false,
-            errors: []
-          };
-
-          console.log(`Données extraites et normalisées pour la nouvelle ligne:`, newRow);
-
-          const validation = validateRow(newRow);
-          if (!validation.isValid) {
-            errorCount++;
-            console.log(`Erreurs de validation pour la ligne ${index + 12}:`, validation.errors);
-          }
-          
-          newRow.isValid = validation.isValid;
-          newRow.errors = validation.errors;
-          newRows.push(newRow);
-        } else {
-          console.log(`Ligne ${index + 12} ignorée car pas assez de colonnes ou données manquantes`);
-        }
-      });
-
-      console.log(`Total des lignes ajoutées:`, newRows.length - csvRows.length);
-      console.log(`Nombre d'erreurs trouvées:`, errorCount);
-
-      setCsvRows(newRows);
-      toast({
-        title: "Import CSV",
-        description: `${newRows.length - csvRows.length} nouvelles lignes ajoutées. ${errorCount} lignes contiennent des erreurs.`
-      });
+        })
+        .withFailureHandler((error) => {
+          console.error("Erreur lors de l'import:", error);
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Une erreur est survenue lors de l'import du fichier"
+          });
+        })
+        .handleFileSelect(text);
     };
-
+    
     reader.onerror = (error) => {
       console.error("Erreur lors de la lecture du fichier:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Une erreur est survenue lors de la lecture du fichier."
+        description: "Une erreur est survenue lors de la lecture du fichier"
       });
     };
 
-    console.log("Début de la lecture du fichier");
     reader.readAsText(file);
   };
 
@@ -316,6 +279,53 @@ const Index = () => {
         });
       })
       .generateScripts({ csvRows: validRows });
+  };
+
+  const handleSave = () => {
+    if (csvRows.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Aucune donnée à sauvegarder"
+      });
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (response.success) {
+          // Création et téléchargement du fichier CSV
+          const blob = new Blob([response.data], { type: 'text/csv' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'network_rules.csv';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          
+          toast({
+            title: "Succès",
+            description: response.message
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: response.message
+          });
+        }
+      })
+      .withFailureHandler((error) => {
+        console.error("Erreur:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la sauvegarde"
+        });
+      })
+      .saveToCSV(csvRows, headerLines);
   };
 
   return (
@@ -630,6 +640,14 @@ const Index = () => {
             </div>
           </div>
         )}
+
+        <Button 
+          variant="outline"
+          className="text-[#BDC3C7] hover:bg-white/20 border-[#BDC3C7]/30 transition-colors"
+          onClick={handleSave}
+        >
+          Save
+        </Button>
       </div>
     </div>
   );

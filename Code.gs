@@ -1,3 +1,4 @@
+
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -33,6 +34,8 @@ function importCSV(csvData) {
       throw new Error("Le fichier CSV doit contenir au moins 12 lignes");
     }
 
+    // Sauvegarder les 11 premières lignes
+    var headerLines = data.slice(0, 11);
     var processedData = data.slice(11).map(function(row, index) {
       console.log("Traitement ligne", index + 12, ":", row);
       
@@ -68,6 +71,7 @@ function importCSV(csvData) {
     return { 
       success: true, 
       data: processedData,
+      headerLines: headerLines,
       message: processedData.length + " lignes importées avec succès"
     };
   } catch(e) {
@@ -79,28 +83,20 @@ function importCSV(csvData) {
   }
 }
 
-function saveToCSV(data) {
+function saveToCSV(data, headerLines) {
   console.log("saveToCSV called with data:", data);
   try {
-    // Création de l'en-tête du CSV
-    var headers = [
-      "Source IP",
-      "Destination IP",
-      "Protocol",
-      "Service",
-      "Port",
-      "Authentication",
-      "Flow Encryption",
-      "Classification",
-      "APP Code"
-    ];
+    // D'abord, ajouter les 11 premières lignes
+    var csvContent = headerLines.map(function(row) {
+      return row.join(',');
+    }).join('\n') + '\n';
 
-    // Conversion des données en format CSV
-    var csvContent = headers.join(",") + "\n";
-    
+    // Puis ajouter les données modifiées
     data.forEach(function(row) {
       var csvRow = [
+        '', '', '', // colonnes vides pour les 3 premières colonnes
         row.sourceIP,
+        '', '', // colonnes vides pour les colonnes 5 et 6
         row.destIP,
         row.protocol,
         row.service,
