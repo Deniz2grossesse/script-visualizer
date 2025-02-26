@@ -487,7 +487,19 @@
     }
 
     function updateRule(index, field, value) {
-      currentRules[index][field] = value;
+      console.log('updateRule called', { index, field, value });
+      const newRules = [...currentRules];
+      newRules[index] = {
+        ...newRules[index],
+        [field]: value
+      };
+      
+      const validation = validateRow(newRules[index]);
+      newRules[index].isValid = validation.isValid;
+      newRules[index].errors = validation.errors;
+      
+      currentRules = newRules;
+      displayRules(currentRules);
     }
 
     function addNewLine() {
@@ -629,22 +641,16 @@
     }
 
     function displayRules(rules) {
+      console.log("Affichage des règles:", rules);
       const table = document.getElementById('rulesTable');
       const tbody = table.querySelector('tbody');
       tbody.innerHTML = '';
-        
+      
       rules.forEach((rule, index) => {
         const validation = validateRow(rule);
-        const currentErrors = [];
-        
-        if (validation === 'error') {
-          currentErrors.push('Erreur de validation');
-        } else if (validation === 'warning') {
-          currentErrors.push('Avertissement');
-        }
         
         const tr = document.createElement('tr');
-        if (currentErrors.length > 0) {
+        if (!validation.isValid) {
           tr.className = 'has-error';
         }
         
@@ -658,7 +664,7 @@
               <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
             </select>
           </td>
-          <td><input type="text" value="${rule.service || ''}" onchange="updateRule(${index}, 'service', this.value)" class="${!validateService(rule.service) ? 'border-red-500' : ''}"></td>
+          <td><input type="text" value="${rule.service || ''}" onchange="updateRule(${index}, 'service', this.value)"></td>
           <td><input type="text" value="${rule.port || ''}" onchange="updateRule(${index}, 'port', this.value)" class="${!validatePort(rule.port) ? 'border-red-500' : ''}"></td>
           <td>
             <select onchange="updateRule(${index}, 'authentication', this.value)">
@@ -679,7 +685,7 @@
               <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
             </select>
           </td>
-          <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)" class="${!validateAppCode(rule.appCode) ? 'border-red-500' : ''}"></td>
+          <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
           <td>
             <button class="delete-row-btn" onclick="deleteRow(${index})">Delete</button>
           </td>
@@ -687,16 +693,16 @@
 
         tbody.appendChild(tr);
 
-        if (currentErrors.length > 0) {
+        if (!validation.isValid) {
           const errorRow = document.createElement('tr');
           const errorCell = document.createElement('td');
           errorCell.colSpan = 10;
-          errorCell.innerHTML = `<div class="error-message">${currentErrors.join('<br>')}</div>`;
+          errorCell.innerHTML = `<div class="error-message">${validation.errors.join('<br>')}</div>`;
           errorRow.appendChild(errorCell);
           tbody.appendChild(errorRow);
         }
       });
-        
+      
       table.style.display = 'table';
     }
 
@@ -706,53 +712,48 @@
     }
 
     function validateRow(rule) {
+      console.log('validateRow called with:', rule);
       const errors = [];
       
       if (!validateIP(rule.sourceIP)) {
-        errors.push('IP source invalide');
+        errors.push("IP source invalide");
       }
-      
       if (!validateIP(rule.destIP)) {
-        errors.push('IP destination invalide');
+        errors.push("IP destination invalide");
       }
-      
-      if (!validateService(rule.service)) {
-        errors.push('Service invalide');
-      }
-      
       if (!validatePort(rule.port)) {
-        errors.push('Port invalide');
+        errors.push("Port invalide");
+      }
+      if (!['tcp', 'udp', 'icmp'].includes(rule.protocol?.toLowerCase())) {
+        errors.push("Protocole invalide");
+      }
+      if (!rule.service) {
+        errors.push("Service invalide");
       }
       
-      if (!validateAppCode(rule.appCode)) {
-        errors.push('Code APP invalide');
-      }
-      
-      if (errors.length > 0) {
-        return 'error';
-      } else if (errors.length > 0) {
-        return 'warning';
-      } else {
-        return 'valid';
-      }
+      return { isValid: errors.length === 0, errors };
     }
 
     function validateIP(ip) {
+      if (!ip) return false;
       const regex = /^(\d{1,3}\.){3}\d{1,3}$/;
-      return regex.test(ip);
-    }
-
-    function validateService(service) {
-      return ['TCP', 'UDP', 'ICMP'].includes(service);
+      if (!regex.test(ip)) return false;
+      
+      const parts = ip.split('.');
+      return parts.every(part => {
+        const num = parseInt(part, 10);
+        return num >= 0 && num <= 255;
+      });
     }
 
     function validatePort(port) {
-      const regex = /^\d+$/;
-      return regex.test(port);
+      if (!port) return false;
+      const num = parseInt(port, 10);
+      return !isNaN(num) && num >= 1 && num <= 65535;
     }
 
-    function validateAppCode(appCode) {
-      return /^[a-zA-Z0-9-]+$/.test(appCode);
+    function validateService(service) {
+      return !!service && service.length > 0;
     }
 
     function handleError(error) {
