@@ -345,6 +345,30 @@
     .loading-message.visible {
       display: block;
     }
+
+    .btn-save {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      padding: 12px 35px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-save:hover {
+      background-color: #219a52;
+    }
+
+    .btn-save svg {
+      width: 16px;
+      height: 16px;
+    }
   </style>
 </head>
 <body>
@@ -420,6 +444,14 @@
       <button class="btn-delete" onclick="deleteForm()">Delete</button>
       <button class="btn-resume" onclick="resumeDraft()">Resume Draft</button>
       <button class="btn-verify" onclick="verifyFields()">Verify</button>
+      <button class="btn-save" onclick="saveNES()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Save NES
+      </button>
       <button class="btn-generate" onclick="generateScripts()">Generate Scripts</button>
     </div>
 
@@ -581,6 +613,42 @@
       } else {
         alert('Erreurs:\n' + errors.join('\n'));
       }
+    }
+
+    function saveNES() {
+      if (currentRules.length === 0) {
+        alert("Aucune donnée à sauvegarder");
+        return;
+      }
+
+      showLoading();
+      
+      google.script.run
+        .withSuccessHandler(function(response) {
+          hideLoading();
+          if (response.success) {
+            // Création et téléchargement du fichier CSV
+            const blob = new Blob([response.data], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'network_rules.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            alert(response.message);
+          } else {
+            alert(response.message || "Erreur lors de la sauvegarde");
+          }
+        })
+        .withFailureHandler(function(error) {
+          hideLoading();
+          console.error("Erreur:", error);
+          alert("Erreur lors de la sauvegarde du fichier");
+        })
+        .saveToCSV(currentRules);
     }
 
     function generateScripts() {

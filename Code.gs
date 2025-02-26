@@ -1,4 +1,3 @@
-
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -76,6 +75,56 @@ function importCSV(csvData) {
     return { 
       success: false, 
       message: "Erreur lors de l'import: " + e.toString() 
+    };
+  }
+}
+
+function saveToCSV(data) {
+  console.log("saveToCSV called with data:", data);
+  try {
+    // Création de l'en-tête du CSV
+    var headers = [
+      "Source IP",
+      "Destination IP",
+      "Protocol",
+      "Service",
+      "Port",
+      "Authentication",
+      "Flow Encryption",
+      "Classification",
+      "APP Code"
+    ];
+
+    // Conversion des données en format CSV
+    var csvContent = headers.join(",") + "\n";
+    
+    data.forEach(function(row) {
+      var csvRow = [
+        row.sourceIP,
+        row.destIP,
+        row.protocol,
+        row.service,
+        row.port,
+        row.authentication,
+        row.flowEncryption,
+        row.classification,
+        row.appCode
+      ].join(",");
+      csvContent += csvRow + "\n";
+    });
+
+    console.log("CSV content generated:", csvContent);
+    
+    return {
+      success: true,
+      data: csvContent,
+      message: "Données sauvegardées avec succès"
+    };
+  } catch(e) {
+    console.error("Erreur lors de la sauvegarde:", e.toString());
+    return {
+      success: false,
+      message: "Erreur lors de la sauvegarde: " + e.toString()
     };
   }
 }
