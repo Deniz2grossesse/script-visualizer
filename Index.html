@@ -405,6 +405,7 @@
 
   <script>
     let currentRules = [];
+    let generatedScripts = [];
 
     function showLoading() {
       document.getElementById('loadingMessage').classList.add('visible');
@@ -530,6 +531,50 @@
       displayRules(currentRules);
     }
 
+    function displayRules(rules) {
+      document.getElementById('rulesTable').style.display = 'table';
+      const tbody = document.getElementById('rulesTable').querySelector('tbody');
+      tbody.innerHTML = '';
+      
+      rules.forEach((rule, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><input type="text" value="${rule.sourceIP}" onchange="updateRule(${index}, 'sourceIP', this.value)"></td>
+          <td><input type="text" value="${rule.destIP}" onchange="updateRule(${index}, 'destIP', this.value)"></td>
+          <td>
+            <select onchange="updateRule(${index}, 'protocol', this.value)">
+              <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
+              <option value="UDP" ${rule.protocol === 'UDP' ? 'selected' : ''}>UDP</option>
+              <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
+            </select>
+          </td>
+          <td><input type="text" value="${rule.service}" onchange="updateRule(${index}, 'service', this.value)"></td>
+          <td><input type="text" value="${rule.port}" onchange="updateRule(${index}, 'port', this.value)"></td>
+          <td>
+            <select onchange="updateRule(${index}, 'authentication', this.value)">
+              <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
+              <option value="No" ${rule.authentication === 'No' ? 'selected' : ''}>No</option>
+            </select>
+          </td>
+          <td>
+            <select onchange="updateRule(${index}, 'flowEncryption', this.value)">
+              <option value="Yes" ${rule.flowEncryption === 'Yes' ? 'selected' : ''}>Yes</option>
+              <option value="No" ${rule.flowEncryption === 'No' ? 'selected' : ''}>No</option>
+            </select>
+          </td>
+          <td>
+            <select onchange="updateRule(${index}, 'classification', this.value)">
+              <option value="Yellow" ${rule.classification === 'Yellow' ? 'selected' : ''}>Yellow</option>
+              <option value="Amber" ${rule.classification === 'Amber' ? 'selected' : ''}>Amber</option>
+              <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
+            </select>
+          </td>
+          <td><input type="text" value="${rule.appCode}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
     function deleteForm() {
       if (confirm('Voulez-vous vraiment supprimer le formulaire ?')) {
         google.script.run
@@ -607,16 +652,20 @@
       google.script.run
         .withSuccessHandler((response) => {
           if (response.success) {
+            generatedScripts = response.data;
             const container = document.getElementById('scriptsContainer');
             container.innerHTML = '';
             
-            Object.entries(response.data).forEach(([type, script]) => {
+            generatedScripts.forEach((scriptData) => {
               const scriptBlock = document.createElement('div');
               scriptBlock.className = 'script-block';
               scriptBlock.innerHTML = `
-                <h3>${type}</h3>
-                <pre>${script}</pre>
-                <button class="copy-button" onclick="copyScript(this)">Copy</button>
+                <h3>Script ID: ${scriptData.id}</h3>
+                <pre>${scriptData.script}</pre>
+                <div>
+                  <button class="copy-button" onclick="copyScript(this)">Copy</button>
+                  <button class="copy-button" onclick="deleteScript(${scriptData.id})">Delete</button>
+                </div>
               `;
               container.appendChild(scriptBlock);
             });
@@ -630,13 +679,39 @@
         .generateScripts(formData);
     }
 
+    function deleteScript(id) {
+      if (confirm('Voulez-vous vraiment supprimer ce script ?')) {
+        generatedScripts = generatedScripts.filter(script => script.id !== id);
+        const container = document.getElementById('scriptsContainer');
+        container.innerHTML = '';
+        
+        generatedScripts.forEach((scriptData) => {
+          const scriptBlock = document.createElement('div');
+          scriptBlock.className = 'script-block';
+          scriptBlock.innerHTML = `
+            <h3>Script ID: ${scriptData.id}</h3>
+            <pre>${scriptData.script}</pre>
+            <div>
+              <button class="copy-button" onclick="copyScript(this)">Copy</button>
+              <button class="copy-button" onclick="deleteScript(${scriptData.id})">Delete</button>
+            </div>
+          `;
+          container.appendChild(scriptBlock);
+        });
+        
+        if (generatedScripts.length === 0) {
+          document.getElementById('scriptsOutput').style.display = 'none';
+        }
+      }
+    }
+
     function handleError(error) {
       console.error('Erreur:', error);
       alert('Une erreur est survenue: ' + error.toString());
     }
 
     function copyScript(button) {
-      const scriptText = button.previousElementSibling.textContent;
+      const scriptText = button.parentElement.previousElementSibling.textContent;
       navigator.clipboard.writeText(scriptText).then(() => {
         alert('Script copié dans le presse-papier');
       }).catch(err => {
