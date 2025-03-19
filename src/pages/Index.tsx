@@ -231,6 +231,16 @@ const Index = () => {
   }'`;
   };
 
+  const deleteScript = (id: number) => {
+    console.log('deleteScript called for id:', id);
+    const newScripts = generatedScripts.filter(script => script.id !== id);
+    setGeneratedScripts(newScripts);
+    toast({
+      title: "Script supprimé",
+      description: "Le script a été supprimé avec succès."
+    });
+  };
+
   const handleGenerateScript = () => {
     console.log('handleGenerateScript called with csvRows:', csvRows);
     const validRows = csvRows.filter(row => {
@@ -248,7 +258,6 @@ const Index = () => {
       return;
     }
 
-    // On envoie les données au serveur GAS
     google.script.run
       .withSuccessHandler((response) => {
         console.log('Response from generateScripts:', response);
@@ -294,7 +303,6 @@ const Index = () => {
     google.script.run
       .withSuccessHandler((response) => {
         if (response.success) {
-          // Création et téléchargement du fichier CSV
           const blob = new Blob([response.data], { type: 'text/csv' });
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
@@ -625,13 +633,20 @@ const Index = () => {
                       readOnly
                       className="w-full h-48 p-4 rounded-md font-mono text-sm bg-[#2C3E50] border border-[#BDC3C7]/30 shadow-input focus:border-primary transition-colors text-white"
                     />
-                    <div className="mt-2 flex justify-end">
+                    <div className="mt-2 flex justify-end gap-2">
                       <Button 
                         onClick={() => navigator.clipboard.writeText(script)}
                         variant="outline" 
                         className="text-white hover:bg-white/20 transition-colors"
                       >
                         Copy script
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => deleteScript(id)}
+                        className="text-red-500 hover:text-red-400 hover:bg-red-500/20"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
