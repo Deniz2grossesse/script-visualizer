@@ -8,6 +8,9 @@ function doGet() {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
+// Global variable to store header lines
+var headerLinesCache = [];
+
 function handleFileSelect(fileData) {
   console.log("handleFileSelect called with file data length:", fileData ? fileData.length : 0);
   if (!fileData) {
@@ -35,7 +38,7 @@ function importCSV(csvData) {
     }
 
     // Sauvegarder les 11 premières lignes
-    var headerLines = data.slice(0, 11);
+    headerLinesCache = data.slice(0, 11);
     var processedData = data.slice(11).map(function(row, index) {
       console.log("Traitement ligne", index + 12, ":", row);
       
@@ -85,7 +88,7 @@ function importCSV(csvData) {
     return { 
       success: true, 
       data: allProcessedRows,
-      headerLines: headerLines,
+      headerLines: headerLinesCache,
       message: allProcessedRows.length + " lignes importées avec succès"
     };
   } catch(e) {
@@ -94,5 +97,24 @@ function importCSV(csvData) {
       success: false, 
       message: "Erreur lors de l'import: " + e.toString() 
     };
+  }
+}
+
+// Function to export CSV with header lines and modified data
+function exportCSV(modifiedLines) {
+  try {
+    const csvData = headerLinesCache.slice(); // Clone headers
+    modifiedLines.forEach(rule => {
+      csvData.push([
+        '', '', '', rule.sourceIP, '', '', rule.destIP, rule.protocol,
+        rule.service, rule.port, rule.authentication, rule.flowEncryption,
+        rule.classification, rule.appCode
+      ]);
+    });
+    const csvString = csvData.map(row => row.join(',')).join('\r\n');
+    return csvString;
+  } catch (e) {
+    console.error('Erreur exportCSV:', e.toString());
+    throw new Error('Erreur lors de la génération CSV');
   }
 }
