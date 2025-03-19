@@ -211,6 +211,23 @@
       font-weight: bold;
     }
     
+    .btn-delete-script {
+      background-color: transparent;
+      color: #ff4757;
+      border: 2px solid #ff4757;
+      padding: 12px 35px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    .btn-delete-script:hover {
+      background-color: #ff4757;
+      color: white;
+    }
+    
     .action-buttons {
       display: flex;
       gap: 15px;
@@ -664,12 +681,7 @@
                 </svg>
                 Copy
               </button>
-              <button class="delete-btn" onclick="deleteGeneratedScript(${index})">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3 6h18"></path>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
-                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
+              <button class="btn-delete-script" onclick="deleteGeneratedScript(${index})">
                 Delete
               </button>
             </div>
@@ -799,35 +811,28 @@
       displayRules(currentRules);
     }
 
-    function validateRow(rule) {
-      console.log('validateRow called with:', rule);
-      const errors = [];
-      
-      if (!validateIP(rule.sourceIP)) {
-        errors.push("IP source invalide");
-      }
-      if (!validateIP(rule.destIP)) {
-        errors.push("IP destination invalide");
-      }
-      if (!validatePort(rule.port)) {
-        errors.push("Port invalide");
-      }
-      if (!['tcp', 'udp', 'icmp'].includes(rule.protocol?.toLowerCase())) {
-        errors.push("Protocole invalide");
-      }
-      if (!rule.service) {
-        errors.push("Service invalide");
-      }
-      
-      return { isValid: errors.length === 0, errors };
-    }
-
     function validateIP(ip) {
       if (!ip) return false;
-      const regex = /^(\d{1,3}\.){3}\d{1,3}$/;
-      if (!regex.test(ip)) return false;
-      
-      const parts = ip.split('.');
+      const ipList = ip.split(',').map(part => part.trim()).filter(Boolean);
+      const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+      const ipv4CidrRegex = /^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/;
+
+      return ipList.every(ipPart => {
+        if (ipv4Regex.test(ipPart)) {
+          return validateIPv4Numbers(ipPart);
+        } else if (ipv4CidrRegex.test(ipPart)) {
+          const [addr, mask] = ipPart.split('/');
+          const validAddr = validateIPv4Numbers(addr);
+          const maskNum = parseInt(mask, 10);
+          return validAddr && maskNum >= 0 && maskNum <= 32;
+        } else {
+          return false;
+        }
+      });
+    }
+
+    function validateIPv4Numbers(addr) {
+      const parts = addr.split('.');
       return parts.every(part => {
         const num = parseInt(part, 10);
         return num >= 0 && num <= 255;
