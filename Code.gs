@@ -40,21 +40,33 @@ function importCSV(csvData) {
       console.log("Traitement ligne", index + 12, ":", row);
       
       if (row.length >= 14) {
-        var processedRow = {
-          sourceIP: row[3] || '',
-          destIP: row[6] || '',
-          protocol: row[7] || 'TCP',
-          service: row[8] || '',
-          port: row[9] || '',
-          authentication: row[10]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
-          flowEncryption: row[11]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
-          classification: row[12]?.toLowerCase() === 'yellow' ? 'Yellow' : 
-                        row[12]?.toLowerCase() === 'amber' ? 'Amber' : 
-                        row[12]?.toLowerCase() === 'red' ? 'Red' : 'Yellow',
-          appCode: row[13] || ''
-        };
-        console.log("Ligne traitée:", processedRow);
-        return processedRow;
+        var sourceIPs = (row[3] || '').split(',').map(ip => ip.trim()).filter(ip => ip);
+        var destIPs = (row[6] || '').split(',').map(ip => ip.trim()).filter(ip => ip);
+        var combinations = [];
+
+        if (sourceIPs.length === 0) sourceIPs = [''];
+        if (destIPs.length === 0) destIPs = [''];
+
+        sourceIPs.forEach(function(srcIP) {
+          destIPs.forEach(function(dstIP) {
+            combinations.push({
+              sourceIP: srcIP,
+              destIP: dstIP,
+              protocol: row[7] || 'TCP',
+              service: row[8] || '',
+              port: row[9] || '',
+              authentication: row[10]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
+              flowEncryption: row[11]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
+              classification: row[12]?.toLowerCase() === 'yellow' ? 'Yellow' : 
+                            row[12]?.toLowerCase() === 'amber' ? 'Amber' : 
+                            row[12]?.toLowerCase() === 'red' ? 'Red' : 'Yellow',
+              appCode: row[13] || ''
+            });
+          });
+        });
+
+        console.log("Nombre de combinaisons générées:", combinations.length);
+        return combinations;
       }
       console.log("Ligne ignorée - pas assez de colonnes");
       return null;
@@ -62,17 +74,19 @@ function importCSV(csvData) {
       return row !== null;
     });
 
-    console.log("Nombre de lignes traitées:", processedData.length);
+    // Aplatir toutes les combinaisons
+    var allProcessedRows = processedData.flat();
+    console.log("Nombre total de lignes après aplatissement:", allProcessedRows.length);
     
-    if (processedData.length === 0) {
+    if (allProcessedRows.length === 0) {
       throw new Error("Aucune donnée valide trouvée dans le CSV");
     }
 
     return { 
       success: true, 
-      data: processedData,
+      data: allProcessedRows,
       headerLines: headerLines,
-      message: processedData.length + " lignes importées avec succès"
+      message: allProcessedRows.length + " lignes importées avec succès"
     };
   } catch(e) {
     console.error("Erreur lors de l'import:", e.toString());
