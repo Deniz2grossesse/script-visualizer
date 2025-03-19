@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -745,8 +746,8 @@
         }
         
         tr.innerHTML = `
-          <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)" class="${!validateIP(rule.sourceIP) ? 'border-red-500' : ''}"></td>
-          <td><input type="text" value="${rule.destIP || ''}" onchange="updateRule(${index}, 'destIP', this.value)" class="${!validateIP(rule.destIP) ? 'border-red-500' : ''}"></td>
+          <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)" class="${!validateIPList(rule.sourceIP) ? 'border-red-500' : ''}"></td>
+          <td><input type="text" value="${rule.destIP || ''}" onchange="updateRule(${index}, 'destIP', this.value)" class="${!validateIPList(rule.destIP) ? 'border-red-500' : ''}"></td>
           <td>
             <select onchange="updateRule(${index}, 'protocol', this.value)">
               <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
@@ -808,21 +809,28 @@
     }
 
     function validateRow(rule) {
-      console.log('validateRow called with:', rule);
       const errors = [];
-      
-      if (!validateIP(rule.sourceIP)) {
+      let isValid = true;
+
+      if (!validateIPList(rule.sourceIP)) {
         errors.push("IP source invalide");
+        isValid = false;
       }
-      if (!validateIP(rule.destIP)) {
+      
+      if (!validateIPList(rule.destIP)) {
         errors.push("IP destination invalide");
+        isValid = false;
       }
+      
       if (!validatePort(rule.port)) {
         errors.push("Port invalide");
+        isValid = false;
       }
+      
       if (!['tcp', 'udp', 'icmp'].includes(rule.protocol?.toLowerCase())) {
         errors.push("Protocole invalide");
       }
+      
       if (!rule.service) {
         errors.push("Service invalide");
       }
@@ -830,26 +838,55 @@
       return { isValid: errors.length === 0, errors };
     }
 
+    function validateIPList(ipString) {
+      if (!ipString) return false;
+      const ips = ipString.split(',').map(ip => ip.trim()).filter(ip => ip !== '');
+      return ips.every(validateIP);
+    }
+
     function validateIP(ip) {
       if (!ip) return false;
-      const regex = /^(\d{1,3}\.){3}\d{1,3}$/;
-      if (!regex.test(ip)) return false;
       
-      const parts = ip.split('.');
-      return parts.every(part => {
-        const num = parseInt(part, 10);
-        return num >= 0 && num <= 255;
-      });
+      // Check for CIDR notation
+      if (ip.includes('/')) {
+        const parts = ip.split('/');
+        if (parts.length !== 2) return false;
+        
+        const ipPart = parts[0];
+        const cidrPart = parseInt(parts[1], 10);
+        
+        // Validate the IP part
+        const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+        if (!ipRegex.test(ipPart)) return false;
+        
+        // Validate each octet
+        const octets = ipPart.split('.');
+        if (!octets.every(octet => {
+          const num = parseInt(octet, 10);
+          return num >= 0 && num <= 255;
+        })) return false;
+        
+        // Validate CIDR part (must be 0-32)
+        if (isNaN(cidrPart) || cidrPart < 0 || cidrPart > 32) return false;
+        
+        return true;
+      } else {
+        // Regular IPv4 validation
+        const regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+        if (!regex.test(ip)) return false;
+        
+        const parts = ip.split('.');
+        return parts.every(part => {
+          const num = parseInt(part, 10);
+          return num >= 0 && num <= 255;
+        });
+      }
     }
 
     function validatePort(port) {
       if (!port) return false;
       const num = parseInt(port, 10);
       return !isNaN(num) && num >= 1 && num <= 65535;
-    }
-
-    function validateService(service) {
-      return !!service && service.length > 0;
     }
 
     function handleError(error) {
