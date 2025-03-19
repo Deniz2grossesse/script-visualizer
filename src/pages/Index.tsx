@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Network, Shield, ArrowRight, Plus, Lock, FileCode, AlertTriangle, Check, X, Upload, Trash2, Copy, XCircle } from "lucide-react";
+import { Network, Shield, ArrowRight, Plus, Lock, FileCode, AlertTriangle, Check, X, Upload, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface FieldError {
@@ -231,16 +231,6 @@ const Index = () => {
   }'`;
   };
 
-  const deleteScript = (id: number) => {
-    console.log('deleteScript called for id:', id);
-    const newScripts = generatedScripts.filter(script => script.id !== id);
-    setGeneratedScripts(newScripts);
-    toast({
-      title: "Script supprimé",
-      description: "Le script a été supprimé avec succès."
-    });
-  };
-
   const handleGenerateScript = () => {
     console.log('handleGenerateScript called with csvRows:', csvRows);
     const validRows = csvRows.filter(row => {
@@ -258,6 +248,7 @@ const Index = () => {
       return;
     }
 
+    // On envoie les données au serveur GAS
     google.script.run
       .withSuccessHandler((response) => {
         console.log('Response from generateScripts:', response);
@@ -303,6 +294,7 @@ const Index = () => {
     google.script.run
       .withSuccessHandler((response) => {
         if (response.success) {
+          // Création et téléchargement du fichier CSV
           const blob = new Blob([response.data], { type: 'text/csv' });
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
@@ -595,6 +587,18 @@ const Index = () => {
             Delete
           </Button>
           <Button 
+            variant="outline"
+            className="text-[#BDC3C7] hover:bg-white/20 border-[#BDC3C7]/30 transition-colors"
+          >
+            Resume Draft
+          </Button>
+          <Button 
+            variant="outline"
+            className="text-[#E67E22] hover:bg-[#E67E22]/20 border-[#E67E22] transition-colors"
+          >
+            Verify
+          </Button>
+          <Button 
             onClick={handleGenerateScript}
             className="bg-[#E67E22] hover:bg-[#D35400] text-white border-none transition-colors flex items-center gap-2"
           >
@@ -621,21 +625,13 @@ const Index = () => {
                       readOnly
                       className="w-full h-48 p-4 rounded-md font-mono text-sm bg-[#2C3E50] border border-[#BDC3C7]/30 shadow-input focus:border-primary transition-colors text-white"
                     />
-                    <div className="mt-2 flex justify-end gap-2">
-                      <Button
-                        onClick={() => deleteScript(id)}
-                        variant="destructive"
-                        className="flex items-center gap-2"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                        Delete
-                      </Button>
-                      <Button
+                    <div className="mt-2 flex justify-end">
+                      <Button 
                         onClick={() => navigator.clipboard.writeText(script)}
-                        className="flex items-center gap-2 bg-[#3498DB] hover:bg-[#2980B9] text-white"
+                        variant="outline" 
+                        className="text-white hover:bg-white/20 transition-colors"
                       >
-                        <Copy className="h-5 w-5" />
-                        Copy
+                        Copy script
                       </Button>
                     </div>
                   </div>
