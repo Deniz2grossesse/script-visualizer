@@ -302,24 +302,21 @@
       background-color: #2980b9;
     }
 
-    .delete-row-btn {
-      background: none;
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
       border: none;
-      color: #e74c3c;
+      border-radius: 4px;
+      padding: 8px 16px;
       cursor: pointer;
-      padding: 4px;
+      font-size: 14px;
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 8px;
     }
 
-    .delete-row-btn:hover {
-      color: #c0392b;
-    }
-
-    .delete-row-btn svg {
-      width: 20px;
-      height: 20px;
+    .delete-btn:hover {
+      background-color: #c0392b;
     }
 
     .error-message {
@@ -482,6 +479,7 @@
 
   <script>
     let currentRules = [];
+    let generatedScripts = [];
 
     function showLoading() {
       document.getElementById('loadingMessage').classList.add('visible');
@@ -672,24 +670,51 @@
     }
 
     function generateScripts() {
+      const formData = {
+        rules: currentRules
+      };
+
+      google.script.run
+        .withSuccessHandler((response) => {
+          if (response.success) {
+            generatedScripts = response.data;
+            displayGeneratedScripts();
+            alert(response.message);
+          } else {
+            alert('Erreur lors de la génération: ' + response.message);
+          }
+        })
+        .withFailureHandler(handleError)
+        .generateScripts(formData);
+    }
+
+    function displayGeneratedScripts() {
       const scriptsOutput = document.getElementById('scriptsOutput');
       scriptsOutput.innerHTML = '';
       
-      if (currentRules.length > 0) {
-        currentRules.forEach((rule, index) => {
+      if (generatedScripts.length > 0) {
+        generatedScripts.forEach((scriptObj) => {
           const scriptDiv = document.createElement('div');
           scriptDiv.className = 'script-item';
+          scriptDiv.id = `script-${scriptObj.id}`;
           
-          const script = generateScriptForRow(rule);
           scriptDiv.innerHTML = `
-            <div class="script-content">${script}</div>
+            <div class="script-content">${scriptObj.script}</div>
             <div class="script-actions">
-              <button class="copy-btn" onclick="copyGeneratedScript(${index})">
+              <button class="copy-btn" onclick="copyScript(${scriptObj.id})">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
                 Copy
+              </button>
+              <button class="delete-btn" onclick="deleteScript(${scriptObj.id})">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                Delete
               </button>
             </div>
           `;
@@ -703,29 +728,32 @@
       }
     }
 
-    function generateScriptForRow(rule) {
-      return `curl -k -X POST "https://api/query" \\
--H "Content-Type: application/json" \\
--H "Authorization: Bearer " \\
--d '{
-  "source": "${rule.sourceIP}",
-  "destination": "${rule.destIP}",
-  "protocol": "${rule.protocol}",
-  "port": "${rule.port}",
-  "service": "${rule.service}"
-}'`;
+    function copyScript(id) {
+      const scriptObj = generatedScripts.find(s => s.id === id);
+      if (scriptObj) {
+        navigator.clipboard.writeText(scriptObj.script)
+          .then(() => {
+            alert('Script copié dans le presse-papier');
+          })
+          .catch(err => {
+            console.error('Erreur lors de la copie:', err);
+            alert('Erreur lors de la copie du script');
+          });
+      }
     }
 
-    function copyGeneratedScript(index) {
-      const script = generateScriptForRow(currentRules[index]);
-      navigator.clipboard.writeText(script)
-        .then(() => {
-          alert('Script copié dans le presse-papier');
-        })
-        .catch(err => {
-          console.error('Erreur lors de la copie:', err);
-          alert('Erreur lors de la copie du script');
-        });
+    function deleteScript(id) {
+      if (confirm('Voulez-vous vraiment supprimer ce script ?')) {
+        generatedScripts = generatedScripts.filter(s => s.id !== id);
+        const element = document.getElementById(`script-${id}`);
+        if (element) {
+          element.remove();
+        }
+        
+        if (generatedScripts.length === 0) {
+          document.getElementById('scriptsOutput').style.display = 'none';
+        }
+      }
     }
 
     function displayRules(rules) {
@@ -857,3 +885,4 @@
   </script>
 </body>
 </html>
+
