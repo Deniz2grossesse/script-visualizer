@@ -541,7 +541,7 @@
               if (response.success) {
                 currentRules = response.data;
                 displayRules(currentRules);
-                document.getElementById('rulesTable').style.display = 'table';  // Added this line to show the table
+                document.getElementById('rulesTable').style.display = 'table';  // Cette ligne affiche le tableau
                 alert(response.message);
               } else {
                 alert(response.message || "Erreur lors de l'import");
@@ -746,71 +746,76 @@
       const tbody = table.querySelector('tbody');
       tbody.innerHTML = '';
       
-      rules.forEach((rule, index) => {
-        const validation = validateRow(rule);
+      if (rules && rules.length > 0) {
+        table.style.display = 'table'; // Ajout d'une vérification supplémentaire ici
         
-        const tr = document.createElement('tr');
-        if (!validation.isValid) {
-          tr.className = 'has-error';
-        }
-        
-        tr.innerHTML = `
-          <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)" class="${!validateIP(rule.sourceIP) ? 'border-red-500' : ''}"></td>
-          <td><input type="text" value="${rule.destIP || ''}" onchange="updateRule(${index}, 'destIP', this.value)" class="${!validateIP(rule.destIP) ? 'border-red-500' : ''}"></td>
-          <td>
-            <select onchange="updateRule(${index}, 'protocol', this.value)">
-              <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
-              <option value="UDP" ${rule.protocol === 'UDP' ? 'selected' : ''}>UDP</option>
-              <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
-            </select>
-          </td>
-          <td><input type="text" value="${rule.service || ''}" onchange="updateRule(${index}, 'service', this.value)"></td>
-          <td><input type="text" value="${rule.port || ''}" onchange="updateRule(${index}, 'port', this.value)" class="${!validatePort(rule.port) ? 'border-red-500' : ''}"></td>
-          <td>
-            <select onchange="updateRule(${index}, 'authentication', this.value)">
-              <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
-              <option value="No" ${rule.authentication === 'No' ? 'selected' : ''}>No</option>
-            </select>
-          </td>
-          <td>
-            <select onchange="updateRule(${index}, 'flowEncryption', this.value)">
-              <option value="Yes" ${rule.flowEncryption === 'Yes' ? 'selected' : ''}>Yes</option>
-              <option value="No" ${rule.flowEncryption === 'No' ? 'selected' : ''}>No</option>
-            </select>
-          </td>
-          <td>
-            <select onchange="updateRule(${index}, 'classification', this.value)">
-              <option value="Yellow" ${rule.classification === 'Yellow' ? 'selected' : ''}>Yellow</option>
-              <option value="Amber" ${rule.classification === 'Amber' ? 'selected' : ''}>Amber</option>
-              <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
-            </select>
-          </td>
-          <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
-          <td>
-            <button class="delete-row-btn" onclick="deleteRow(${index})">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" 
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
-                <path d="M3 6h18"/>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-              </svg>
-            </button>
-          </td>
-        `;
+        rules.forEach((rule, index) => {
+          const validation = validateRow(rule);
+          
+          const tr = document.createElement('tr');
+          if (!validation.isValid) {
+            tr.className = 'has-error';
+          }
+          
+          tr.innerHTML = `
+            <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)" class="${!validateIP(rule.sourceIP) ? 'border-red-500' : ''}"></td>
+            <td><input type="text" value="${rule.destIP || ''}" onchange="updateRule(${index}, 'destIP', this.value)" class="${!validateIP(rule.destIP) ? 'border-red-500' : ''}"></td>
+            <td>
+              <select onchange="updateRule(${index}, 'protocol', this.value)">
+                <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
+                <option value="UDP" ${rule.protocol === 'UDP' ? 'selected' : ''}>UDP</option>
+                <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
+              </select>
+            </td>
+            <td><input type="text" value="${rule.service || ''}" onchange="updateRule(${index}, 'service', this.value)"></td>
+            <td><input type="text" value="${rule.port || ''}" onchange="updateRule(${index}, 'port', this.value)" class="${!validatePort(rule.port) ? 'border-red-500' : ''}"></td>
+            <td>
+              <select onchange="updateRule(${index}, 'authentication', this.value)">
+                <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
+                <option value="No" ${rule.authentication === 'No' ? 'selected' : ''}>No</option>
+              </select>
+            </td>
+            <td>
+              <select onchange="updateRule(${index}, 'flowEncryption', this.value)">
+                <option value="Yes" ${rule.flowEncryption === 'Yes' ? 'selected' : ''}>Yes</option>
+                <option value="No" ${rule.flowEncryption === 'No' ? 'selected' : ''}>No</option>
+              </select>
+            </td>
+            <td>
+              <select onchange="updateRule(${index}, 'classification', this.value)">
+                <option value="Yellow" ${rule.classification === 'Yellow' ? 'selected' : ''}>Yellow</option>
+                <option value="Amber" ${rule.classification === 'Amber' ? 'selected' : ''}>Amber</option>
+                <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
+              </select>
+            </td>
+            <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
+            <td>
+              <button class="delete-row-btn" onclick="deleteRow(${index})">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" 
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                  <path d="M3 6h18"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+              </button>
+            </td>
+          `;
 
-        tbody.appendChild(tr);
+          tbody.appendChild(tr);
 
-        if (!validation.isValid) {
-          const errorRow = document.createElement('tr');
-          const errorCell = document.createElement('td');
-          errorCell.colSpan = 10;
-          errorCell.innerHTML = `<div class="error-message">${validation.errors.join('<br>')}</div>`;
-          errorRow.appendChild(errorCell);
-          tbody.appendChild(errorRow);
-        }
-      });
-      
-      table.style.display = 'table';
+          if (!validation.isValid) {
+            const errorRow = document.createElement('tr');
+            const errorCell = document.createElement('td');
+            errorCell.colSpan = 10;
+            errorCell.innerHTML = `<div class="error-message">${validation.errors.join('<br>')}</div>`;
+            errorRow.appendChild(errorCell);
+            tbody.appendChild(errorRow);
+          }
+        });
+      } else {
+        console.log("Aucune règle à afficher ou tableau vide");
+        table.style.display = 'none';
+      }
     }
 
     function deleteRow(index) {
