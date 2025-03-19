@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -671,38 +672,53 @@
       scriptsOutput.innerHTML = '';
       
       if (currentRules.length > 0) {
-        currentRules.forEach((rule, index) => {
-          const scriptDiv = document.createElement('div');
-          scriptDiv.className = 'script-item';
-          
-          const script = generateScriptForRow(rule);
-          scriptDiv.innerHTML = `
-            <div class="script-content">${script}</div>
-            <div class="script-actions">
-              <button class="copy-btn" onclick="copyGeneratedScript(${index})">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-                Copy
-              </button>
-              <button class="delete-btn" onclick="deleteGeneratedScript(${index})">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3 6h18"/>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                </svg>
-                Delete
-              </button>
-            </div>
-          `;
-          
-          scriptsOutput.appendChild(scriptDiv);
-        });
-        
-        scriptsOutput.style.display = 'block';
+        google.script.run
+          .withSuccessHandler(function(response) {
+            if (response.success) {
+              response.data.forEach((script, index) => {
+                const scriptDiv = document.createElement('div');
+                scriptDiv.className = 'script-item';
+                
+                scriptDiv.innerHTML = `
+                  <div class="script-content">${script}</div>
+                  <div class="script-actions">
+                    <button class="copy-btn" onclick="copyGeneratedScript(${index})">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                      Copy
+                    </button>
+                    <button class="delete-btn" onclick="deleteGeneratedScript(${index})">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                      Delete
+                    </button>
+                  </div>
+                `;
+                
+                scriptsOutput.appendChild(scriptDiv);
+              });
+              
+              scriptsOutput.style.display = 'block';
+              toast({
+                title: "Succès",
+                description: `${response.data.length} script(s) généré(s) avec succès`
+              });
+            } else {
+              alert(response.message || "Erreur lors de la génération des scripts");
+            }
+          })
+          .withFailureHandler(function(error) {
+            console.error('Error in generateScripts:', error);
+            alert("Erreur lors de la génération des scripts: " + error);
+          })
+          .generateScripts({ csvRows: currentRules });
       } else {
-        scriptsOutput.style.display = 'none';
+        alert("Aucune règle à traiter. Veuillez ajouter des règles d'abord.");
       }
     }
 
@@ -720,8 +736,8 @@
     }
 
     function copyGeneratedScript(index) {
-      const script = generateScriptForRow(currentRules[index]);
-      navigator.clipboard.writeText(script)
+      const scriptContent = document.querySelectorAll('.script-content')[index].textContent;
+      navigator.clipboard.writeText(scriptContent)
         .then(() => {
           alert('Script copié dans le presse-papier');
         })
@@ -836,10 +852,7 @@
       
       if (!['tcp', 'udp', 'icmp'].includes(rule.protocol?.toLowerCase())) {
         errors.push("Protocole invalide");
-      }
-      
-      if (!rule.service) {
-        errors.push("Service invalide");
+        isValid = false;
       }
       
       return { isValid: errors.length === 0, errors };
@@ -928,6 +941,11 @@
     function handleError(error) {
       console.error('Erreur:', error);
       alert('Une erreur est survenue: ' + error.toString());
+    }
+
+    // Function to display toast messages (simplified implementation)
+    function toast(config) {
+      alert(config.title + ": " + config.description);
     }
   </script>
 </body>
