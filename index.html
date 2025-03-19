@@ -686,7 +686,6 @@
     }
 
     function generateScripts() {
-      console.log('generateScripts called with csvRows:', csvRows);
       const scriptsOutput = document.getElementById('scriptsOutput');
       scriptsOutput.innerHTML = '';
       
@@ -855,6 +854,7 @@
       displayRules(currentRules);
     }
 
+    // Ajout de la fonction validateRow qui était manquante
     function validateRow(rule) {
       const errors = [];
       let isValid = true;
@@ -887,6 +887,7 @@
       return { isValid: errors.length === 0, errors };
     }
 
+    // Ajout de la fonction validateIPList qui était référencée mais manquante
     function validateIPList(ipString) {
       if (!ipString) return false;
       
