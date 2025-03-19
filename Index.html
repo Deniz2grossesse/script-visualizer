@@ -276,27 +276,28 @@
       font-family: monospace;
     }
 
-    .copy-button {
+    .scripts-actions {
+      display: flex;
+      gap: 10px;
       margin-top: 10px;
+    }
+
+    .copy-button {
       padding: 8px 16px;
       background-color: #3498db;
       color: white;
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      display: inline-block;
-      margin-right: 8px;
     }
 
     .delete-button {
-      margin-top: 10px;
       padding: 8px 16px;
       background-color: #e74c3c;
       color: white;
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      display: inline-block;
     }
 
     .copy-button:hover {
@@ -636,7 +637,7 @@
               scriptBlock.innerHTML = `
                 <h3>${type}</h3>
                 <pre>${script}</pre>
-                <div>
+                <div class="scripts-actions">
                   <button class="copy-button" onclick="copyScript(this)">Copy</button>
                   <button class="delete-button" onclick="deleteScript(this)">Delete</button>
                 </div>
@@ -682,4 +683,3 @@
   </script>
 </body>
 </html>
-
