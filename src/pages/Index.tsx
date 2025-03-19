@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Network, Shield, ArrowRight, Plus, Lock, FileCode, AlertTriangle, Check, X, Upload, Trash2 } from "lucide-react";
+import { Network, Shield, ArrowRight, Plus, Lock, FileCode, AlertTriangle, Check, X, Upload, Trash2, Copy, XCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface FieldError {
@@ -595,18 +595,6 @@ const Index = () => {
             Delete
           </Button>
           <Button 
-            variant="outline"
-            className="text-[#BDC3C7] hover:bg-white/20 border-[#BDC3C7]/30 transition-colors"
-          >
-            Resume Draft
-          </Button>
-          <Button 
-            variant="outline"
-            className="text-[#E67E22] hover:bg-[#E67E22]/20 border-[#E67E22] transition-colors"
-          >
-            Verify
-          </Button>
-          <Button 
             onClick={handleGenerateScript}
             className="bg-[#E67E22] hover:bg-[#D35400] text-white border-none transition-colors flex items-center gap-2"
           >
@@ -639,14 +627,16 @@ const Index = () => {
                         variant="outline" 
                         className="text-white hover:bg-white/20 transition-colors"
                       >
+                        <Copy className="h-4 w-4 mr-2" />
                         Copy script
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         onClick={() => deleteScript(id)}
-                        className="text-red-500 hover:text-red-400 hover:bg-red-500/20"
+                        className="text-red-500 border-red-500 hover:bg-red-500/20 hover:text-red-400"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <XCircle className="h-4 w-4 mr-2" />
+                        Close
                       </Button>
                     </div>
                   </div>
