@@ -535,7 +535,9 @@
 
       console.log("Type du fichier:", file.type);
       console.log("Nom du fichier:", file.name);
-
+      
+      showLoading(); // Add this to show loading indicator
+      
       const reader = new FileReader();
       
       reader.onload = (e) => {
@@ -874,6 +876,6 @@
       console.error('Erreur:', error);
       alert('Une erreur est survenue: ' + error.toString());
     }
-  </script>
-</body>
-</html>
+
+
+
