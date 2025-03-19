@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -303,24 +302,14 @@
       background-color: #2980b9;
     }
 
-    .delete-row-btn {
-      background: none;
-      border: none;
-      color: #e74c3c;
-      cursor: pointer;
-      padding: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
+      margin-right: 10px;
     }
 
-    .delete-row-btn:hover {
-      color: #c0392b;
-    }
-
-    .delete-row-btn svg {
-      width: 20px;
-      height: 20px;
+    .delete-btn:hover {
+      background-color: #c0392b;
     }
 
     .error-message {
@@ -688,6 +677,14 @@
           scriptDiv.innerHTML = `
             <div class="script-content">${script}</div>
             <div class="script-actions">
+              <button class="delete-btn" onclick="deleteGeneratedScript(${index})">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                Delete
+              </button>
               <button class="copy-btn" onclick="copyGeneratedScript(${index})">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -730,6 +727,20 @@
           console.error('Erreur lors de la copie:', err);
           alert('Erreur lors de la copie du script');
         });
+    }
+
+    function deleteGeneratedScript(index) {
+      if (confirm('Êtes-vous sûr de vouloir supprimer ce script ?')) {
+        currentRules.splice(index, 1);
+        displayRules(currentRules);
+        generateScripts();
+        
+        if (currentRules.length === 0) {
+          document.getElementById('scriptsOutput').style.display = 'none';
+        }
+        
+        alert('Script supprimé avec succès');
+      }
     }
 
     function displayRules(rules) {
@@ -861,3 +872,4 @@
   </script>
 </body>
 </html>
+
