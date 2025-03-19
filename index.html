@@ -666,7 +666,7 @@
       }
     }
 
-    generateScripts() {
+    function generateScripts() {
       const scriptsOutput = document.getElementById('scriptsOutput');
       scriptsOutput.innerHTML = '';
       
@@ -686,13 +686,13 @@
                 </svg>
                 Copy
               </button>
-              <button class="delete-row-btn" onclick="deleteGeneratedScript(${index})">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" 
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+              <button class="delete-btn" onclick="deleteGeneratedScript(${index})">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M3 6h18"/>
                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
                   <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                 </svg>
+                Delete
               </button>
             </div>
           `;
@@ -896,6 +896,39 @@
       return !isNaN(num) && num >= 1 && num <= 65535;
     }
 
+    function saveNES() {
+      if (currentRules.length === 0) {
+        alert("Aucune ligne à sauvegarder. Veuillez ajouter des données.");
+        return;
+      }
+      
+      showLoading();
+      google.script.run
+        .withSuccessHandler(function(csvContent) {
+          hideLoading();
+          // Create and trigger download
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'export_onboarding.csv';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          alert("Fichier CSV sauvegardé avec succès.");
+        })
+        .withFailureHandler(function(err) {
+          hideLoading();
+          console.error('Erreur GAS:', err);
+          alert('Erreur lors de la sauvegarde NES');
+        })
+        .exportCSV(currentRules);
+    }
+
     function handleError(error) {
       console.error('Erreur:', error);
-      alert('Une erreur est sur
+      alert('Une erreur est survenue: ' + error.toString());
+    }
+  </script>
+</body>
+</html>
