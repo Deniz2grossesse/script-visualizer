@@ -622,6 +622,14 @@ const Index = () => {
                       className="w-full h-48 p-4 rounded-md font-mono text-sm bg-[#2C3E50] border border-[#BDC3C7]/30 shadow-input focus:border-primary transition-colors text-white"
                     />
                     <div className="mt-2 flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => deleteScript(id)}
+                        className="text-[#ea384c] border-[#ea384c] hover:bg-[#ea384c]/20 hover:text-[#f8f9fa] transition-colors"
+                      >
+                        <XCircle className="h-4 w-4 mr-2" />
+                        Close
+                      </Button>
                       <Button 
                         onClick={() => navigator.clipboard.writeText(script)}
                         variant="outline" 
@@ -629,14 +637,6 @@ const Index = () => {
                       >
                         <Copy className="h-4 w-4 mr-2" />
                         Copy script
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => deleteScript(id)}
-                        className="text-red-500 border-red-500 hover:bg-red-500/20 hover:text-red-400"
-                      >
-                        <XCircle className="h-4 w-4 mr-2" />
-                        Close
                       </Button>
                     </div>
                   </div>
@@ -659,3 +659,4 @@ const Index = () => {
 };
 
 export default Index;
+
