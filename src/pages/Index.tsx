@@ -622,20 +622,21 @@ const Index = () => {
                       className="w-full h-48 p-4 rounded-md font-mono text-sm bg-[#2C3E50] border border-[#BDC3C7]/30 shadow-input focus:border-primary transition-colors text-white"
                     />
                     <div className="mt-2 flex justify-end gap-2">
-                      <button
+                      <Button
                         onClick={() => deleteScript(id)}
-                        className="flex items-center justify-center bg-transparent hover:bg-red-500/10 p-2 rounded"
-                        aria-label="Delete script"
+                        variant="destructive"
+                        className="flex items-center gap-2"
                       >
-                        <Trash2 className="h-6 w-6 text-red-500" />
-                      </button>
-                      <button
+                        <Trash2 className="h-5 w-5" />
+                        Delete
+                      </Button>
+                      <Button
                         onClick={() => navigator.clipboard.writeText(script)}
-                        className="flex items-center justify-center gap-2 bg-[#3498DB] hover:bg-[#2980B9] text-white px-4 py-2 rounded-md"
+                        className="flex items-center gap-2 bg-[#3498DB] hover:bg-[#2980B9] text-white"
                       >
                         <Copy className="h-5 w-5" />
                         Copy
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
