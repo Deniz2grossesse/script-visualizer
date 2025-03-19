@@ -124,3 +124,54 @@ function saveToCSV(data, headerLines) {
     };
   }
 }
+
+function generateScripts(formData) {
+  console.log("generateScripts appelé avec:", formData);
+  try {
+    var results = [];
+    if (formData && formData.rules && formData.rules.length > 0) {
+      formData.rules.forEach(function(rule, index) {
+        var script = generateScriptForRule(rule, index);
+        results.push({
+          id: index + 1,
+          script: script
+        });
+      });
+      
+      return {
+        success: true,
+        data: results,
+        message: results.length + " script(s) généré(s)"
+      };
+    } else {
+      return {
+        success: false,
+        message: "Aucune règle à traiter"
+      };
+    }
+  } catch(e) {
+    console.error("Erreur:", e.toString());
+    return {
+      success: false,
+      message: "Erreur: " + e.toString()
+    };
+  }
+}
+
+function generateScriptForRule(rule, index) {
+  return 'curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\\n' +
+    '  -H "Authorization: Bearer <TON_TOKEN>" \\\n' +
+    '  -H "Content-Type: application/json" \\\n' +
+    '  -d \'{\n' +
+    '    "source": {\n' +
+    '      "ip": "' + rule.sourceIP.split('/')[0] + '"\n' +
+    '    },\n' +
+    '    "destination": {\n' +
+    '      "ip": "' + rule.destIP + '"\n' +
+    '    },\n' +
+    '    "service": {\n' +
+    '      "protocol": "' + rule.protocol.toUpperCase() + '",\n' +
+    '      "port": ' + rule.port + '\n' +
+    '    }\n' +
+    '  }\'';
+}
