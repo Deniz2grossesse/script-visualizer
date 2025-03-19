@@ -278,26 +278,27 @@
 
     .scripts-actions {
       display: flex;
+      flex-direction: row;
       gap: 10px;
       margin-top: 10px;
     }
 
-    .copy-button {
+    .copy-button, .delete-button {
       padding: 8px 16px;
-      background-color: #3498db;
-      color: white;
       border: none;
       border-radius: 4px;
       cursor: pointer;
+      flex: 0 0 auto;
+    }
+
+    .copy-button {
+      background-color: #3498db;
+      color: white;
     }
 
     .delete-button {
-      padding: 8px 16px;
       background-color: #e74c3c;
       color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
     }
 
     .copy-button:hover {
@@ -683,3 +684,4 @@
   </script>
 </body>
 </html>
+
