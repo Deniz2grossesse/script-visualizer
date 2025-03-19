@@ -541,6 +541,7 @@
               if (response.success) {
                 currentRules = response.data;
                 displayRules(currentRules);
+                document.getElementById('rulesTable').style.display = 'table';  // Added this line to show the table
                 alert(response.message);
               } else {
                 alert(response.message || "Erreur lors de l'import");
@@ -681,8 +682,13 @@
                 </svg>
                 Copy
               </button>
-              <button class="btn-delete-script" onclick="deleteGeneratedScript(${index})">
-                Delete
+              <button class="delete-row-btn" onclick="deleteGeneratedScript(${index})">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" 
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                  <path d="M3 6h18"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
               </button>
             </div>
           `;
@@ -782,7 +788,8 @@
           <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
           <td>
             <button class="delete-row-btn" onclick="deleteRow(${index})">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" 
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
                 <path d="M3 6h18"/>
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
                 <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
