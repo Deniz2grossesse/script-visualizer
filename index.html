@@ -499,6 +499,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   <script>
     let currentRules = [];
 
@@ -656,65 +657,105 @@
 
     function saveNES() {
       // Code pour sauvegarder les données NES
-      alert('Données NES sauvegardées');
+      if (currentRules.length === 0) {
+        alert("Aucune ligne à sauvegarder. Veuillez ajouter des données.");
+        return;
+      }
+      
+      showLoading();
+      google.script.run
+        .withSuccessHandler(function(csvContent) {
+          hideLoading();
+          // Create and trigger download
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'export_onboarding.csv';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          alert("Fichier CSV sauvegardé avec succès.");
+        })
+        .withFailureHandler(function(err) {
+          hideLoading();
+          console.error('Erreur GAS:', err);
+          alert('Erreur lors de la sauvegarde NES');
+        })
+        .exportCSV(currentRules);
     }
 
     function generateScripts() {
+      console.log('generateScripts called with csvRows:', csvRows);
       const scriptsOutput = document.getElementById('scriptsOutput');
       scriptsOutput.innerHTML = '';
       
-      if (currentRules.length > 0) {
-        currentRules.forEach((rule, index) => {
-          const scriptDiv = document.createElement('div');
-          scriptDiv.className = 'script-item';
-          
-          const script = generateScriptForRow(rule);
-          scriptDiv.innerHTML = `
-            <div class="script-content">${script}</div>
-            <div class="script-actions">
-              <button class="copy-btn" onclick="copyGeneratedScript(${index})">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-                Copy
-              </button>
-              <button class="delete-row-btn" onclick="deleteGeneratedScript(${index})">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" 
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
-                  <path d="M3 6h18"/>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                </svg>
-              </button>
-            </div>
-          `;
-          
-          scriptsOutput.appendChild(scriptDiv);
-        });
-        
-        scriptsOutput.style.display = 'block';
-      } else {
-        scriptsOutput.style.display = 'none';
+      if (currentRules.length === 0) {
+        alert("Aucune règle à générer. Veuillez ajouter des données.");
+        return;
       }
-    }
+      
+      const validRows = currentRules.filter(row => {
+        const validation = validateRow(row);
+        return validation.isValid;
+      });
 
-    function generateScriptForRow(rule) {
-      return `curl -k -X POST "https://api/query" \\
--H "Content-Type: application/json" \\
--H "Authorization: Bearer " \\
--d '{
-  "source": "${rule.sourceIP}",
-  "destination": "${rule.destIP}",
-  "protocol": "${rule.protocol}",
-  "port": "${rule.port}",
-  "service": "${rule.service}"
-}'`;
+      if (validRows.length === 0) {
+        alert("Aucune règle valide trouvée. Veuillez corriger les erreurs.");
+        return;
+      }
+      
+      showLoading();
+      google.script.run
+        .withSuccessHandler((response) => {
+          hideLoading();
+          console.log('Response from generateScripts:', response);
+          if (response.success) {
+            response.data.forEach((script, index) => {
+              const scriptDiv = document.createElement('div');
+              scriptDiv.className = 'script-item';
+              
+              scriptDiv.innerHTML = `
+                <div class="script-content">${script}</div>
+                <div class="script-actions">
+                  <button class="copy-btn" onclick="copyGeneratedScript(${index})">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copy
+                  </button>
+                  <button class="delete-row-btn" onclick="deleteGeneratedScript(${index})">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" 
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                      <path d="M3 6h18"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                  </button>
+                </div>
+              `;
+              
+              scriptsOutput.appendChild(scriptDiv);
+            });
+            
+            scriptsOutput.style.display = 'block';
+            alert(`${response.data.length} script(s) généré(s) avec succès`);
+          } else {
+            alert(response.message || "Erreur lors de la génération des scripts");
+          }
+        })
+        .withFailureHandler((error) => {
+          hideLoading();
+          console.error('Error in generateScripts:', error);
+          alert('Erreur lors de la génération des scripts');
+        })
+        .generateScripts({ csvRows: validRows });
     }
 
     function copyGeneratedScript(index) {
-      const script = generateScriptForRow(currentRules[index]);
-      navigator.clipboard.writeText(script)
+      const scriptContent = document.querySelectorAll('.script-content')[index].textContent;
+      navigator.clipboard.writeText(scriptContent)
         .then(() => {
           alert('Script copié dans le presse-papier');
         })
@@ -725,9 +766,15 @@
     }
 
     function deleteGeneratedScript(index) {
-      if (confirm('Voulez-vous supprimer ce script ?')) {
-        currentRules.splice(index, 1);
-        generateScripts(); // Regénère les scripts avec les bons index
+      console.log('Deleting script at index:', index);
+      const scriptItems = document.querySelectorAll('.script-item');
+      if (index < scriptItems.length) {
+        scriptItems[index].remove();
+        
+        // Si tous les scripts ont été supprimés, masquer le conteneur
+        if (document.querySelectorAll('.script-item').length === 0) {
+          document.getElementById('scriptsOutput').style.display = 'none';
+        }
       }
     }
     
@@ -829,10 +876,12 @@
       
       if (!['tcp', 'udp', 'icmp'].includes(rule.protocol?.toLowerCase())) {
         errors.push("Protocole invalide");
+        isValid = false;
       }
       
       if (!rule.service) {
         errors.push("Service invalide");
+        isValid = false;
       }
       
       return { isValid: errors.length === 0, errors };
@@ -840,8 +889,18 @@
 
     function validateIPList(ipString) {
       if (!ipString) return false;
-      const ips = ipString.split(',').map(ip => ip.trim()).filter(ip => ip !== '');
-      return ips.every(validateIP);
+      
+      // Si c'est une chaîne vide, on considère que c'est invalide
+      if (ipString.trim() === '') return false;
+      
+      // Si c'est une liste d'IPs séparées par des virgules
+      if (ipString.includes(',')) {
+        const ips = ipString.split(',').map(ip => ip.trim()).filter(ip => ip !== '');
+        return ips.length > 0 && ips.every(validateIP);
+      }
+      
+      // Si c'est une seule IP
+      return validateIP(ipString);
     }
 
     function validateIP(ip) {

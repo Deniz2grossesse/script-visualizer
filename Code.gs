@@ -118,3 +118,74 @@ function exportCSV(modifiedLines) {
     throw new Error('Erreur lors de la génération CSV');
   }
 }
+
+// Function to generate scripts from the rules
+function generateScripts(rulesData) {
+  try {
+    console.log("generateScripts called with:", rulesData);
+    const rules = rulesData.csvRows || [];
+    
+    if (!rules || rules.length === 0) {
+      return { 
+        success: false, 
+        message: "Aucune règle valide à traiter" 
+      };
+    }
+    
+    const scripts = rules.map(rule => {
+      return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
+  -H "Authorization: Bearer <TON_TOKEN>" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "source": {
+      "ip": "${rule.sourceIP.split('/')[0]}"
+    },
+    "destination": {
+      "ip": "${rule.destIP}"
+    },
+    "service": {
+      "protocol": "${rule.protocol.toUpperCase()}",
+      "port": ${rule.port}
+    }
+  }'`;
+    });
+    
+    return {
+      success: true,
+      data: scripts,
+      message: scripts.length + " scripts générés avec succès"
+    };
+  } catch (e) {
+    console.error("Erreur generateScripts:", e.toString());
+    return {
+      success: false,
+      message: "Erreur lors de la génération des scripts: " + e.toString()
+    };
+  }
+}
+
+// Function to delete form data
+function deleteForm() {
+  try {
+    // Clear any stored data if needed
+    headerLinesCache = [];
+    return { success: true, message: "Formulaire supprimé avec succès" };
+  } catch (e) {
+    console.error("Erreur deleteForm:", e.toString());
+    return { success: false, message: "Erreur lors de la suppression: " + e.toString() };
+  }
+}
+
+// Function to get draft data if available
+function getDraft() {
+  try {
+    // Implement draft retrieval logic here
+    return { 
+      success: false, 
+      message: "Fonction non implémentée" 
+    };
+  } catch (e) {
+    console.error("Erreur getDraft:", e.toString());
+    return { success: false, message: "Erreur: " + e.toString() };
+  }
+}
