@@ -9,7 +9,6 @@ declare namespace google {
       function saveDraft(formData: any): void;
       function getDraft(): void;
       function deleteForm(): void;
-      function saveToCSV(data: any, headerLines?: any[]): void;
     }
   }
 }

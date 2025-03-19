@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -50,7 +51,7 @@ const Index = () => {
     department: { error: false, message: '' },
     projectCode: { error: false, message: '' },
   });
-  const [headerLines, setHeaderLines] = useState<string[][]>([]);
+  // Removed the headerLines state as it's no longer needed
 
   useEffect(() => {
     console.log('Index component mounted');
@@ -134,7 +135,6 @@ const Index = () => {
         .withSuccessHandler((response) => {
           if (response.success) {
             setCsvRows(response.data);
-            setHeaderLines(response.headerLines || []);
             toast({
               title: "Import réussi",
               description: response.message
@@ -281,52 +281,7 @@ const Index = () => {
       .generateScripts({ csvRows: validRows });
   };
 
-  const handleSave = () => {
-    if (csvRows.length === 0) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Aucune donnée à sauvegarder"
-      });
-      return;
-    }
-
-    google.script.run
-      .withSuccessHandler((response) => {
-        if (response.success) {
-          // Création et téléchargement du fichier CSV
-          const blob = new Blob([response.data], { type: 'text/csv' });
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'network_rules.csv';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
-          
-          toast({
-            title: "Succès",
-            description: response.message
-          });
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: response.message
-          });
-        }
-      })
-      .withFailureHandler((error) => {
-        console.error("Erreur:", error);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la sauvegarde"
-        });
-      })
-      .saveToCSV(csvRows, headerLines);
-  };
+  // Removed the handleSave function
 
   return (
     <div className="min-h-screen bg-[#212121] text-[#BDC3C7] font-sans p-6">
@@ -640,14 +595,6 @@ const Index = () => {
             </div>
           </div>
         )}
-
-        <Button 
-          variant="outline"
-          className="text-[#BDC3C7] hover:bg-white/20 border-[#BDC3C7]/30 transition-colors"
-          onClick={handleSave}
-        >
-          Save
-        </Button>
       </div>
     </div>
   );
