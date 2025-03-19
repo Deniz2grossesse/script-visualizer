@@ -217,6 +217,21 @@
       justify-content: flex-end;
       margin-top: 40px;
     }
+    
+    #actionBar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #1A1F2C;
+      padding: 15px 30px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+    }
+    
+    body {
+      padding-bottom: 90px; /* Évite que le contenu soit caché derrière la barre */
+    }
 
     .rules-table {
       width: 100%;
@@ -468,7 +483,7 @@
 
     <div id="scriptsOutput" class="scripts-container"></div>
 
-    <div class="action-buttons">
+    <div id="actionBar" class="action-buttons">
       <button class="btn-delete" onclick="deleteForm()">Delete</button>
       <button class="btn-resume" onclick="resumeDraft()">Resume Draft</button>
       <button class="btn-verify" onclick="verifyFields()">Verify</button>
