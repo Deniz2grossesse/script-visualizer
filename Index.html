@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -403,6 +404,9 @@
     </div>
   </div>
 
+  <!-- Required Lovable script tag -->
+  <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+  
   <script>
     let currentRules = [];
 
@@ -616,7 +620,10 @@
               scriptBlock.innerHTML = `
                 <h3>${type}</h3>
                 <pre>${script}</pre>
-                <button class="copy-button" onclick="copyScript(this)">Copy</button>
+                <div class="button-group">
+                  <button class="copy-button" onclick="copyScript(this)">Copy</button>
+                  <button class="copy-button" style="background-color: #e74c3c;" onclick="deleteScript(this)">Delete</button>
+                </div>
               `;
               container.appendChild(scriptBlock);
             });
@@ -636,12 +643,25 @@
     }
 
     function copyScript(button) {
-      const scriptText = button.previousElementSibling.textContent;
+      const scriptText = button.parentElement.previousElementSibling.textContent;
       navigator.clipboard.writeText(scriptText).then(() => {
         alert('Script copié dans le presse-papier');
       }).catch(err => {
         console.error('Erreur lors de la copie:', err);
       });
+    }
+    
+    function deleteScript(button) {
+      if (confirm('Voulez-vous vraiment supprimer ce script ?')) {
+        const scriptBlock = button.closest('.script-block');
+        scriptBlock.remove();
+        
+        // Si plus aucun script, cacher la section
+        const container = document.getElementById('scriptsContainer');
+        if (container.children.length === 0) {
+          document.getElementById('scriptsOutput').style.display = 'none';
+        }
+      }
     }
   </script>
 </body>
