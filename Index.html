@@ -526,43 +526,50 @@
     }
 
     function handleFileSelect(event) {
-      const file = event.target.files[0];
-      if (file) {
-        showLoading();
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-          const content = e.target.result;
-          
-          // Appel à la fonction Google Apps Script
-          google.script.run
-            .withSuccessHandler(function(response) {
-              hideLoading();
-              if (response.success) {
-                currentRules = response.data;
-                displayRules(currentRules);
-                document.getElementById('rulesTable').style.display = 'table';  // Cette ligne affiche le tableau
-                alert(response.message);
-              } else {
-                alert(response.message || "Erreur lors de l'import");
-              }
-            })
-            .withFailureHandler(function(error) {
-              hideLoading();
-              console.error("Erreur:", error);
-              alert("Erreur lors de l'import du fichier");
-            })
-            .handleFileSelect(content);
-        };
-        
-        reader.onerror = function(e) {
-          hideLoading();
-          console.error("Erreur lors de la lecture du fichier:", e);
-          alert("Erreur lors de la lecture du fichier");
-        };
-
-        reader.readAsText(file);
+      const file = event.target.files?.[0];
+      
+      if (!file) {
+        console.log("Pas de fichier sélectionné");
+        return;
       }
+
+      console.log("Type du fichier:", file.type);
+      console.log("Nom du fichier:", file.name);
+
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        const text = e.target?.result;
+        
+        // Appel à la fonction Google Apps Script
+        google.script.run
+          .withSuccessHandler(function(response) {
+            hideLoading();
+            if (response.success) {
+              currentRules = response.data;
+              displayRules(currentRules);
+              document.getElementById('rulesTable').style.display = 'table';  // Cette ligne affiche le tableau
+              console.log("Nombre de règles importées :", currentRules.length);
+              alert(response.message);
+            } else {
+              alert(response.message || "Erreur lors de l'import");
+            }
+          })
+          .withFailureHandler(function(error) {
+            hideLoading();
+            console.error("Erreur:", error);
+            alert("Erreur lors de l'import du fichier");
+          })
+          .handleFileSelect(text);
+      };
+      
+      reader.onerror = function(e) {
+        hideLoading();
+        console.error("Erreur lors de la lecture du fichier:", e);
+        alert("Erreur lors de la lecture du fichier");
+      };
+
+      reader.readAsText(file);
     }
 
     function updateRule(index, field, value) {
@@ -582,6 +589,7 @@
     }
 
     function addNewLine() {
+      console.log('addNewLine called');
       currentRules.push({
         sourceIP: '',
         destIP: '',
@@ -594,6 +602,7 @@
         appCode: ''
       });
       displayRules(currentRules);
+      document.getElementById('rulesTable').style.display = 'table';
     }
 
     function deleteForm() {
@@ -747,7 +756,7 @@
       tbody.innerHTML = '';
       
       if (rules && rules.length > 0) {
-        table.style.display = 'table'; // Ajout d'une vérification supplémentaire ici
+        table.style.display = 'table';
         
         rules.forEach((rule, index) => {
           const validation = validateRow(rule);
