@@ -87,13 +87,9 @@ function saveToCSV(data, headerLines) {
   console.log("saveToCSV called with data:", data);
   try {
     // D'abord, ajouter les 11 premières lignes
-    var csvContent = '';
-    
-    if (headerLines && headerLines.length > 0) {
-      csvContent = headerLines.map(function(row) {
-        return row.join(',');
-      }).join('\n') + '\n';
-    }
+    var csvContent = headerLines.map(function(row) {
+      return row.join(',');
+    }).join('\n') + '\n';
 
     // Puis ajouter les données modifiées
     data.forEach(function(row) {

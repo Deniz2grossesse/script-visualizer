@@ -6,7 +6,7 @@ declare namespace google {
       function withFailureHandler(handler: (error: Error) => void): typeof google.script.run;
       function generateScripts(data: any): void;
       function handleFileSelect(fileData: string): void;
-      function saveToCSV(data: any, headerLines?: string[][]): void;
+      function saveToCSV(data: any, headerLines: string[][]): void;
       function saveDraft(formData: any): void;
       function getDraft(): void;
       function deleteForm(): void;
