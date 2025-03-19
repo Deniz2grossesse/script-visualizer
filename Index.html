@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -285,10 +284,27 @@
       border: none;
       border-radius: 4px;
       cursor: pointer;
+      display: inline-block;
+      margin-right: 8px;
+    }
+
+    .delete-button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-block;
     }
 
     .copy-button:hover {
       background-color: #2980b9;
+    }
+
+    .delete-button:hover {
+      background-color: #c0392b;
     }
 
     .error-message {
@@ -620,9 +636,9 @@
               scriptBlock.innerHTML = `
                 <h3>${type}</h3>
                 <pre>${script}</pre>
-                <div class="button-group">
+                <div>
                   <button class="copy-button" onclick="copyScript(this)">Copy</button>
-                  <button class="copy-button" style="background-color: #e74c3c;" onclick="deleteScript(this)">Delete</button>
+                  <button class="delete-button" onclick="deleteScript(this)">Delete</button>
                 </div>
               `;
               container.appendChild(scriptBlock);
@@ -666,3 +682,4 @@
   </script>
 </body>
 </html>
+
