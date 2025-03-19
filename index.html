@@ -11,6 +11,7 @@
       padding: 20px;
       background: #212121;
       color: #fff;
+      padding-bottom: 90px;
     }
     
     .container {
@@ -216,6 +217,21 @@
       gap: 15px;
       justify-content: flex-end;
       margin-top: 40px;
+      align-items: center;
+    }
+    
+    #actionBar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #1A1F2C;
+      padding: 15px 30px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
     }
 
     .rules-table {
@@ -363,8 +379,10 @@
       font-weight: 500;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
       transition: all 0.2s ease;
+      min-width: 120px;
     }
 
     .btn-save:hover {
@@ -455,6 +473,14 @@
       <button class="btn-delete" onclick="deleteForm()">Delete</button>
       <button class="btn-resume" onclick="resumeDraft()">Resume Draft</button>
       <button class="btn-verify" onclick="verifyFields()">Verify</button>
+      <button class="btn-save" onclick="saveNES()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Save NES
+      </button>
       <button class="btn-generate" onclick="generateScripts()">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -625,6 +651,11 @@
       } else {
         alert('Erreurs:\n' + errors.join('\n'));
       }
+    }
+
+    function saveNES() {
+      // Code pour sauvegarder les données NES
+      alert('Données NES sauvegardées');
     }
 
     function generateScripts() {
