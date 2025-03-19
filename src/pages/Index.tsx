@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -50,6 +51,7 @@ const Index = () => {
     department: { error: false, message: '' },
     projectCode: { error: false, message: '' },
   });
+  // Removed the headerLines state as it's no longer needed
 
   useEffect(() => {
     console.log('Index component mounted');
@@ -137,7 +139,6 @@ const Index = () => {
               title: "Import réussi",
               description: response.message
             });
-            console.log("Nombre de règles importées :", response.data.length);
           } else {
             toast({
               variant: "destructive",
@@ -247,6 +248,7 @@ const Index = () => {
       return;
     }
 
+    // On envoie les données au serveur GAS
     google.script.run
       .withSuccessHandler((response) => {
         console.log('Response from generateScripts:', response);
@@ -278,6 +280,8 @@ const Index = () => {
       })
       .generateScripts({ csvRows: validRows });
   };
+
+  // Removed the handleSave function
 
   return (
     <div className="min-h-screen bg-[#212121] text-[#BDC3C7] font-sans p-6">

@@ -211,23 +211,6 @@
       font-weight: bold;
     }
     
-    .btn-delete-script {
-      background-color: transparent;
-      color: #ff4757;
-      border: 2px solid #ff4757;
-      padding: 12px 35px;
-      border-radius: 25px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-    
-    .btn-delete-script:hover {
-      background-color: #ff4757;
-      color: white;
-    }
-    
     .action-buttons {
       display: flex;
       gap: 15px;
@@ -526,52 +509,42 @@
     }
 
     function handleFileSelect(event) {
-      const file = event.target.files?.[0];
-      
-      if (!file) {
-        console.log("Pas de fichier sélectionné");
-        return;
-      }
-
-      console.log("Type du fichier:", file.type);
-      console.log("Nom du fichier:", file.name);
-      
-      showLoading(); // Add this to show loading indicator
-      
-      const reader = new FileReader();
-      
-      reader.onload = (e) => {
-        const text = e.target?.result;
+      const file = event.target.files[0];
+      if (file) {
+        showLoading();
+        const reader = new FileReader();
         
-        // Appel à la fonction Google Apps Script
-        google.script.run
-          .withSuccessHandler(function(response) {
-            hideLoading();
-            if (response.success) {
-              currentRules = response.data;
-              displayRules(currentRules);
-              document.getElementById('rulesTable').style.display = 'table';  // Cette ligne affiche le tableau
-              console.log("Nombre de règles importées :", currentRules.length);
-              alert(response.message);
-            } else {
-              alert(response.message || "Erreur lors de l'import");
-            }
-          })
-          .withFailureHandler(function(error) {
-            hideLoading();
-            console.error("Erreur:", error);
-            alert("Erreur lors de l'import du fichier");
-          })
-          .handleFileSelect(text);
-      };
-      
-      reader.onerror = function(e) {
-        hideLoading();
-        console.error("Erreur lors de la lecture du fichier:", e);
-        alert("Erreur lors de la lecture du fichier");
-      };
+        reader.onload = function(e) {
+          const content = e.target.result;
+          
+          // Appel à la fonction Google Apps Script
+          google.script.run
+            .withSuccessHandler(function(response) {
+              hideLoading();
+              if (response.success) {
+                currentRules = response.data;
+                displayRules(currentRules);
+                alert(response.message);
+              } else {
+                alert(response.message || "Erreur lors de l'import");
+              }
+            })
+            .withFailureHandler(function(error) {
+              hideLoading();
+              console.error("Erreur:", error);
+              alert("Erreur lors de l'import du fichier");
+            })
+            .handleFileSelect(content);
+        };
+        
+        reader.onerror = function(e) {
+          hideLoading();
+          console.error("Erreur lors de la lecture du fichier:", e);
+          alert("Erreur lors de la lecture du fichier");
+        };
 
-      reader.readAsText(file);
+        reader.readAsText(file);
+      }
     }
 
     function updateRule(index, field, value) {
@@ -591,7 +564,6 @@
     }
 
     function addNewLine() {
-      console.log('addNewLine called');
       currentRules.push({
         sourceIP: '',
         destIP: '',
@@ -604,7 +576,6 @@
         appCode: ''
       });
       displayRules(currentRules);
-      document.getElementById('rulesTable').style.display = 'table';
     }
 
     function deleteForm() {
@@ -693,13 +664,13 @@
                 </svg>
                 Copy
               </button>
-              <button class="delete-row-btn" onclick="deleteGeneratedScript(${index})">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" 
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
-                  <path d="M3 6h18"/>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              <button class="delete-btn" onclick="deleteGeneratedScript(${index})">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                 </svg>
+                Delete
               </button>
             </div>
           `;
@@ -757,76 +728,70 @@
       const tbody = table.querySelector('tbody');
       tbody.innerHTML = '';
       
-      if (rules && rules.length > 0) {
-        table.style.display = 'table';
+      rules.forEach((rule, index) => {
+        const validation = validateRow(rule);
         
-        rules.forEach((rule, index) => {
-          const validation = validateRow(rule);
-          
-          const tr = document.createElement('tr');
-          if (!validation.isValid) {
-            tr.className = 'has-error';
-          }
-          
-          tr.innerHTML = `
-            <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)" class="${!validateIP(rule.sourceIP) ? 'border-red-500' : ''}"></td>
-            <td><input type="text" value="${rule.destIP || ''}" onchange="updateRule(${index}, 'destIP', this.value)" class="${!validateIP(rule.destIP) ? 'border-red-500' : ''}"></td>
-            <td>
-              <select onchange="updateRule(${index}, 'protocol', this.value)">
-                <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
-                <option value="UDP" ${rule.protocol === 'UDP' ? 'selected' : ''}>UDP</option>
-                <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
-              </select>
-            </td>
-            <td><input type="text" value="${rule.service || ''}" onchange="updateRule(${index}, 'service', this.value)"></td>
-            <td><input type="text" value="${rule.port || ''}" onchange="updateRule(${index}, 'port', this.value)" class="${!validatePort(rule.port) ? 'border-red-500' : ''}"></td>
-            <td>
-              <select onchange="updateRule(${index}, 'authentication', this.value)">
-                <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
-                <option value="No" ${rule.authentication === 'No' ? 'selected' : ''}>No</option>
-              </select>
-            </td>
-            <td>
-              <select onchange="updateRule(${index}, 'flowEncryption', this.value)">
-                <option value="Yes" ${rule.flowEncryption === 'Yes' ? 'selected' : ''}>Yes</option>
-                <option value="No" ${rule.flowEncryption === 'No' ? 'selected' : ''}>No</option>
-              </select>
-            </td>
-            <td>
-              <select onchange="updateRule(${index}, 'classification', this.value)">
-                <option value="Yellow" ${rule.classification === 'Yellow' ? 'selected' : ''}>Yellow</option>
-                <option value="Amber" ${rule.classification === 'Amber' ? 'selected' : ''}>Amber</option>
-                <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
-              </select>
-            </td>
-            <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
-            <td>
-              <button class="delete-row-btn" onclick="deleteRow(${index})">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" 
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
-                  <path d="M3 6h18"/>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                </svg>
-              </button>
-            </td>
-          `;
+        const tr = document.createElement('tr');
+        if (!validation.isValid) {
+          tr.className = 'has-error';
+        }
+        
+        tr.innerHTML = `
+          <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)" class="${!validateIP(rule.sourceIP) ? 'border-red-500' : ''}"></td>
+          <td><input type="text" value="${rule.destIP || ''}" onchange="updateRule(${index}, 'destIP', this.value)" class="${!validateIP(rule.destIP) ? 'border-red-500' : ''}"></td>
+          <td>
+            <select onchange="updateRule(${index}, 'protocol', this.value)">
+              <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
+              <option value="UDP" ${rule.protocol === 'UDP' ? 'selected' : ''}>UDP</option>
+              <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
+            </select>
+          </td>
+          <td><input type="text" value="${rule.service || ''}" onchange="updateRule(${index}, 'service', this.value)"></td>
+          <td><input type="text" value="${rule.port || ''}" onchange="updateRule(${index}, 'port', this.value)" class="${!validatePort(rule.port) ? 'border-red-500' : ''}"></td>
+          <td>
+            <select onchange="updateRule(${index}, 'authentication', this.value)">
+              <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
+              <option value="No" ${rule.authentication === 'No' ? 'selected' : ''}>No</option>
+            </select>
+          </td>
+          <td>
+            <select onchange="updateRule(${index}, 'flowEncryption', this.value)">
+              <option value="Yes" ${rule.flowEncryption === 'Yes' ? 'selected' : ''}>Yes</option>
+              <option value="No" ${rule.flowEncryption === 'No' ? 'selected' : ''}>No</option>
+            </select>
+          </td>
+          <td>
+            <select onchange="updateRule(${index}, 'classification', this.value)">
+              <option value="Yellow" ${rule.classification === 'Yellow' ? 'selected' : ''}>Yellow</option>
+              <option value="Amber" ${rule.classification === 'Amber' ? 'selected' : ''}>Amber</option>
+              <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
+            </select>
+          </td>
+          <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
+          <td>
+            <button class="delete-row-btn" onclick="deleteRow(${index})">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </button>
+          </td>
+        `;
 
-          tbody.appendChild(tr);
+        tbody.appendChild(tr);
 
-          if (!validation.isValid) {
-            const errorRow = document.createElement('tr');
-            const errorCell = document.createElement('td');
-            errorCell.colSpan = 10;
-            errorCell.innerHTML = `<div class="error-message">${validation.errors.join('<br>')}</div>`;
-            errorRow.appendChild(errorCell);
-            tbody.appendChild(errorRow);
-          }
-        });
-      } else {
-        console.log("Aucune règle à afficher ou tableau vide");
-        table.style.display = 'none';
-      }
+        if (!validation.isValid) {
+          const errorRow = document.createElement('tr');
+          const errorCell = document.createElement('td');
+          errorCell.colSpan = 10;
+          errorCell.innerHTML = `<div class="error-message">${validation.errors.join('<br>')}</div>`;
+          errorRow.appendChild(errorCell);
+          tbody.appendChild(errorRow);
+        }
+      });
+      
+      table.style.display = 'table';
     }
 
     function deleteRow(index) {
@@ -834,28 +799,35 @@
       displayRules(currentRules);
     }
 
-    function validateIP(ip) {
-      if (!ip) return false;
-      const ipList = ip.split(',').map(part => part.trim()).filter(Boolean);
-      const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
-      const ipv4CidrRegex = /^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/;
-
-      return ipList.every(ipPart => {
-        if (ipv4Regex.test(ipPart)) {
-          return validateIPv4Numbers(ipPart);
-        } else if (ipv4CidrRegex.test(ipPart)) {
-          const [addr, mask] = ipPart.split('/');
-          const validAddr = validateIPv4Numbers(addr);
-          const maskNum = parseInt(mask, 10);
-          return validAddr && maskNum >= 0 && maskNum <= 32;
-        } else {
-          return false;
-        }
-      });
+    function validateRow(rule) {
+      console.log('validateRow called with:', rule);
+      const errors = [];
+      
+      if (!validateIP(rule.sourceIP)) {
+        errors.push("IP source invalide");
+      }
+      if (!validateIP(rule.destIP)) {
+        errors.push("IP destination invalide");
+      }
+      if (!validatePort(rule.port)) {
+        errors.push("Port invalide");
+      }
+      if (!['tcp', 'udp', 'icmp'].includes(rule.protocol?.toLowerCase())) {
+        errors.push("Protocole invalide");
+      }
+      if (!rule.service) {
+        errors.push("Service invalide");
+      }
+      
+      return { isValid: errors.length === 0, errors };
     }
 
-    function validateIPv4Numbers(addr) {
-      const parts = addr.split('.');
+    function validateIP(ip) {
+      if (!ip) return false;
+      const regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+      if (!regex.test(ip)) return false;
+      
+      const parts = ip.split('.');
       return parts.every(part => {
         const num = parseInt(part, 10);
         return num >= 0 && num <= 255;
@@ -876,6 +848,6 @@
       console.error('Erreur:', error);
       alert('Une erreur est survenue: ' + error.toString());
     }
-
-
-
+  </script>
+</body>
+</html>
