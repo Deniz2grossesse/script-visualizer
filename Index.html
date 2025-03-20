@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -486,8 +485,6 @@
 
     <div id="actionBar" class="action-buttons">
       <button class="btn-delete" onclick="deleteForm()">Delete</button>
-      <button class="btn-resume" onclick="resumeDraft()">Resume Draft</button>
-      <button class="btn-verify" onclick="verifyFields()">Verify</button>
       <button class="btn-save" onclick="saveNES()">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
@@ -615,56 +612,6 @@
           })
           .withFailureHandler(handleError)
           .deleteForm();
-      }
-    }
-
-    function resumeDraft() {
-      google.script.run
-        .withSuccessHandler((response) => {
-          if (response.success && response.data) {
-            const data = response.data;
-            document.getElementById('department').value = data.department || '';
-            document.getElementById('projectCode').value = data.projectCode || '';
-            document.getElementById('email').value = data.email || '';
-            if (data.rules) {
-              currentRules = data.rules;
-              displayRules(currentRules);
-            }
-          } else {
-            alert('Aucun brouillon trouvé');
-          }
-        })
-        .withFailureHandler(handleError)
-        .getDraft();
-    }
-
-    function verifyFields() {
-      const department = document.getElementById('department').value;
-      const projectCode = document.getElementById('projectCode').value;
-      const email = document.getElementById('email').value;
-      
-      let isValid = true;
-      let errors = [];
-
-      if (!department || department.length > 4) {
-        errors.push('Le département doit faire entre 1 et 4 caractères');
-        isValid = false;
-      }
-
-      if (!projectCode || projectCode.length > 4) {
-        errors.push('Le code projet doit faire entre 1 et 4 caractères');
-        isValid = false;
-      }
-
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        errors.push('Email invalide');
-        isValid = false;
-      }
-
-      if (isValid) {
-        alert('Tous les champs sont valides');
-      } else {
-        alert('Erreurs:\n' + errors.join('\n'));
       }
     }
 
@@ -908,3 +855,4 @@
   </script>
 </body>
 </html>
+
