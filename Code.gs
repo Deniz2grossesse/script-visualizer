@@ -119,3 +119,4 @@ function exportCSV(modifiedLines) {
     throw new Error('Erreur lors de la génération CSV');
   }
 }
+
