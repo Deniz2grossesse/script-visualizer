@@ -11,7 +11,6 @@
       padding: 20px;
       background: #212121;
       color: #fff;
-      padding-bottom: 90px;
     }
     
     .container {
@@ -217,7 +216,6 @@
       gap: 15px;
       justify-content: flex-end;
       margin-top: 40px;
-      align-items: center;
     }
     
     #actionBar {
@@ -229,9 +227,10 @@
       padding: 15px 30px;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       z-index: 1000;
-      display: flex;
-      justify-content: flex-end;
-      gap: 15px;
+    }
+    
+    body {
+      padding-bottom: 90px;
     }
 
     .rules-table {
@@ -379,10 +378,8 @@
       font-weight: 500;
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 8px;
       transition: all 0.2s ease;
-      min-width: 120px;
     }
 
     .btn-save:hover {
@@ -392,6 +389,23 @@
     .btn-save svg {
       width: 16px;
       height: 16px;
+    }
+
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .delete-btn:hover {
+      background-color: #c0392b;
     }
   </style>
 </head>
@@ -412,6 +426,14 @@
           <line x1="9" y1="15" x2="15" y2="15"/>
         </svg>
         Importer CSV
+      </button>
+      <button class="btn-save" onclick="saveNES()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Save NES
       </button>
     </div>
 
@@ -469,18 +491,10 @@
 
     <div id="scriptsOutput" class="scripts-container"></div>
 
-    <div class="action-buttons">
+    <div id="actionBar" class="action-buttons">
       <button class="btn-delete" onclick="deleteForm()">Delete</button>
       <button class="btn-resume" onclick="resumeDraft()">Resume Draft</button>
       <button class="btn-verify" onclick="verifyFields()">Verify</button>
-      <button class="btn-save" onclick="saveNES()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-          <polyline points="17 21 17 13 7 13 7 21"/>
-          <polyline points="7 3 7 8 15 8"/>
-        </svg>
-        Save NES
-      </button>
       <button class="btn-generate" onclick="generateScripts()">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -498,7 +512,6 @@
     </div>
   </div>
 
-  <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   <script>
     let currentRules = [];
 
@@ -527,7 +540,6 @@
         reader.onload = function(e) {
           const content = e.target.result;
           
-          // Appel à la fonction Google Apps Script
           google.script.run
             .withSuccessHandler(function(response) {
               hideLoading();
@@ -654,106 +666,62 @@
       }
     }
 
-    function saveNES() {
-      // Code pour sauvegarder les données NES
-      if (currentRules.length === 0) {
-        alert("Aucune ligne à sauvegarder. Veuillez ajouter des données.");
-        return;
-      }
-      
-      showLoading();
-      google.script.run
-        .withSuccessHandler(function(csvContent) {
-          hideLoading();
-          // Create and trigger download
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = 'export_onboarding.csv';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          alert("Fichier CSV sauvegardé avec succès.");
-        })
-        .withFailureHandler(function(err) {
-          hideLoading();
-          console.error('Erreur GAS:', err);
-          alert('Erreur lors de la sauvegarde NES');
-        })
-        .exportCSV(currentRules);
-    }
-
     function generateScripts() {
       const scriptsOutput = document.getElementById('scriptsOutput');
       scriptsOutput.innerHTML = '';
       
-      if (currentRules.length === 0) {
-        alert("Aucune règle à générer. Veuillez ajouter des données.");
-        return;
+      if (currentRules.length > 0) {
+        currentRules.forEach((rule, index) => {
+          const scriptDiv = document.createElement('div');
+          scriptDiv.className = 'script-item';
+          
+          const script = generateScriptForRow(rule);
+          scriptDiv.innerHTML = `
+            <div class="script-content">${script}</div>
+            <div class="script-actions">
+              <button class="copy-btn" onclick="copyGeneratedScript(${index})">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Copy
+              </button>
+              <button class="delete-btn" onclick="deleteGeneratedScript(${index})">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+                Delete
+              </button>
+            </div>
+          `;
+          
+          scriptsOutput.appendChild(scriptDiv);
+        });
+        
+        scriptsOutput.style.display = 'block';
+      } else {
+        scriptsOutput.style.display = 'none';
       }
-      
-      const validRows = currentRules.filter(row => {
-        const validation = validateRow(row);
-        return validation.isValid;
-      });
+    }
 
-      if (validRows.length === 0) {
-        alert("Aucune règle valide trouvée. Veuillez corriger les erreurs.");
-        return;
-      }
-      
-      showLoading();
-      google.script.run
-        .withSuccessHandler((response) => {
-          hideLoading();
-          console.log('Response from generateScripts:', response);
-          if (response.success) {
-            response.data.forEach((script, index) => {
-              const scriptDiv = document.createElement('div');
-              scriptDiv.className = 'script-item';
-              
-              scriptDiv.innerHTML = `
-                <div class="script-content">${script}</div>
-                <div class="script-actions">
-                  <button class="copy-btn" onclick="copyGeneratedScript(${index})">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                    Copy
-                  </button>
-                  <button class="delete-btn" onclick="deleteGeneratedScript(${index})">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M3 6h18"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-                      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    </svg>
-                    Delete
-                  </button>
-                </div>
-              `;
-              
-              scriptsOutput.appendChild(scriptDiv);
-            });
-            
-            scriptsOutput.style.display = 'block';
-            alert(`${response.data.length} script(s) généré(s) avec succès`);
-          } else {
-            alert(response.message || "Erreur lors de la génération des scripts");
-          }
-        })
-        .withFailureHandler((error) => {
-          hideLoading();
-          console.error('Error in generateScripts:', error);
-          alert('Erreur lors de la génération des scripts');
-        })
-        .generateScripts({ csvRows: validRows });
+    function generateScriptForRow(rule) {
+      return `curl -k -X POST "https://api/query" \\
+-H "Content-Type: application/json" \\
+-H "Authorization: Bearer " \\
+-d '{
+  "source": "${rule.sourceIP}",
+  "destination": "${rule.destIP}",
+  "protocol": "${rule.protocol}",
+  "port": "${rule.port}",
+  "service": "${rule.service}"
+}'`;
     }
 
     function copyGeneratedScript(index) {
-      const scriptContent = document.querySelectorAll('.script-content')[index].textContent;
-      navigator.clipboard.writeText(scriptContent)
+      const script = generateScriptForRow(currentRules[index]);
+      navigator.clipboard.writeText(script)
         .then(() => {
           alert('Script copié dans le presse-papier');
         })
@@ -764,15 +732,9 @@
     }
 
     function deleteGeneratedScript(index) {
-      console.log('Deleting script at index:', index);
-      const scriptItems = document.querySelectorAll('.script-item');
-      if (index < scriptItems.length) {
-        scriptItems[index].remove();
-        
-        // Si tous les scripts ont été supprimés, masquer le conteneur
-        if (document.querySelectorAll('.script-item').length === 0) {
-          document.getElementById('scriptsOutput').style.display = 'none';
-        }
+      if (confirm('Voulez-vous supprimer ce script ?')) {
+        currentRules.splice(index, 1);
+        generateScripts(); // Regénère les scripts avec les bons index
       }
     }
     
@@ -874,12 +836,10 @@
       
       if (!['tcp', 'udp', 'icmp'].includes(rule.protocol?.toLowerCase())) {
         errors.push("Protocole invalide");
-        isValid = false;
       }
       
       if (!rule.service) {
         errors.push("Service invalide");
-        isValid = false;
       }
       
       return { isValid: errors.length === 0, errors };
@@ -887,18 +847,8 @@
 
     function validateIPList(ipString) {
       if (!ipString) return false;
-      
-      // Si c'est une chaîne vide, on considère que c'est invalide
-      if (ipString.trim() === '') return false;
-      
-      // Si c'est une liste d'IPs séparées par des virgules
-      if (ipString.includes(',')) {
-        const ips = ipString.split(',').map(ip => ip.trim()).filter(ip => ip !== '');
-        return ips.length > 0 && ips.every(validateIP);
-      }
-      
-      // Si c'est une seule IP
-      return validateIP(ipString);
+      const ips = ipString.split(',').map(ip => ip.trim()).filter(ip => ip !== '');
+      return ips.every(validateIP);
     }
 
     function validateIP(ip) {
@@ -944,6 +894,35 @@
       if (!port) return false;
       const num = parseInt(port, 10);
       return !isNaN(num) && num >= 1 && num <= 65535;
+    }
+
+    function saveNES() {
+      if (currentRules.length === 0) {
+        alert("Aucune ligne à sauvegarder. Veuillez ajouter des données.");
+        return;
+      }
+      
+      showLoading();
+      google.script.run
+        .withSuccessHandler(function(csvContent) {
+          hideLoading();
+          // Create and trigger download
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'export_onboarding.csv';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          alert("Fichier CSV sauvegardé avec succès.");
+        })
+        .withFailureHandler(function(err) {
+          hideLoading();
+          console.error('Erreur GAS:', err);
+          alert('Erreur lors de la sauvegarde NES');
+        })
+        .exportCSV(currentRules);
     }
 
     function handleError(error) {
