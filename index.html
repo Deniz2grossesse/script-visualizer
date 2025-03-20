@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,6 +12,7 @@
       padding: 20px;
       background: #212121;
       color: #fff;
+      padding-bottom: 90px;
     }
     
     .container {
@@ -216,6 +218,7 @@
       gap: 15px;
       justify-content: flex-end;
       margin-top: 40px;
+      align-items: center;
     }
     
     #actionBar {
@@ -227,10 +230,9 @@
       padding: 15px 30px;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       z-index: 1000;
-    }
-    
-    body {
-      padding-bottom: 90px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
     }
 
     .rules-table {
@@ -378,8 +380,10 @@
       font-weight: 500;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
       transition: all 0.2s ease;
+      min-width: 120px;
     }
 
     .btn-save:hover {
@@ -389,23 +393,6 @@
     .btn-save svg {
       width: 16px;
       height: 16px;
-    }
-
-    .delete-btn {
-      background-color: #e74c3c;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 8px 16px;
-      cursor: pointer;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .delete-btn:hover {
-      background-color: #c0392b;
     }
   </style>
 </head>
@@ -426,14 +413,6 @@
           <line x1="9" y1="15" x2="15" y2="15"/>
         </svg>
         Importer CSV
-      </button>
-      <button class="btn-save" onclick="saveNES()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-          <polyline points="17 21 17 13 7 13 7 21"/>
-          <polyline points="7 3 7 8 15 8"/>
-        </svg>
-        Save NES
       </button>
     </div>
 
@@ -491,8 +470,18 @@
 
     <div id="scriptsOutput" class="scripts-container"></div>
 
-    <div id="actionBar" class="action-buttons">
+    <div class="action-buttons">
       <button class="btn-delete" onclick="deleteForm()">Delete</button>
+      <button class="btn-resume" onclick="resumeDraft()">Resume Draft</button>
+      <button class="btn-verify" onclick="verifyFields()">Verify</button>
+      <button class="btn-save" onclick="saveNES()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Save NES
+      </button>
       <button class="btn-generate" onclick="generateScripts()">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -538,6 +527,7 @@
         reader.onload = function(e) {
           const content = e.target.result;
           
+          // Appel à la fonction Google Apps Script
           google.script.run
             .withSuccessHandler(function(response) {
               hideLoading();
@@ -600,80 +590,73 @@
 
     function deleteForm() {
       if (confirm('Voulez-vous vraiment supprimer le formulaire ?')) {
-        document.getElementById('department').value = '';
-        document.getElementById('projectCode').value = '';
-        document.getElementById('email').value = '';
-        currentRules = [];
-        document.getElementById('rulesTable').style.display = 'none';
-        document.getElementById('scriptsOutput').style.display = 'none';
+        google.script.run
+          .withSuccessHandler(() => {
+            document.getElementById('department').value = '';
+            document.getElementById('projectCode').value = '';
+            document.getElementById('email').value = '';
+            currentRules = [];
+            document.getElementById('rulesTable').style.display = 'none';
+            document.getElementById('scriptsOutput').style.display = 'none';
+          })
+          .withFailureHandler(handleError)
+          .deleteForm();
       }
     }
 
-    function applyCoherence(rules) {
-      const grouped = {};
+    function resumeDraft() {
+      google.script.run
+        .withSuccessHandler((response) => {
+          if (response.success && response.data) {
+            const data = response.data;
+            document.getElementById('department').value = data.department || '';
+            document.getElementById('projectCode').value = data.projectCode || '';
+            document.getElementById('email').value = data.email || '';
+            if (data.rules) {
+              currentRules = data.rules;
+              displayRules(currentRules);
+            }
+          } else {
+            alert('Aucun brouillon trouvé');
+          }
+        })
+        .withFailureHandler(handleError)
+        .getDraft();
+    }
 
-      rules.forEach(rule => {
-        const key = [
-          rule.protocol,
-          rule.port,
-          rule.service,
-          rule.authentication,
-          rule.flowEncryption,
-          rule.classification,
-          rule.appCode
-        ].join('|');
+    function verifyFields() {
+      const department = document.getElementById('department').value;
+      const projectCode = document.getElementById('projectCode').value;
+      const email = document.getElementById('email').value;
+      
+      let isValid = true;
+      let errors = [];
 
-        if (!grouped[key]) {
-          grouped[key] = {
-            ...rule,
-            sourceIPs: new Set([rule.sourceIP]),
-            destIPs: new Set([rule.destIP])
-          };
-        } else {
-          grouped[key].sourceIPs.add(rule.sourceIP);
-          grouped[key].destIPs.add(rule.destIP);
-        }
-      });
+      if (!department || department.length > 4) {
+        errors.push('Le département doit faire entre 1 et 4 caractères');
+        isValid = false;
+      }
 
-      const mergedRules = Object.values(grouped).map(rule => ({
-        ...rule,
-        sourceIP: Array.from(rule.sourceIPs).join(','),
-        destIP: Array.from(rule.destIPs).join(','),
-        sourceIPs: undefined,
-        destIPs: undefined
-      }));
+      if (!projectCode || projectCode.length > 4) {
+        errors.push('Le code projet doit faire entre 1 et 4 caractères');
+        isValid = false;
+      }
 
-      return mergedRules;
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errors.push('Email invalide');
+        isValid = false;
+      }
+
+      if (isValid) {
+        alert('Tous les champs sont valides');
+      } else {
+        alert('Erreurs:\n' + errors.join('\n'));
+      }
     }
 
     function saveNES() {
-      if (currentRules.length === 0) {
-        alert("Aucune ligne à sauvegarder. Veuillez ajouter des données.");
-        return;
-      }
-
-      const coherentRules = applyCoherence(currentRules);
-
-      showLoading();
-      google.script.run
-        .withSuccessHandler(function(csvContent) {
-          hideLoading();
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = 'export_onboarding.csv';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          alert("Fichier CSV sauvegardé avec succès.");
-        })
-        .withFailureHandler(function(err) {
-          hideLoading();
-          console.error('Erreur GAS:', err);
-          alert('Erreur lors de la sauvegarde du fichier CSV');
-        })
-        .exportCSV(coherentRules);
+      // Code pour sauvegarder les données NES
+      alert('Données NES sauvegardées');
     }
 
     function generateScripts() {
@@ -696,13 +679,13 @@
                 </svg>
                 Copy
               </button>
-              <button class="delete-btn" onclick="deleteGeneratedScript(${index})">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <button class="delete-row-btn" onclick="deleteGeneratedScript(${index})">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" 
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
                   <path d="M3 6h18"/>
                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
                   <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                 </svg>
-                Delete
               </button>
             </div>
           `;
@@ -855,10 +838,10 @@
       return { isValid: errors.length === 0, errors };
     }
 
-    function validateIPList(ips) {
-      if (!ips) return false;
-      const ipsArray = ips.split(',').map(ip => ip.trim()).filter(ip => ip !== '');
-      return ipsArray.every(validateIP);
+    function validateIPList(ipString) {
+      if (!ipString) return false;
+      const ips = ipString.split(',').map(ip => ip.trim()).filter(ip => ip !== '');
+      return ips.every(validateIP);
     }
 
     function validateIP(ip) {

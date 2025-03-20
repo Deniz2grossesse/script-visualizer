@@ -103,7 +103,6 @@ function importCSV(csvData) {
 // Function to export CSV with header lines and modified data
 function exportCSV(modifiedLines) {
   try {
-    console.log("exportCSV called with", modifiedLines.length, "rules");
     const csvData = headerLinesCache.slice(); // Clone headers
     modifiedLines.forEach(rule => {
       csvData.push([
@@ -119,4 +118,3 @@ function exportCSV(modifiedLines) {
     throw new Error('Erreur lors de la génération CSV');
   }
 }
-
