@@ -581,6 +581,18 @@ const Index = () => {
             Delete
           </Button>
           <Button 
+            variant="outline"
+            className="text-[#BDC3C7] hover:bg-white/20 border-[#BDC3C7]/30 transition-colors"
+          >
+            Resume Draft
+          </Button>
+          <Button 
+            variant="outline"
+            className="text-[#E67E22] hover:bg-[#E67E22]/20 border-[#E67E22] transition-colors"
+          >
+            Verify
+          </Button>
+          <Button 
             onClick={handleGenerateScript}
             className="bg-[#E67E22] hover:bg-[#D35400] text-white border-none transition-colors flex items-center gap-2"
           >

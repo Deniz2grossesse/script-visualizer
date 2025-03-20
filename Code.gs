@@ -1,7 +1,7 @@
 
 function doGet() {
   console.log("doGet called");
-  return HtmlService.createTemplateFromFile('Index')
+  return HtmlService.createTemplateFromFile('index')
     .evaluate()
     .setTitle('One Click Onboarding')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
