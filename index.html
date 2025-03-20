@@ -12,7 +12,6 @@
       padding: 20px;
       background: #212121;
       color: #fff;
-      padding-bottom: 90px;
     }
     
     .container {
@@ -218,7 +217,6 @@
       gap: 15px;
       justify-content: flex-end;
       margin-top: 40px;
-      align-items: center;
     }
     
     #actionBar {
@@ -230,9 +228,10 @@
       padding: 15px 30px;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       z-index: 1000;
-      display: flex;
-      justify-content: flex-end;
-      gap: 15px;
+    }
+    
+    body {
+      padding-bottom: 90px;
     }
 
     .rules-table {
@@ -380,10 +379,8 @@
       font-weight: 500;
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 8px;
       transition: all 0.2s ease;
-      min-width: 120px;
     }
 
     .btn-save:hover {
@@ -393,6 +390,23 @@
     .btn-save svg {
       width: 16px;
       height: 16px;
+    }
+
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .delete-btn:hover {
+      background-color: #c0392b;
     }
   </style>
 </head>
@@ -470,7 +484,7 @@
 
     <div id="scriptsOutput" class="scripts-container"></div>
 
-    <div class="action-buttons">
+    <div id="actionBar" class="action-buttons">
       <button class="btn-delete" onclick="deleteForm()">Delete</button>
       <button class="btn-resume" onclick="resumeDraft()">Resume Draft</button>
       <button class="btn-verify" onclick="verifyFields()">Verify</button>
@@ -654,11 +668,6 @@
       }
     }
 
-    function saveNES() {
-      // Code pour sauvegarder les données NES
-      alert('Données NES sauvegardées');
-    }
-
     function generateScripts() {
       const scriptsOutput = document.getElementById('scriptsOutput');
       scriptsOutput.innerHTML = '';
@@ -679,13 +688,13 @@
                 </svg>
                 Copy
               </button>
-              <button class="delete-row-btn" onclick="deleteGeneratedScript(${index})">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" 
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+              <button class="delete-btn" onclick="deleteGeneratedScript(${index})">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M3 6h18"/>
                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
                   <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                 </svg>
+                Delete
               </button>
             </div>
           `;
@@ -725,9 +734,15 @@
     }
 
     function deleteGeneratedScript(index) {
-      if (confirm('Voulez-vous supprimer ce script ?')) {
-        currentRules.splice(index, 1);
-        generateScripts(); // Regénère les scripts avec les bons index
+      console.log('Deleting script at index:', index);
+      const scriptItems = document.querySelectorAll('.script-item');
+      if (index < scriptItems.length) {
+        scriptItems[index].remove();
+        
+        // Si tous les scripts ont été supprimés, masquer le conteneur
+        if (document.querySelectorAll('.script-item').length === 0) {
+          document.getElementById('scriptsOutput').style.display = 'none';
+        }
       }
     }
     
@@ -746,8 +761,8 @@
         }
         
         tr.innerHTML = `
-          <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)" class="${!validateIPList(rule.sourceIP) ? 'border-red-500' : ''}"></td>
-          <td><input type="text" value="${rule.destIP || ''}" onchange="updateRule(${index}, 'destIP', this.value)" class="${!validateIPList(rule.destIP) ? 'border-red-500' : ''}"></td>
+          <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)" class="${!validateIP(rule.sourceIP) ? 'border-red-500' : ''}"></td>
+          <td><input type="text" value="${rule.destIP || ''}" onchange="updateRule(${index}, 'destIP', this.value)" class="${!validateIP(rule.destIP) ? 'border-red-500' : ''}"></td>
           <td>
             <select onchange="updateRule(${index}, 'protocol', this.value)">
               <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
@@ -808,40 +823,33 @@
       displayRules(currentRules);
     }
 
-    function validateRow(rule) {
-      const errors = [];
-      let isValid = true;
-
-      if (!validateIPList(rule.sourceIP)) {
-        errors.push("IP source invalide");
-        isValid = false;
+    function saveNES() {
+      if (currentRules.length === 0) {
+        alert("Aucune ligne à sauvegarder. Veuillez ajouter des données.");
+        return;
       }
       
-      if (!validateIPList(rule.destIP)) {
-        errors.push("IP destination invalide");
-        isValid = false;
-      }
-      
-      if (!validatePort(rule.port)) {
-        errors.push("Port invalide");
-        isValid = false;
-      }
-      
-      if (!['tcp', 'udp', 'icmp'].includes(rule.protocol?.toLowerCase())) {
-        errors.push("Protocole invalide");
-      }
-      
-      if (!rule.service) {
-        errors.push("Service invalide");
-      }
-      
-      return { isValid: errors.length === 0, errors };
-    }
-
-    function validateIPList(ipString) {
-      if (!ipString) return false;
-      const ips = ipString.split(',').map(ip => ip.trim()).filter(ip => ip !== '');
-      return ips.every(validateIP);
+      showLoading();
+      google.script.run
+        .withSuccessHandler(function(csvContent) {
+          hideLoading();
+          // Create and trigger download
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'export_onboarding.csv';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          alert("Fichier CSV sauvegardé avec succès.");
+        })
+        .withFailureHandler(function(err) {
+          hideLoading();
+          console.error('Erreur GAS:', err);
+          alert('Erreur lors de la sauvegarde NES');
+        })
+        .exportCSV(currentRules);
     }
 
     function validateIP(ip) {
@@ -887,6 +895,32 @@
       if (!port) return false;
       const num = parseInt(port, 10);
       return !isNaN(num) && num >= 1 && num <= 65535;
+    }
+
+    function validateService(service) {
+      return !!service && service.length > 0;
+    }
+
+    function validateRow(rule) {
+      const errors = [];
+      let isValid = true;
+      
+      if (!validateIP(rule.sourceIP) && rule.sourceIP !== '') {
+        errors.push('Source IP invalide');
+        isValid = false;
+      }
+      
+      if (!validateIP(rule.destIP) && rule.destIP !== '') {
+        errors.push('IP Destination invalide');
+        isValid = false;
+      }
+      
+      if (!validatePort(rule.port) && rule.port !== '') {
+        errors.push('Port invalide (doit être entre 1 et 65535)');
+        isValid = false;
+      }
+      
+      return { isValid, errors };
     }
 
     function handleError(error) {
