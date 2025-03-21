@@ -450,6 +450,11 @@
       width: 16px;
       height: 16px;
     }
+
+    .duplicate-row {
+      background-color: rgba(255, 0, 0, 0.1);
+      border: 2px solid #ff4d4d;
+    }
   </style>
 </head>
 <body>
@@ -685,7 +690,7 @@
       const department = document.getElementById('department').value;
       const projectCode = document.getElementById('projectCode').value;
       const email = document.getElementById('email').value;
-      
+
       let isValid = true;
       let errors = [];
 
@@ -704,13 +709,37 @@
         isValid = false;
       }
 
-      if (isValid) {
-        alert('Tous les champs sont valides');
-      } else {
+      // === Détection des doublons ===
+      let hasDuplicates = false;
+      const seenKeys = new Map();
+
+      currentRules.forEach(rule => {
+        const key = [
+          rule.sourceIP, rule.destIP, rule.protocol,
+          rule.service, rule.port, rule.authentication,
+          rule.flowEncryption, rule.classification, rule.appCode
+        ].join('|');
+
+        if (seenKeys.has(key)) {
+          rule.isDuplicate = true;
+          hasDuplicates = true;
+        } else {
+          rule.isDuplicate = false;
+          seenKeys.set(key, true);
+        }
+      });
+
+      displayRules(currentRules);  // Mise à jour visuelle
+
+      if (!isValid) {
         alert('Erreurs:\n' + errors.join('\n'));
+      } else if (hasDuplicates) {
+        alert('Doublon(s) trouvé(s)');
+      } else {
+        alert('Tous les champs sont valides. Aucun doublon détecté.');
       }
     }
-
+    
     function generateScripts() {
       console.log('generateScripts called with csvRows:', currentRules);
       const scriptsOutput = document.getElementById('scriptsOutput');
@@ -798,8 +827,8 @@
         const validation = validateRow(rule);
         
         const tr = document.createElement('tr');
-        if (!validation.isValid) {
-          tr.className = 'has-error';
+        if (!validation.isValid || rule.isDuplicate) {
+          tr.className = rule.isDuplicate ? 'duplicate-row' : 'has-error';
         }
         
         tr.innerHTML = `
@@ -863,99 +892,7 @@
     function deleteRow(index) {
       currentRules.splice(index, 1);
       displayRules(currentRules);
+      verifyFields();  // Recalcule les doublons restants
     }
 
-    function saveNES() {
-      if (currentRules.length === 0) {
-        alert("Aucune ligne à sauvegarder. Veuillez ajouter des données.");
-        return;
-      }
-      
-      showLoading();
-      google.script.run
-        .withSuccessHandler(function(csvContent) {
-          hideLoading();
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = 'export_onboarding.csv';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          alert("Fichier CSV sauvegardé avec succès.");
-        })
-        .withFailureHandler(function(err) {
-          hideLoading();
-          console.error('Erreur GAS:', err);
-          alert('Erreur lors de la sauvegarde NES');
-        })
-        .exportCSV(currentRules);
-    }
-
-    function validateIP(ip) {
-      if (!ip) return false;
-      if (ip.includes('/')) {
-        const parts = ip.split('/');
-        if (parts.length !== 2) return false;
-        const ipPart = parts[0];
-        const cidrPart = parseInt(parts[1], 10);
-        const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-        if (!ipRegex.test(ipPart)) return false;
-        const octets = ipPart.split('.');
-        if (!octets.every(octet => {
-          const num = parseInt(octet, 10);
-          return num >= 0 && num <= 255;
-        })) return false;
-        if (isNaN(cidrPart) || cidrPart < 0 || cidrPart > 32) return false;
-        return true;
-      } else {
-        const regex = /^(\d{1,3}\.){3}\d{1,3}$/;
-        if (!regex.test(ip)) return false;
-        const parts = ip.split('.');
-        return parts.every(part => {
-          const num = parseInt(part, 10);
-          return num >= 0 && num <= 255;
-        });
-      }
-    }
-
-    function validatePort(port) {
-      if (!port) return false;
-      const num = parseInt(port, 10);
-      return !isNaN(num) && num >= 1 && num <= 65535;
-    }
-
-    function validateService(service) {
-      return !!service && service.length > 0;
-    }
-
-    function validateRow(rule) {
-      const errors = [];
-      let isValid = true;
-      
-      if (!validateIP(rule.sourceIP) && rule.sourceIP !== '') {
-        errors.push('Source IP invalide');
-        isValid = false;
-      }
-      
-      if (!validateIP(rule.destIP) && rule.destIP !== '') {
-        errors.push('IP Destination invalide');
-        isValid = false;
-      }
-      
-      if (!validatePort(rule.port) && rule.port !== '') {
-        errors.push('Port invalide (doit être entre 1 et 65535)');
-        isValid = false;
-      }
-      
-      return { isValid, errors };
-    }
-
-    function handleError(error) {
-      console.error('Erreur:', error);
-      alert('Une erreur est survenue: ' + error.toString());
-    }
-  </script>
-</body>
-</html>
+    function save
