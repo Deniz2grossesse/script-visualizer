@@ -305,18 +305,37 @@
       color: white;
       border: none;
       border-radius: 4px;
-      padding: 8px 16px;
+      padding: 6px 12px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 12px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      min-width: 100px;
+      gap: 6px;
+      min-width: 80px;
       justify-content: center;
     }
 
     .copy-btn:hover {
       background-color: #2980b9;
+    }
+
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 80px;
+      justify-content: center;
+    }
+
+    .delete-btn:hover {
+      background-color: #c0392b;
     }
 
     .delete-row-btn {
@@ -335,14 +354,19 @@
     }
 
     .delete-row-btn svg {
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
     }
 
     .trash-icon {
       color: #e74c3c;
       cursor: pointer;
-      font-size: 18px;
+      font-size: 14px;
+    }
+
+    .trash-icon svg {
+      width: 18px;
+      height: 18px;
     }
 
     .error-message {
@@ -397,25 +421,6 @@
     .btn-save svg {
       width: 16px;
       height: 16px;
-    }
-
-    .delete-btn {
-      background-color: #e74c3c;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 8px 16px;
-      cursor: pointer;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 100px;
-      justify-content: center;
-    }
-
-    .delete-btn:hover {
-      background-color: #c0392b;
     }
   </style>
 </head>
@@ -549,20 +554,15 @@
         
         reader.onload = function(e) {
           const content = e.target.result;
-          
-          // Appel à la fonction Google Apps Script
           google.script.run
             .withSuccessHandler(function(response) {
               hideLoading();
               if (response.success) {
                 currentRules = response.data;
                 displayRules(currentRules);
-                
-                // Remplir automatiquement les champs avec les données extraites du CSV
                 document.getElementById('department').value = response.department || '';
                 document.getElementById('projectCode').value = response.projectCode || '';
                 document.getElementById('email').value = response.requesterEmail || '';
-                
                 alert(response.message);
               } else {
                 alert(response.message || "Erreur lors de l'import");
@@ -697,14 +697,14 @@
             <div class="script-content">${script}</div>
             <div class="script-actions">
               <button class="copy-btn" onclick="copyGeneratedScript(${index})">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
                 Copy
               </button>
               <button class="delete-btn" onclick="deleteGeneratedScript(${index})">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M3 6h18"/>
                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
                   <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -753,8 +753,6 @@
       const scriptItems = document.querySelectorAll('.script-item');
       if (index < scriptItems.length) {
         scriptItems[index].remove();
-        
-        // Si tous les scripts ont été supprimés, masquer le conteneur
         if (document.querySelectorAll('.script-item').length === 0) {
           document.getElementById('scriptsOutput').style.display = 'none';
         }
@@ -809,9 +807,10 @@
           <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
           <td>
             <div class="trash-icon" onclick="deleteRow(${index})">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
               </svg>
             </div>
           </td>
@@ -847,7 +846,6 @@
       google.script.run
         .withSuccessHandler(function(csvContent) {
           hideLoading();
-          // Create and trigger download
           const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
@@ -868,35 +866,23 @@
 
     function validateIP(ip) {
       if (!ip) return false;
-      
-      // Check for CIDR notation
       if (ip.includes('/')) {
         const parts = ip.split('/');
         if (parts.length !== 2) return false;
-        
         const ipPart = parts[0];
         const cidrPart = parseInt(parts[1], 10);
-        
-        // Validate the IP part
         const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
         if (!ipRegex.test(ipPart)) return false;
-        
-        // Validate each octet
         const octets = ipPart.split('.');
         if (!octets.every(octet => {
           const num = parseInt(octet, 10);
           return num >= 0 && num <= 255;
         })) return false;
-        
-        // Validate CIDR part (must be 0-32)
         if (isNaN(cidrPart) || cidrPart < 0 || cidrPart > 32) return false;
-        
         return true;
       } else {
-        // Regular IPv4 validation
         const regex = /^(\d{1,3}\.){3}\d{1,3}$/;
         if (!regex.test(ip)) return false;
-        
         const parts = ip.split('.');
         return parts.every(part => {
           const num = parseInt(part, 10);

@@ -137,3 +137,48 @@ function exportCSV(modifiedLines) {
     throw new Error('Erreur lors de la génération CSV');
   }
 }
+
+// Function to generate scripts for network rules
+function generateScripts(options) {
+  try {
+    console.log("generateScripts called with options:", JSON.stringify(options));
+    
+    const csvRows = options.csvRows || [];
+    if (csvRows.length === 0) {
+      return {
+        success: false,
+        message: "Aucune donnée à traiter"
+      };
+    }
+    
+    const scripts = csvRows.map((row, index) => {
+      return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
+  -H "Authorization: Bearer <TON_TOKEN>" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "source": {
+      "ip": "${row.sourceIP.split('/')[0]}"
+    },
+    "destination": {
+      "ip": "${row.destIP}"
+    },
+    "service": {
+      "protocol": "${row.protocol.toUpperCase()}",
+      "port": ${row.port}
+    }
+  }'`;
+    });
+    
+    return {
+      success: true,
+      data: scripts,
+      message: scripts.length + " script(s) généré(s) avec succès"
+    };
+  } catch (e) {
+    console.error("Erreur generateScripts:", e.toString());
+    return {
+      success: false,
+      message: "Erreur lors de la génération des scripts: " + e.toString()
+    };
+  }
+}
