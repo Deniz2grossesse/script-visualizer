@@ -8,8 +8,9 @@ function doGet() {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-// Global variable to store header lines
+// Global variables to store header lines and raw CSV content
 var headerLinesCache = [];
+var rawCSVContent = "";  // Contiendra le fichier CSV brut
 
 function handleFileSelect(fileData) {
   console.log("handleFileSelect called with file data length:", fileData ? fileData.length : 0);
@@ -19,6 +20,10 @@ function handleFileSelect(fileData) {
       message: "Aucun fichier sélectionné" 
     };
   }
+  
+  // Store the raw CSV content
+  rawCSVContent = fileData;
+  
   return importCSV(fileData);
 }
 
@@ -36,6 +41,15 @@ function importCSV(csvData) {
     if (data.length < 12) {
       throw new Error("Le fichier CSV doit contenir au moins 12 lignes");
     }
+
+    // Extract department (C5), projectCode (J5), and requesterEmail (J6)
+    var department = data[4]?.[2] || "";      // Ligne 5, colonne 3 → C5
+    var projectCode = data[4]?.[9] || "";     // Ligne 5, colonne 10 → J5
+    var requesterEmail = data[5]?.[9] || "";  // Ligne 6, colonne 10 → J6
+    
+    console.log("Extracted department:", department);
+    console.log("Extracted projectCode:", projectCode);
+    console.log("Extracted requesterEmail:", requesterEmail);
 
     // Sauvegarder les 11 premières lignes
     headerLinesCache = data.slice(0, 11);
@@ -89,7 +103,10 @@ function importCSV(csvData) {
       success: true, 
       data: allProcessedRows,
       headerLines: headerLinesCache,
-      message: allProcessedRows.length + " lignes importées avec succès"
+      message: allProcessedRows.length + " lignes importées avec succès",
+      department: department,
+      projectCode: projectCode,
+      requesterEmail: requesterEmail
     };
   } catch(e) {
     console.error("Erreur lors de l'import:", e.toString());
@@ -103,6 +120,8 @@ function importCSV(csvData) {
 // Function to export CSV with header lines and modified data
 function exportCSV(modifiedLines) {
   try {
+    // If we want to use the raw CSV content instead, we can parse it again here
+    // For now, continuing with the current approach of headerLinesCache + modified lines
     const csvData = headerLinesCache.slice(); // Clone headers
     modifiedLines.forEach(rule => {
       csvData.push([

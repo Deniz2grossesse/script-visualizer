@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -547,6 +548,12 @@
               if (response.success) {
                 currentRules = response.data;
                 displayRules(currentRules);
+                
+                // Remplir automatiquement les champs avec les données extraites du CSV
+                document.getElementById('department').value = response.department || '';
+                document.getElementById('projectCode').value = response.projectCode || '';
+                document.getElementById('email').value = response.requesterEmail || '';
+                
                 alert(response.message);
               } else {
                 alert(response.message || "Erreur lors de l'import");
