@@ -1,8 +1,9 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Network, Shield, ArrowRight, Plus, Lock, FileCode, AlertTriangle, Check, X, Upload, Trash2 } from "lucide-react";
+import { Network, Shield, ArrowRight, Plus, Lock, FileCode, AlertTriangle, Check, X, Upload, Trash2, Copy } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface FieldError {
@@ -619,13 +620,21 @@ const Index = () => {
                       readOnly
                       className="w-full h-48 p-4 rounded-md font-mono text-sm bg-[#2C3E50] border border-[#BDC3C7]/30 shadow-input focus:border-primary transition-colors text-white"
                     />
-                    <div className="mt-2 flex justify-end">
+                    <div className="mt-2 flex justify-end space-x-2">
                       <Button 
                         onClick={() => navigator.clipboard.writeText(script)}
-                        variant="outline" 
-                        className="text-white hover:bg-white/20 transition-colors"
+                        size="sm"
+                        className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-1.5"
                       >
-                        Copy script
+                        <Copy className="h-3.5 w-3.5" />
+                        Copy
+                      </Button>
+                      <Button 
+                        size="sm"
+                        className="bg-red-500 hover:bg-red-600 text-white flex items-center gap-1.5"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Delete
                       </Button>
                     </div>
                   </div>
