@@ -123,6 +123,9 @@ function exportCSV(modifiedLines) {
     // If we want to use the raw CSV content instead, we can parse it again here
     // For now, continuing with the current approach of headerLinesCache + modified lines
     const csvData = headerLinesCache.slice(); // Clone headers
+    
+    console.log("CSV Header Lines (originales, non modifiées):", JSON.stringify(headerLinesCache));
+    
     modifiedLines.forEach(rule => {
       csvData.push([
         '', '', '', rule.sourceIP, '', '', rule.destIP, rule.protocol,
@@ -130,6 +133,11 @@ function exportCSV(modifiedLines) {
         rule.classification, rule.appCode
       ]);
     });
+    
+    console.log("CSV Data exportée (11 premières lignes + lignes modifiées):", 
+                "Nombre total de lignes: " + csvData.length,
+                "Premières lignes: " + JSON.stringify(csvData.slice(0, 5)));
+    
     const csvString = csvData.map(row => row.join(',')).join('\r\n');
     return csvString;
   } catch (e) {
