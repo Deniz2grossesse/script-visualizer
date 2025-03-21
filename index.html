@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -312,6 +311,8 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      min-width: 100px;
+      justify-content: center;
     }
 
     .copy-btn:hover {
@@ -336,6 +337,12 @@
     .delete-row-btn svg {
       width: 20px;
       height: 20px;
+    }
+
+    .trash-icon {
+      color: #e74c3c;
+      cursor: pointer;
+      font-size: 18px;
     }
 
     .error-message {
@@ -403,6 +410,8 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      min-width: 100px;
+      justify-content: center;
     }
 
     .delete-btn:hover {
@@ -799,13 +808,12 @@
           </td>
           <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
           <td>
-            <button class="delete-row-btn" onclick="deleteRow(${index})">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 6h18"/>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            <div class="trash-icon" onclick="deleteRow(${index})">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
               </svg>
-            </button>
+            </div>
           </td>
         `;
 
