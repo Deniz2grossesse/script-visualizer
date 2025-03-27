@@ -479,6 +479,32 @@
       background-color: rgba(255, 0, 0, 0.1);
       border: 2px solid #ff4d4d;
     }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+    }
+
+    .add-btn svg {
+      stroke: #2ECC71;
+    }
+    .add-btn:hover svg {
+      stroke: #27AE60;
+    }
+
+    .duplicate-btn svg {
+      stroke: #3498db;
+    }
+    .duplicate-btn:hover svg {
+      stroke: #2980b9;
+    }
   </style>
 </head>
 <body>
@@ -899,116 +925,4 @@
             <select class="select-field" onchange="updateRule(${index}, 'classification', this.value)">
               <option value="Yellow" ${rule.classification === 'Yellow' ? 'selected' : ''}>Yellow</option>
               <option value="Amber" ${rule.classification === 'Amber' ? 'selected' : ''}>Amber</option>
-              <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
-            </select>
-          </td>
-          <td><input type="text" class="appcode-field" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
-          <td style="text-align: right;">
-            <div style="display: flex; gap: 5px; justify-content: flex-end;">
-              <button class="delete-row-btn" onclick="duplicateRow(${index})" title="Duplicate row">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0FA0CE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-              </button>
-              <button class="delete-row-btn" onclick="deleteRow(${index})" title="Delete row">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3 6h18"></path>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
-                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
-              </button>
-            </div>
-          </td>
-        `;
-
-        tbody.appendChild(tr);
-
-        if (!validation.isValid) {
-          const errorRow = document.createElement('tr');
-          const errorCell = document.createElement('td');
-          errorCell.colSpan = 10;
-          errorCell.innerHTML = `<div class="error-message">${validation.errors.join('<br>')}</div>`;
-          errorRow.appendChild(errorCell);
-          tbody.appendChild(errorRow);
-        }
-      });
-      
-      table.style.display = 'table';
-    }
-
-    function deleteRow(index) {
-      currentRules.splice(index, 1);
-      displayRules(currentRules);
-      verifyFields();
-    }
-
-    function saveNES() {
-      const department = document.getElementById('department').value;
-      const projectCode = document.getElementById('projectCode').value;
-      const email = document.getElementById('email').value;
-      
-      if (!department || !projectCode || !email) {
-        alert("Department, Project Code, and Email fields are mandatory.");
-        return;
-      }
-      
-      if (currentRules.length === 0) {
-        alert("No rows to save. Please add data.");
-        return;
-      }
-      
-      google.script.run
-        .withSuccessHandler((csvContent) => {
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = 'export_onboarding.csv';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          alert("CSV file saved successfully.");
-        })
-        .withFailureHandler((error) => {
-          console.error('Error in saveNES:', error);
-          alert("Error saving CSV file");
-        })
-        .exportCSV(currentRules);
-    }
-
-    function validateIP(ip) {
-      if (!ip) return false;
-      const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-      return ipRegex.test(ip) && ip.split('.').every(num => parseInt(num) >= 0 && parseInt(num) <= 255);
-    }
-    
-    function validatePort(port) {
-      if (!port) return false;
-      const portNum = parseInt(port);
-      return !isNaN(portNum) && portNum >= 1 && portNum <= 65535;
-    }
-    
-    function validateRow(row) {
-      const errors = [];
-      
-      if (!validateIP(row.sourceIP)) {
-        errors.push("Invalid source IP");
-      }
-      if (!validateIP(row.destIP)) {
-        errors.push("Invalid destination IP");
-      }
-      if (!validatePort(row.port)) {
-        errors.push("Invalid port");
-      }
-      
-      return { isValid: errors.length === 0, errors };
-    }
-    
-    function handleError(error) {
-      console.error("Error:", error);
-      alert("An error occurred: " + error);
-    }
-  </script>
-</body>
-</html>
+              <option value="Red" ${rule
