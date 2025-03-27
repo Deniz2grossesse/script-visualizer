@@ -1,16 +1,15 @@
 
-import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Index from './pages/index';
+import NotFound from './pages/NotFound';
 import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <iframe 
-        src="index.html" 
-        style={{ width: '100%', height: '100vh', border: 'none' }} 
-        title="Network Rules Generator"
-      />
-    </div>
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 
