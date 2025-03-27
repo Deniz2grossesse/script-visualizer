@@ -325,7 +325,7 @@ const Index = () => {
           <span className="text-[#BDC3C7]">These three fields are mandatory, you cannot start entering them without having filled them in.</span>
         </div>
 
-        <div className="flex justify-end gap-3 mb-6">
+        <div className="flex justify-end gap-4 mb-6">
           <Button 
             onClick={addEmptyRow}
             className="flex items-center gap-2 bg-[#2ECC71] hover:bg-[#27AE60] text-white"
