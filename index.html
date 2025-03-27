@@ -523,7 +523,7 @@
           <th>Flow Encryption</th>
           <th>Classification</th>
           <th>APP Code</th>
-          <th>Actions</th>
+          <th>Manage</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -653,6 +653,20 @@
       displayRules(currentRules);
     }
 
+    function duplicateRow(index) {
+      console.log('Duplicating row at index:', index);
+      if (index >= 0 && index < currentRules.length) {
+        const duplicatedRow = {...currentRules[index]};
+        currentRules.splice(index + 1, 0, duplicatedRow);
+        displayRules(currentRules);
+        toast("Row duplicated successfully");
+      }
+    }
+
+    function toast(message) {
+      alert(message);
+    }
+
     function deleteForm() {
       if (confirm('Voulez-vous vraiment supprimer le formulaire ?')) {
         google.script.run
@@ -712,7 +726,6 @@
         isValid = false;
       }
 
-      // === Duplicate detection ===
       let hasDuplicates = false;
       const seenKeys = new Map();
 
@@ -732,7 +745,7 @@
         }
       });
 
-      displayRules(currentRules);  // Visual update
+      displayRules(currentRules);
 
       if (!isValid) {
         alert('Errors:\n' + errors.join('\n'));
@@ -867,13 +880,21 @@
           </td>
           <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
           <td>
-            <button class="delete-row-btn" onclick="deleteRow(${index})">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 6h18"></path>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
-                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
-            </button>
+            <div style="display: flex; gap: 5px;">
+              <button class="delete-row-btn" onclick="duplicateRow(${index})" title="Duplicate row">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+              <button class="delete-row-btn" onclick="deleteRow(${index})" title="Delete row">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
           </td>
         `;
 
@@ -895,7 +916,7 @@
     function deleteRow(index) {
       currentRules.splice(index, 1);
       displayRules(currentRules);
-      verifyFields();  // Recalcule les doublons restants
+      verifyFields();
     }
 
     function saveNES() {
