@@ -544,7 +544,7 @@ const Index = () => {
                       />
                     </td>
                     <td className="p-2 text-right">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end items-center space-x-1">
                         <Button
                           variant="ghost"
                           onClick={() => deleteRow(index)}

@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,7 +6,6 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
-    /* ... keep existing code (variables CSS) */
   }
 }
 
@@ -56,7 +54,6 @@
   @apply h-9;
 }
 
-/* Largeurs spécifiques pour chaque type de champ */
 .w-ip {
   width: 150px;
 }
@@ -70,7 +67,7 @@
 }
 
 .w-port {
-  width: 120px;
+  width: 240px;
 }
 
 .w-select {
