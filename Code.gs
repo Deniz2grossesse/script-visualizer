@@ -1,4 +1,3 @@
-
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -53,10 +52,22 @@ function importCSV(csvData) {
 
     // Sauvegarder les 11 premières lignes
     headerLinesCache = data.slice(0, 11);
+    
+    // Compteurs pour les lignes valides et ignorées
+    var validRows = 0;
+    var skippedRows = 0;
+    
     var processedData = data.slice(11).map(function(row, index) {
       console.log("Traitement ligne", index + 12, ":", row);
       
       if (row.length >= 14) {
+        // Champs requis dans une ligne
+        if (!row[3] || !row[6] || !row[7] || !row[8] || !row[9] || !row[10] || !row[11] || !row[12] || !row[13]) {
+          console.log("Ligne ignorée car un champ est vide :", row);
+          skippedRows++;
+          return null; // Ligne ignorée si un champ est manquant
+        }
+        
         var sourceIPs = (row[3] || '').split(',').map(ip => ip.trim()).filter(ip => ip);
         var destIPs = (row[6] || '').split(',').map(ip => ip.trim()).filter(ip => ip);
         var combinations = [];
@@ -83,9 +94,11 @@ function importCSV(csvData) {
         });
 
         console.log("Nombre de combinaisons générées:", combinations.length);
+        validRows += combinations.length;
         return combinations;
       }
       console.log("Ligne ignorée - pas assez de colonnes");
+      skippedRows++;
       return null;
     }).filter(function(row) {
       return row !== null;
@@ -103,7 +116,7 @@ function importCSV(csvData) {
       success: true, 
       data: allProcessedRows,
       headerLines: headerLinesCache,
-      message: allProcessedRows.length + " lignes importées avec succès",
+      message: validRows + " lignes valides importées, " + skippedRows + " lignes ignorées (champs manquants)",
       department: department,
       projectCode: projectCode,
       requesterEmail: requesterEmail
