@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -196,6 +195,17 @@ const Index = () => {
       title: "Ligne supprimée",
       description: "La ligne a été supprimée avec succès."
     });
+  };
+
+  const duplicateRow = (index: number) => {
+    console.log('duplicateRow called for index:', index);
+    const row = csvRows[index];
+    const newRows = [...csvRows];
+    newRows.splice(index + 1, 0, {
+      ...row,
+      id: newRows.length + 1
+    });
+    setCsvRows(newRows);
   };
 
   const updateRow = (index: number, field: keyof CSVRow, value: string) => {
@@ -457,7 +467,7 @@ const Index = () => {
                   <th className="p-2 text-left">Flow Encryption</th>
                   <th className="p-2 text-left">Classification</th>
                   <th className="p-2 text-left">APP Code</th>
-                  <th className="p-2 text-left">Actions</th>
+                  <th className="p-2 text-left">Manage ligne</th>
                 </tr>
               </thead>
               <tbody>
@@ -467,7 +477,7 @@ const Index = () => {
                       <Input
                         value={row.sourceIP}
                         onChange={(e) => updateRow(index, 'sourceIP', e.target.value)}
-                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8"
+                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8 w-[180px]"
                       />
                     </td>
                     <td className="p-2">
@@ -545,13 +555,25 @@ const Index = () => {
                       />
                     </td>
                     <td className="p-2">
-                      <Button
-                        variant="ghost"
-                        onClick={() => deleteRow(index)}
-                        className="h-8 w-8 p-0 text-red-500 hover:text-red-400 hover:bg-red-500/20"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          onClick={() => duplicateRow(index)}
+                          className="h-8 w-8 p-0 text-[#0FA0CE] hover:text-[#1EAEDB] hover:bg-blue-500/20"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                          </svg>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => deleteRow(index)}
+                          className="h-8 w-8 p-0 text-red-500 hover:text-red-400 hover:bg-red-500/20"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}

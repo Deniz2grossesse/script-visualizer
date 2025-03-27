@@ -523,7 +523,7 @@
           <th>Flow Encryption</th>
           <th>Classification</th>
           <th>APP Code</th>
-          <th>Manage</th>
+          <th>Manage ligne</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -848,7 +848,7 @@
         }
         
         tr.innerHTML = `
-          <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)" class="${!validateIP(rule.sourceIP) ? 'border-red-500' : ''}"></td>
+          <td><input type="text" value="${rule.sourceIP || ''}" onchange="updateRule(${index}, 'sourceIP', this.value)" class="${!validateIP(rule.sourceIP) ? 'border-red-500' : ''}" style="width: 180px;"></td>
           <td><input type="text" value="${rule.destIP || ''}" onchange="updateRule(${index}, 'destIP', this.value)" class="${!validateIP(rule.destIP) ? 'border-red-500' : ''}"></td>
           <td>
             <select onchange="updateRule(${index}, 'protocol', this.value)">
@@ -880,7 +880,7 @@
           </td>
           <td><input type="text" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
           <td>
-            <div style="display: flex; gap: 5px;">
+            <div style="display: flex; gap: 1px;">
               <button class="delete-row-btn" onclick="duplicateRow(${index})" title="Duplicate row">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0FA0CE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
