@@ -1,4 +1,3 @@
-
 <script>
 let rules = [];
 
@@ -45,6 +44,21 @@ function createRuleElement(rule, index) {
       <label>Port</label>
       <input type="number" min="1" max="65535" value="${rule.port}" onchange="updateRule(${index}, 'port', this.value)">
     </div>
+    <div class="form-actions">
+      <button class="icon-btn duplicate-btn" onclick="duplicateRow(${index})" title="Duplicate row">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#3498db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+      </button>
+      <button class="icon-btn delete-btn" onclick="deleteRule(${index})" title="Delete rule">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18"></path>
+          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+        </svg>
+      </button>
+    </div>
   `;
   return ruleDiv;
 }
@@ -59,6 +73,19 @@ function refreshRulesDisplay() {
 
 function updateRule(index, field, value) {
   rules[index][field] = value;
+}
+
+function duplicateRow(index) {
+  const newRule = { ...rules[index] };
+  rules.splice(index + 1, 0, newRule);
+  refreshRulesDisplay();
+}
+
+function deleteRule(index) {
+  if (confirm('Are you sure you want to delete this rule?')) {
+    rules.splice(index, 1);
+    refreshRulesDisplay();
+  }
 }
 
 function verifyRules() {
