@@ -1,3 +1,4 @@
+
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -9,7 +10,8 @@ function doGet() {
 
 // Global variables to store header lines and raw CSV content
 var headerLinesCache = [];
-var rawCSVContent = "";  // Contiendra le fichier CSV brut
+var rawCSVContent = "";  // Contains the raw CSV file
+var userDraft = null;   // To store the draft for a user
 
 function handleFileSelect(fileData) {
   console.log("handleFileSelect called with file data length:", fileData ? fileData.length : 0);
@@ -200,6 +202,101 @@ function generateScripts(options) {
     return {
       success: false,
       message: "Erreur lors de la génération des scripts: " + e.toString()
+    };
+  }
+}
+
+// Function to save the form as a draft
+function saveDraft(formData) {
+  try {
+    console.log("saveDraft called with data:", JSON.stringify(formData));
+    userDraft = formData;
+    
+    return {
+      success: true,
+      message: "Brouillon sauvegardé avec succès"
+    };
+  } catch (e) {
+    console.error("Erreur saveDraft:", e.toString());
+    return {
+      success: false,
+      message: "Erreur lors de la sauvegarde: " + e.toString()
+    };
+  }
+}
+
+// Function to retrieve the saved draft
+function getDraft() {
+  try {
+    console.log("getDraft called");
+    
+    if (!userDraft) {
+      return {
+        success: false,
+        message: "Aucun brouillon trouvé"
+      };
+    }
+    
+    return {
+      success: true,
+      data: userDraft,
+      message: "Brouillon récupéré avec succès"
+    };
+  } catch (e) {
+    console.error("Erreur getDraft:", e.toString());
+    return {
+      success: false,
+      message: "Erreur lors de la récupération: " + e.toString()
+    };
+  }
+}
+
+// Function to delete the form data
+function deleteForm() {
+  try {
+    console.log("deleteForm called");
+    headerLinesCache = [];
+    rawCSVContent = "";
+    userDraft = null;
+    
+    return {
+      success: true,
+      message: "Formulaire supprimé avec succès"
+    };
+  } catch (e) {
+    console.error("Erreur deleteForm:", e.toString());
+    return {
+      success: false,
+      message: "Erreur lors de la suppression: " + e.toString()
+    };
+  }
+}
+
+// Function to save the Network Equipment Sheet
+function saveNES(formData) {
+  try {
+    console.log("saveNES called with data:", JSON.stringify(formData));
+    
+    if (!formData.department || !formData.projectCode || !formData.email || !formData.rules || formData.rules.length === 0) {
+      return {
+        success: false,
+        message: "Données incomplètes"
+      };
+    }
+    
+    // Save the NES (in a real app, this would save to a database or file)
+    // For now, we'll just save it as a draft
+    userDraft = formData;
+    
+    return {
+      success: true,
+      message: "NES sauvegardé avec succès"
+    };
+  } catch (e) {
+    console.error("Erreur saveNES:", e.toString());
+    return {
+      success: false,
+      message: "Erreur lors de la sauvegarde du NES: " + e.toString()
     };
   }
 }
