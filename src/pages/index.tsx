@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Network, Shield, ArrowRight, Plus, Lock, FileCode, AlertTriangle, Check, X, Upload, Trash2, Copy } from "lucide-react";
+import { Network, Shield, ArrowRight, Plus, Lock, FileCode, AlertTriangle, Check, X, Upload, Trash2, Copy, CopyPlus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface FieldError {
@@ -194,6 +194,18 @@ const Index = () => {
     toast({
       title: "Ligne supprimée",
       description: "La ligne a été supprimée avec succès."
+    });
+  };
+
+  const duplicateRow = (index: number) => {
+    console.log('duplicateRow called for index:', index);
+    const newRows = [...csvRows];
+    const duplicatedRow = { ...newRows[index] };
+    newRows.splice(index + 1, 0, duplicatedRow);
+    setCsvRows(newRows);
+    toast({
+      title: "Ligne dupliquée",
+      description: "La ligne a été dupliquée avec succès."
     });
   };
 
@@ -545,6 +557,16 @@ const Index = () => {
                     </td>
                     <td className="p-2 text-right">
                       <div className="flex justify-end items-center space-x-1">
+                        <button 
+                          className="h-8 w-8 p-0 flex items-center justify-center text-[#3498db] hover:bg-[#3498db]/20 rounded-md"
+                          onClick={() => duplicateRow(index)}
+                          title="Duplicate row"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#3498db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                          </svg>
+                        </button>
                         <Button
                           variant="ghost"
                           onClick={() => deleteRow(index)}
