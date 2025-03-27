@@ -586,6 +586,7 @@
 
     <div id="actionBar" class="action-buttons">
       <button class="btn-delete" onclick="deleteForm()">Delete</button>
+      <button class="btn-resume" onclick="resumeDraft()">Resume Draft</button>
       <button class="btn-verify" onclick="verifyFields()">Verify</button>
       <button class="btn-save" onclick="saveNES()">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -742,6 +743,26 @@
           .withFailureHandler(handleError)
           .deleteForm();
       }
+    }
+
+    function resumeDraft() {
+      google.script.run
+        .withSuccessHandler((response) => {
+          if (response.success && response.data) {
+            const data = response.data;
+            document.getElementById('department').value = data.department || '';
+            document.getElementById('projectCode').value = data.projectCode || '';
+            document.getElementById('email').value = data.email || '';
+            if (data.rules) {
+              currentRules = data.rules;
+              displayRules(currentRules);
+            }
+          } else {
+            alert('Aucun brouillon trouvé');
+          }
+        })
+        .withFailureHandler(handleError)
+        .getDraft();
     }
 
     function verifyFields() {
@@ -937,37 +958,42 @@
             <td><input type="text" class="port-field" value="${rule.port || ''}" onchange="updateRule(${index}, 'port', this.value)" class="${!validatePort(rule.port) ? 'border-red-500' : ''}"></td>
             <td>
               <select class="select-field" onchange="updateRule(${index}, 'authentication', this.value)">
-                <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>YES</option>
-                <option value="No" ${rule.authentication === 'No' ? 'selected' : ''}>NO</option>
+                <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
+                <option value="No" ${rule.authentication === 'No' ? 'selected' : ''}>No</option>
               </select>
             </td>
             <td>
               <select class="select-field" onchange="updateRule(${index}, 'flowEncryption', this.value)">
-                <option value="Yes" ${rule.flowEncryption === 'Yes' ? 'selected' : ''}>YES</option>
-                <option value="No" ${rule.flowEncryption === 'No' ? 'selected' : ''}>NO</option>
+                <option value="Yes" ${rule.flowEncryption === 'Yes' ? 'selected' : ''}>Yes</option>
+                <option value="No" ${rule.flowEncryption === 'No' ? 'selected' : ''}>No</option>
               </select>
             </td>
             <td>
               <select class="select-field" onchange="updateRule(${index}, 'classification', this.value)">
-                <option value="Yellow" ${rule.classification === 'Yellow' ? 'selected' : ''}>YELLOW</option>
-                <option value="Amber" ${rule.classification === 'Amber' ? 'selected' : ''}>AMBER</option>
-                <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>RED</option>
+                <option value="Yellow" ${rule.classification === 'Yellow' ? 'selected' : ''}>Yellow</option>
+                <option value="Amber" ${rule.classification === 'Amber' ? 'selected' : ''}>Amber</option>
+                <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
               </select>
             </td>
             <td><input type="text" class="appcode-field" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
-            <td style="text-align: right;">
-              <div style="display: flex; justify-content: flex-end;">
-                <button class="delete-row-btn" onclick="deleteRow(${index})">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <td>
+              <div style="display: flex; gap: 5px; justify-content: flex-end;">
+                <button class="icon-btn add-btn" onclick="addNewLine()" title="Add new line">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#2ECC71" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 1v14M1 8h14"/>
+                  </svg>
+                </button>
+                <button class="icon-btn duplicate-btn" onclick="duplicateRow(${index})" title="Duplicate row">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#3498db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                </button>
+                <button class="delete-row-btn" onclick="deleteRow(${index})" title="Delete row">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 6h18"></path>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
                     <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  </svg>
-                </button>
-                <button class="icon-btn duplicate-btn" onclick="duplicateRow(${index})">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                   </svg>
                 </button>
               </div>
@@ -976,39 +1002,35 @@
           
           tbody.appendChild(tr);
         });
-        
-        // Display validation errors if any
-        const errorDiv = document.querySelector('.validation-errors');
-        if (errorDiv) {
-          errorDiv.remove();
-        }
-        
-        const invalidRows = rules.filter(row => !row.isValid);
-        if (invalidRows.length > 0) {
-          const errorContainer = document.createElement('div');
-          errorContainer.className = 'validation-errors';
-          errorContainer.innerHTML = `
-            <div style="margin-top: 20px; padding: 15px; background-color: rgba(255, 0, 0, 0.1); border-radius: 6px;">
-              <h3 style="color: #e74c3c; margin-top: 0;">Validation Errors:</h3>
-              <ul>
-                ${invalidRows.map((row, idx) => 
-                  `<li style="color: #e74c3c; margin-bottom: 5px;">
-                    Row ${idx + 1}: ${row.errors?.join(', ') || 'Invalid data'}
-                  </li>`
-                ).join('')}
-              </ul>
-            </div>
-          `;
-          table.parentNode.insertBefore(errorContainer, table.nextSibling);
-        }
       } else {
         table.style.display = 'none';
       }
     }
-    
+
+    function saveNES() {
+      google.script.run
+        .withSuccessHandler((response) => {
+          if (response.success) {
+            alert('NES saved successfully');
+          } else {
+            alert('Error saving NES: ' + response.message);
+          }
+        })
+        .withFailureHandler((error) => {
+          console.error('Error in saveNES:', error);
+          alert('Error saving NES');
+        })
+        .saveNES({
+          department: document.getElementById('department').value,
+          projectCode: document.getElementById('projectCode').value,
+          email: document.getElementById('email').value,
+          rules: currentRules
+        });
+    }
+
     function handleError(error) {
-      console.error("Erreur:", error);
-      alert("Erreur lors de l'import du fichier");
+      console.error('Error:', error);
+      alert('An error occurred: ' + error);
     }
   </script>
 </body>
