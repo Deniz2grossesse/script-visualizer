@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -457,7 +456,7 @@ const Index = () => {
                   <th className="p-2 text-left">Flow Encryption</th>
                   <th className="p-2 text-left">Classification</th>
                   <th className="p-2 text-left">APP Code</th>
-                  <th className="p-2 text-left">Actions</th>
+                  <th className="p-2 text-right">Manage ligne</th>
                 </tr>
               </thead>
               <tbody>
@@ -467,19 +466,19 @@ const Index = () => {
                       <Input
                         value={row.sourceIP}
                         onChange={(e) => updateRow(index, 'sourceIP', e.target.value)}
-                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8"
+                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8 w-ip"
                       />
                     </td>
                     <td className="p-2">
                       <Input
                         value={row.destIP}
                         onChange={(e) => updateRow(index, 'destIP', e.target.value)}
-                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8"
+                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8 w-ip"
                       />
                     </td>
                     <td className="p-2">
                       <Select value={row.protocol} onValueChange={(value) => updateRow(index, 'protocol', value)}>
-                        <SelectTrigger className="h-8">
+                        <SelectTrigger className="h-8 w-protocol">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -493,19 +492,19 @@ const Index = () => {
                       <Input
                         value={row.service}
                         onChange={(e) => updateRow(index, 'service', e.target.value)}
-                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8"
+                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8 w-service"
                       />
                     </td>
                     <td className="p-2">
                       <Input
                         value={row.port}
                         onChange={(e) => updateRow(index, 'port', e.target.value)}
-                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8"
+                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8 w-port"
                       />
                     </td>
                     <td className="p-2">
                       <Select value={row.authentication} onValueChange={(value) => updateRow(index, 'authentication', value)}>
-                        <SelectTrigger className="h-8">
+                        <SelectTrigger className="h-8 w-select">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -516,7 +515,7 @@ const Index = () => {
                     </td>
                     <td className="p-2">
                       <Select value={row.flowEncryption} onValueChange={(value) => updateRow(index, 'flowEncryption', value)}>
-                        <SelectTrigger className="h-8">
+                        <SelectTrigger className="h-8 w-select">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -527,7 +526,7 @@ const Index = () => {
                     </td>
                     <td className="p-2">
                       <Select value={row.classification} onValueChange={(value) => updateRow(index, 'classification', value)}>
-                        <SelectTrigger className="h-8">
+                        <SelectTrigger className="h-8 w-select">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -541,17 +540,19 @@ const Index = () => {
                       <Input
                         value={row.appCode}
                         onChange={(e) => updateRow(index, 'appCode', e.target.value)}
-                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8"
+                        className="bg-[#34495E] border-[#BDC3C7]/30 text-white h-8 w-appcode"
                       />
                     </td>
-                    <td className="p-2">
-                      <Button
-                        variant="ghost"
-                        onClick={() => deleteRow(index)}
-                        className="h-8 w-8 p-0 text-red-500 hover:text-red-400 hover:bg-red-500/20"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <td className="p-2 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          onClick={() => deleteRow(index)}
+                          className="h-8 w-8 p-0 text-red-500 hover:text-red-400 hover:bg-red-500/20"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
