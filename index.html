@@ -124,7 +124,7 @@
       justify-content: center;
       gap: 8px;
       padding: 12px 24px;
-      min-width: 40px;
+      min-width: 120px;
     }
     
     .btn-add span {
@@ -427,13 +427,14 @@
     .error-message {
       color: #e74c3c;
       margin-top: 5px;
-      font-size: 12px;
+      font-size: 11px;
+      font-weight: normal;
     }
 
     .success-message {
       color: #2ecc71;
       margin-top: 5px;
-      font-size: 12px;
+      font-size: 11px;
     }
 
     .loading-message {
@@ -950,88 +951,3 @@
             <td>
               <select class="protocol-field" onchange="updateRule(${index}, 'protocol', this.value)">
                 <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
-                <option value="UDP" ${rule.protocol === 'UDP' ? 'selected' : ''}>UDP</option>
-                <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
-              </select>
-            </td>
-            <td><input type="text" class="service-field" value="${rule.service || ''}" onchange="updateRule(${index}, 'service', this.value)"></td>
-            <td><input type="text" class="port-field" value="${rule.port || ''}" onchange="updateRule(${index}, 'port', this.value)" class="${!validatePort(rule.port) ? 'border-red-500' : ''}"></td>
-            <td>
-              <select class="select-field" onchange="updateRule(${index}, 'authentication', this.value)">
-                <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
-                <option value="No" ${rule.authentication === 'No' ? 'selected' : ''}>No</option>
-              </select>
-            </td>
-            <td>
-              <select class="select-field" onchange="updateRule(${index}, 'flowEncryption', this.value)">
-                <option value="Yes" ${rule.flowEncryption === 'Yes' ? 'selected' : ''}>Yes</option>
-                <option value="No" ${rule.flowEncryption === 'No' ? 'selected' : ''}>No</option>
-              </select>
-            </td>
-            <td>
-              <select class="select-field" onchange="updateRule(${index}, 'classification', this.value)">
-                <option value="Yellow" ${rule.classification === 'Yellow' ? 'selected' : ''}>Yellow</option>
-                <option value="Amber" ${rule.classification === 'Amber' ? 'selected' : ''}>Amber</option>
-                <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
-              </select>
-            </td>
-            <td><input type="text" class="appcode-field" value="${rule.appCode || ''}" onchange="updateRule(${index}, 'appCode', this.value)"></td>
-            <td>
-              <div style="display: flex; gap: 5px; justify-content: flex-end;">
-                <button class="icon-btn add-btn" onclick="addNewLine()" title="Add new line">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#2ECC71" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M8 1v14M1 8h14"/>
-                  </svg>
-                </button>
-                <button class="icon-btn duplicate-btn" onclick="duplicateRow(${index})" title="Duplicate row">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#3498db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                  </svg>
-                </button>
-                <button class="delete-row-btn" onclick="deleteRow(${index})" title="Delete row">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
-                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  </svg>
-                </button>
-              </div>
-            </td>
-          `;
-          
-          tbody.appendChild(tr);
-        });
-      } else {
-        table.style.display = 'none';
-      }
-    }
-
-    function saveNES() {
-      google.script.run
-        .withSuccessHandler((response) => {
-          if (response.success) {
-            alert('NES saved successfully');
-          } else {
-            alert('Error saving NES: ' + response.message);
-          }
-        })
-        .withFailureHandler((error) => {
-          console.error('Error in saveNES:', error);
-          alert('Error saving NES');
-        })
-        .saveNES({
-          department: document.getElementById('department').value,
-          projectCode: document.getElementById('projectCode').value,
-          email: document.getElementById('email').value,
-          rules: currentRules
-        });
-    }
-
-    function handleError(error) {
-      console.error('Error:', error);
-      alert('An error occurred: ' + error);
-    }
-  </script>
-</body>
-</html>
