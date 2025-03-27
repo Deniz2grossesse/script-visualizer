@@ -1084,6 +1084,12 @@
       console.error('Error:', error);
       alert('An error occurred: ' + error);
     }
+
+    window.addEventListener('load', () => {
+      if (currentRules.length === 0) {
+        addNewLine();
+      }
+    });
   </script>
 </body>
 </html>
