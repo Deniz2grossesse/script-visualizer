@@ -464,7 +464,7 @@
     <div class="top-buttons">
       <button class="btn-add" onclick="addNewLine()">
         <span>+</span>
-        Ajouter une ligne
+        Add a Line
       </button>
       <button class="btn-import" onclick="importCSV()">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -473,7 +473,7 @@
           <line x1="12" y1="18" x2="12" y2="12"/>
           <line x1="9" y1="15" x2="15" y2="15"/>
         </svg>
-        Importer CSV
+        Import CSV
       </button>
     </div>
 
@@ -556,7 +556,7 @@
     </div>
 
     <div id="loadingMessage" class="loading-message">
-      Fichier en cours de chargement...
+      File is loading...
     </div>
   </div>
 
@@ -695,21 +695,21 @@
       let errors = [];
 
       if (!department || department.length > 4) {
-        errors.push('Le département doit faire entre 1 et 4 caractères');
+        errors.push('Department must be between 1 and 4 characters');
         isValid = false;
       }
 
       if (!projectCode || projectCode.length > 4) {
-        errors.push('Le code projet doit faire entre 1 et 4 caractères');
+        errors.push('Project code must be between 1 and 4 characters');
         isValid = false;
       }
 
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        errors.push('Email invalide');
+        errors.push('Invalid email');
         isValid = false;
       }
 
-      // === Détection des doublons ===
+      // === Duplicate detection ===
       let hasDuplicates = false;
       const seenKeys = new Map();
 
@@ -729,14 +729,14 @@
         }
       });
 
-      displayRules(currentRules);  // Mise à jour visuelle
+      displayRules(currentRules);  // Visual update
 
       if (!isValid) {
-        alert('Erreurs:\n' + errors.join('\n'));
+        alert('Errors:\n' + errors.join('\n'));
       } else if (hasDuplicates) {
-        alert('Doublon(s) trouvé(s)');
+        alert('Duplicate(s) found');
       } else {
-        alert('Tous les champs sont valides. Aucun doublon détecté.');
+        alert('All fields are valid. No duplicates detected.');
       }
     }
     
@@ -901,12 +901,12 @@
       const email = document.getElementById('email').value;
       
       if (!department || !projectCode || !email) {
-        alert("Les champs Department, Project Code et Email sont obligatoires.");
+        alert("Department, Project Code, and Email fields are mandatory.");
         return;
       }
       
       if (currentRules.length === 0) {
-        alert("Aucune ligne à sauvegarder. Veuillez ajouter des données.");
+        alert("No rows to save. Please add data.");
         return;
       }
       
@@ -920,48 +920,14 @@
           link.click();
           document.body.removeChild(link);
           
-          alert("Fichier CSV sauvegardé avec succès.");
+          alert("CSV file saved successfully.");
         })
         .withFailureHandler((error) => {
           console.error('Error in saveNES:', error);
-          alert("Erreur lors de la sauvegarde du fichier CSV");
+          alert("Error saving CSV file");
         })
         .exportCSV(currentRules);
     }
-    
-    function validateIP(ip) {
-      const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-      return ipRegex.test(ip) && ip.split('.').every(num => parseInt(num) >= 0 && parseInt(num) <= 255);
-    }
-    
-    function validatePort(port) {
-      const portNum = parseInt(port);
-      return !isNaN(portNum) && portNum >= 1 && portNum <= 65535;
-    }
-    
-    function validateRow(row) {
-      const errors = [];
-      
-      if (!validateIP(row.sourceIP)) {
-        errors.push("IP source invalide");
-      }
-      if (!validateIP(row.destIP)) {
-        errors.push("IP destination invalide");
-      }
-      if (!validatePort(row.port)) {
-        errors.push("Port invalide");
-      }
-      
-      return { isValid: errors.length === 0, errors };
-    }
-    
-    function handleError(error) {
-      console.error("Erreur:", error);
-      alert("Une erreur est survenue: " + error);
-    }
   </script>
-  
-  <!-- Don't forget the GPT Engineer script tag -->
-  <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
 </body>
 </html>
