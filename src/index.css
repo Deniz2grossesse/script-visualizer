@@ -1,0 +1,5 @@
+
+/* Updated button size for action management */
+.action-btn {
+  @apply h-8 w-8 p-0 flex items-center justify-center min-w-[40px];
+}
