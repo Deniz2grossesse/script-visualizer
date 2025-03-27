@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -89,3 +90,9 @@
 .rule-remove {
   @apply text-red-500 hover:text-red-600 ml-2 mt-8;
 }
+
+/* Updated button size for action management */
+.action-btn {
+  @apply h-8 w-8 p-0 flex items-center justify-center;
+}
+
