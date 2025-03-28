@@ -508,7 +508,29 @@
     .duplicate-btn:hover svg {
       stroke: #2980b9;
     }
-  </style>
+  
+  .duplicate-btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+  }
+
+  .duplicate-btn:hover {
+    background-color: #2980b9;
+  }
+
+  .duplicate-btn svg {
+    stroke: white;
+    margin-right: 5px;
+  }
+</style>
 </head>
 <body>
   <div class="container">
@@ -949,147 +971,3 @@
       const table = document.getElementById('rulesTable');
       const tbody = table.querySelector('tbody');
       tbody.innerHTML = '';
-      
-      if (rules.length > 0) {
-        rules.forEach((rule, index) => {
-          const row = document.createElement('tr');
-          row.className = rule.isDuplicate ? 'duplicate-row' : '';
-          
-          row.innerHTML = `
-            <td>
-              <input type="text" value="${rule.sourceIP || ''}" 
-                onchange="updateRule(${index}, 'sourceIP', this.value)" 
-                placeholder="e.g., 192.168.1.0/24"
-                class="ip-field" />
-            </td>
-            <td>
-              <input type="text" value="${rule.destIP || ''}" 
-                onchange="updateRule(${index}, 'destIP', this.value)" 
-                placeholder="e.g., 10.0.0.1"
-                class="ip-field" />
-            </td>
-            <td>
-              <select onchange="updateRule(${index}, 'protocol', this.value)" class="protocol-field">
-                <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
-                <option value="UDP" ${rule.protocol === 'UDP' ? 'selected' : ''}>UDP</option>
-                <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
-              </select>
-            </td>
-            <td>
-              <input type="text" value="${rule.service || ''}" 
-                onchange="updateRule(${index}, 'service', this.value)" 
-                placeholder="Service name"
-                class="service-field" />
-            </td>
-            <td>
-              <input type="text" value="${rule.port || ''}" 
-                onchange="updateRule(${index}, 'port', this.value)" 
-                placeholder="e.g., 443"
-                class="port-field" />
-            </td>
-            <td>
-              <select onchange="updateRule(${index}, 'authentication', this.value)" class="select-field">
-                <option value="No" ${rule.authentication === 'No' ? 'selected' : ''}>No</option>
-                <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
-              </select>
-            </td>
-            <td>
-              <select onchange="updateRule(${index}, 'flowEncryption', this.value)" class="select-field">
-                <option value="No" ${rule.flowEncryption === 'No' ? 'selected' : ''}>No</option>
-                <option value="Yes" ${rule.flowEncryption === 'Yes' ? 'selected' : ''}>Yes</option>
-              </select>
-            </td>
-            <td>
-              <select onchange="updateRule(${index}, 'classification', this.value)" class="select-field">
-                <option value="Yellow" ${rule.classification === 'Yellow' ? 'selected' : ''}>Yellow</option>
-                <option value="Amber" ${rule.classification === 'Amber' ? 'selected' : ''}>Amber</option>
-                <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
-              </select>
-            </td>
-            <td>
-              <input type="text" value="${rule.appCode || ''}" 
-                onchange="updateRule(${index}, 'appCode', this.value)" 
-                placeholder="App code"
-                class="appcode-field" />
-            </td>
-            <td>
-              <div style="display: flex; gap: 5px; justify-content: flex-end;">
-                <button class="icon-btn add-btn" onclick="addNewLine()" title="Add new line">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#2ECC71" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M8 1v14M1 8h14"/>
-                  </svg>
-                </button>
-                <button class="duplicate-btn" onclick="duplicateRow(${index})" title="Duplicate row">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#3498db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                  </svg>
-                </button>
-                <button class="delete-row-btn" onclick="deleteRow(${index})" title="Delete row">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
-                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  </svg>
-                </button>
-              </div>
-            </td>
-          `;
-          
-          tbody.appendChild(row);
-        });
-        
-        table.style.display = 'table';
-      } else {
-        table.style.display = 'none';
-      }
-    }
-    
-    function saveNES() {
-      const department = document.getElementById('department').value;
-      const projectCode = document.getElementById('projectCode').value;
-      const email = document.getElementById('email').value;
-      
-      if (!department || !projectCode || !email) {
-        alert('Please fill in all required fields (Department, Project Code, and Email)');
-        return;
-      }
-      
-      if (currentRules.length === 0) {
-        alert('No rules to save. Please add at least one rule.');
-        return;
-      }
-      
-      google.script.run
-        .withSuccessHandler((response) => {
-          if (response.success) {
-            alert('NES saved successfully');
-          } else {
-            alert(response.message || 'Error saving NES');
-          }
-        })
-        .withFailureHandler((error) => {
-          console.error('Error saving NES:', error);
-          alert('Error saving NES');
-        })
-        .saveNES({
-          department,
-          projectCode,
-          email,
-          rules: currentRules
-        });
-    }
-    
-    function handleError(error) {
-      console.error('Error:', error);
-      alert('An error occurred: ' + error);
-    }
-
-    window.addEventListener('load', () => {
-      if (currentRules.length === 0) {
-        addNewLine();
-      }
-    });
-  </script>
-</body>
-</html>
