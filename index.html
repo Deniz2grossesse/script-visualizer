@@ -607,7 +607,14 @@
     <div id="actionBar" class="action-buttons">
       <button class="btn-delete" onclick="deleteForm()">Delete</button>
       <button class="btn-resume" onclick="resumeDraft()">Resume Draft</button>
-      <button class="btn-verify" onclick="verifyFields()">Verify</button>
+      <button class="btn-verify" onclick="verifyFields()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Verify
+      </button>
       <button class="btn-save" onclick="saveNES()">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
@@ -809,33 +816,72 @@
         isValid = false;
       }
 
-      let hasDuplicates = false;
-      const seenKeys = new Map();
+      // Validation ligne par ligne
+      currentRules.forEach(rule => {
+        const validation = validateRow(rule);
+        rule.isValid = validation.isValid;
+        rule.errors = validation.errors;
+      });
+
+      // Regroupement
+      const grouped = {};
 
       currentRules.forEach(rule => {
         const key = [
-          rule.sourceIP, rule.destIP, rule.protocol,
-          rule.service, rule.port, rule.authentication,
-          rule.flowEncryption, rule.classification, rule.appCode
+          rule.protocol,
+          rule.service,
+          rule.port,
+          rule.authentication,
+          rule.flowEncryption,
+          rule.classification,
+          rule.appCode
         ].join('|');
 
-        if (seenKeys.has(key)) {
-          rule.isDuplicate = true;
-          hasDuplicates = true;
+        if (!grouped[key]) {
+          grouped[key] = {
+            ...rule,
+            sourceIP: new Set(rule.sourceIP ? rule.sourceIP.split(',').map(s => s.trim()) : []),
+            destIP: new Set(rule.destIP ? rule.destIP.split(',').map(s => s.trim()) : [])
+          };
         } else {
-          rule.isDuplicate = false;
-          seenKeys.set(key, true);
+          if (rule.sourceIP) {
+            rule.sourceIP.split(',').forEach(ip => {
+              if (ip.trim()) grouped[key].sourceIP.add(ip.trim());
+            });
+          }
+          if (rule.destIP) {
+            rule.destIP.split(',').forEach(ip => {
+              if (ip.trim()) grouped[key].destIP.add(ip.trim());
+            });
+          }
         }
+      });
+
+      // Reconstruction de currentRules à partir du regroupement
+      currentRules = Object.values(grouped).map(group => {
+        return {
+          ...group,
+          sourceIP: Array.from(group.sourceIP).filter(ip => ip).join(', '),
+          destIP: Array.from(group.destIP).filter(ip => ip).join(', '),
+          isValid: true,
+          errors: [],
+          isDuplicate: false
+        };
+      });
+
+      // Vérification des lignes après regroupement
+      currentRules.forEach(rule => {
+        const validation = validateRow(rule);
+        rule.isValid = validation.isValid;
+        rule.errors = validation.errors;
       });
 
       displayRules(currentRules);
 
       if (!isValid) {
         alert('Errors:\n' + errors.join('\n'));
-      } else if (hasDuplicates) {
-        alert('Duplicate(s) found');
       } else {
-        alert('All fields are valid. No duplicates detected.');
+        alert('Vérification terminée. Lignes fusionnées et validées.');
       }
     }
     
