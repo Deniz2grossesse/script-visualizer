@@ -247,6 +247,7 @@
       padding: 12px;
       text-align: left;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      vertical-align: top;
     }
 
     .rules-table th {
@@ -257,6 +258,11 @@
 
     .ip-field {
       min-width: 150px;
+      min-height: 40px;
+      line-height: 1.4;
+      font-family: monospace;
+      resize: none;
+      overflow: hidden;
     }
     
     .protocol-field {
@@ -284,13 +290,22 @@
     }
 
     .rules-table td input,
-    .rules-table td select {
+    .rules-table td select,
+    .rules-table td textarea {
       width: 100%;
       padding: 8px;
       background-color: #34495E;
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 4px;
       color: #fff;
+    }
+
+    .rules-table td textarea:focus,
+    .rules-table td input:focus,
+    .rules-table td select:focus {
+      outline: none;
+      border-color: #3498db;
+      background-color: #2C3E50;
     }
 
     .scripts-container {
@@ -700,8 +715,30 @@
       }
     }
 
+    function formatIPsForDisplay(ipString) {
+      if (!ipString) return '';
+      return ipString.split(',').map(ip => ip.trim()).filter(ip => ip).join('\n');
+    }
+
+    function formatIPsForStorage(ipString) {
+      if (!ipString) return '';
+      return ipString.split('\n').map(ip => ip.trim()).filter(ip => ip).join(',');
+    }
+
+    function calculateRowsForIPs(ipString) {
+      if (!ipString) return 1;
+      const ips = ipString.split(',').filter(ip => ip.trim());
+      return Math.max(1, ips.length);
+    }
+
     function updateRule(index, field, value) {
       console.log('updateRule called', { index, field, value });
+      
+      // Convert textarea newlines to comma-separated for IP fields
+      if (field === 'sourceIP' || field === 'destIP') {
+        value = formatIPsForStorage(value);
+      }
+      
       const newRules = [...currentRules];
       newRules[index] = {
         ...newRules[index],
@@ -713,7 +750,11 @@
       newRules[index].errors = validation.errors;
       
       currentRules = newRules;
-      displayRules(currentRules);
+      
+      // Re-render only if it's an IP field to update textarea height
+      if (field === 'sourceIP' || field === 'destIP') {
+        displayRules(currentRules);
+      }
     }
 
     function addNewLine() {
@@ -1002,24 +1043,30 @@
     function validateIP(ip) {
       if (!ip) return false;
       
-      const ipRegex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(\/\d{1,2})?$/;
-      const match = ip.match(ipRegex);
+      // Handle multiple IPs separated by commas
+      const ips = ip.split(',').map(i => i.trim()).filter(i => i);
+      if (ips.length === 0) return false;
       
-      if (!match) return false;
-      
-      // Check that each octet is between 0 and 255
-      for (let i = 1; i <= 4; i++) {
-        const octet = parseInt(match[i]);
-        if (octet < 0 || octet > 255) return false;
-      }
-      
-      // Check CIDR notation if present
-      if (match[5]) {
-        const cidr = parseInt(match[5].substring(1));
-        if (cidr < 0 || cidr > 32) return false;
-      }
-      
-      return true;
+      return ips.every(singleIp => {
+        const ipRegex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(\/\d{1,2})?$/;
+        const match = singleIp.match(ipRegex);
+        
+        if (!match) return false;
+        
+        // Check that each octet is between 0 and 255
+        for (let i = 1; i <= 4; i++) {
+          const octet = parseInt(match[i]);
+          if (octet < 0 || octet > 255) return false;
+        }
+        
+        // Check CIDR notation if present
+        if (match[5]) {
+          const cidr = parseInt(match[5].substring(1));
+          if (cidr < 0 || cidr > 32) return false;
+        }
+        
+        return true;
+      });
     }
     
     function validatePort(port) {
@@ -1040,18 +1087,25 @@
           const row = document.createElement('tr');
           row.className = rule.isDuplicate ? 'duplicate-row' : '';
           
+          const sourceIPRows = calculateRowsForIPs(rule.sourceIP);
+          const destIPRows = calculateRowsForIPs(rule.destIP);
+          
           row.innerHTML = `
             <td>
-              <input type="text" value="${rule.sourceIP || ''}" 
+              <textarea 
+                rows="${sourceIPRows}"
                 onchange="updateRule(${index}, 'sourceIP', this.value)" 
                 placeholder="e.g., 192.168.1.0/24"
-                class="ip-field" />
+                class="ip-field"
+              >${formatIPsForDisplay(rule.sourceIP || '')}</textarea>
             </td>
             <td>
-              <input type="text" value="${rule.destIP || ''}" 
+              <textarea 
+                rows="${destIPRows}"
                 onchange="updateRule(${index}, 'destIP', this.value)" 
                 placeholder="e.g., 10.0.0.1"
-                class="ip-field" />
+                class="ip-field"
+              >${formatIPsForDisplay(rule.destIP || '')}</textarea>
             </td>
             <td>
               <select onchange="updateRule(${index}, 'protocol', this.value)" class="protocol-field">
@@ -1122,14 +1176,6 @@
           `;
           
           tbody.appendChild(row);
-        });
-        
-        const duplicateButtons = tbody.querySelectorAll('.duplicate-btn');
-        duplicateButtons.forEach(btn => {
-          btn.addEventListener('click', function () {
-            const i = parseInt(this.getAttribute('data-index'));
-            duplicateRow(i);
-          });
         });
         
         table.style.display = 'table';
