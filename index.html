@@ -7,58 +7,67 @@
   <title>One Click Onboarding</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       margin: 0;
       padding: 0;
-      background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%);
+      background: #212121;
+      color: #BDC3C7;
       min-height: 100vh;
     }
 
     .container {
       max-width: 1200px;
-      margin: 40px auto;
-      padding: 30px;
-      background: #2C3E50;
+      margin: 0 auto;
+      padding: 24px;
+      background: #34495E;
       border-radius: 12px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      margin-top: 40px;
+      margin-bottom: 40px;
     }
 
     h1 {
       color: white;
-      font-size: 2.5em;
-      margin-bottom: 30px;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 32px;
       text-align: center;
-      font-weight: 600;
     }
 
     .info-box {
-      background: #34495E;
-      border: 1px solid #456789;
-      color: #ECF0F1;
-      padding: 15px 20px;
+      background: #2C3E50;
+      border: 1px solid rgba(189, 195, 199, 0.3);
+      color: #BDC3C7;
+      padding: 16px;
       border-radius: 8px;
-      margin-bottom: 30px;
-      font-size: 0.95em;
-      line-height: 1.5;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .mandatory {
-      margin-bottom: 30px;
+    .mandatory-fields {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+      max-width: 800px;
     }
 
     .form-group {
-      margin-bottom: 15px;
+      margin-bottom: 16px;
     }
 
     label {
       display: block;
-      margin-bottom: 5px;
-      color: #ECF0F1;
+      margin-bottom: 8px;
+      color: white;
       font-weight: 500;
+      font-size: 0.875rem;
     }
 
     .required {
-      color: #E74C3C;
+      color: #ef4444;
       margin-left: 4px;
     }
 
@@ -66,131 +75,131 @@
     input[type="email"],
     input[type="number"],
     select,
-    .ip-textarea {
+    textarea {
       width: 100%;
       padding: 12px;
-      border: 1px solid #456789;
+      border: 1px solid rgba(189, 195, 199, 0.3);
       border-radius: 8px;
-      font-size: 1em;
-      background: #3A5875;
-      color: #ECF0F1;
-      transition: border-color 0.3s ease;
-      resize: none;
-    }
-
-    .ip-textarea {
-      font-family: 'Arial', sans-serif;
-      line-height: 1.4;
-      min-height: 44px;
+      font-size: 1rem;
+      background: #34495E;
+      color: white;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
     }
 
     input::placeholder,
-    .ip-textarea::placeholder {
-      color: #8FA3B5;
+    textarea::placeholder {
+      color: rgba(189, 195, 199, 0.5);
     }
 
     input:focus,
     select:focus,
-    .ip-textarea:focus {
+    textarea:focus {
       outline: none;
-      border-color: #3498DB;
-      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-      background: #3E618F;
+      border-color: #E67E22;
+      box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.2);
     }
 
-    .rules-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 20px;
-      padding: 25px;
-      background: #34495E;
-      border: 1px solid #456789;
-      border-radius: 12px;
-      margin-bottom: 30px;
+    .action-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin: 32px 0;
+      flex-wrap: wrap;
     }
 
     .btn {
       padding: 12px 24px;
       border: none;
       border-radius: 8px;
-      font-size: 0.95em;
+      font-size: 0.875rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .btn-primary {
-      background: #3498DB;
+      background: #E67E22;
       color: white;
     }
 
     .btn-primary:hover {
-      background: #2980B9;
+      background: #D35400;
+      transform: translateY(-1px);
     }
 
-    .btn-delete {
+    .btn-secondary {
+      background: #2ECC71;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #27AE60;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #BDC3C7;
+      border: 1px solid rgba(189, 195, 199, 0.3);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
       background: #E74C3C;
       color: white;
     }
 
-    .btn-resume {
-      background: #27AE60;
+    .btn-danger:hover {
+      background: #C0392B;
+      transform: translateY(-1px);
+    }
+
+    .rules-container {
+      margin-top: 32px;
+    }
+
+    .rules-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    .rules-table th {
+      background: #2C3E50;
       color: white;
+      padding: 12px 8px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.875rem;
+      border-bottom: 2px solid #34495E;
     }
 
-    .btn-verify {
-      background: #F1C40F;
-      color: #2C3E50;
+    .rules-table td {
+      padding: 8px;
+      border-bottom: 1px solid #2C3E50;
+      vertical-align: top;
     }
 
-    .btn-generate {
-      background: #3498DB;
-      color: white;
+    .rules-table tr:hover {
+      background: rgba(44, 62, 80, 0.5);
     }
 
-    .action-buttons {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin: 30px 0;
-    }
-
-    .add-button {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #27AE60;
-      color: white;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .rule-row {
       transition: all 0.3s ease;
     }
 
-    .add-button:hover {
-      background: #219A52;
-      transform: scale(1.05);
-    }
-
-    .duplicate-row {
+    .rule-row.duplicate-row {
       background: rgba(231, 76, 60, 0.2) !important;
       border: 2px solid #E74C3C !important;
-      border-radius: 8px;
       animation: pulse-duplicate 2s infinite;
-    }
-
-    .duplicate-warning {
-      background: #E74C3C;
-      color: white;
-      padding: 8px 12px;
-      border-radius: 6px;
-      margin-top: 10px;
-      font-size: 0.9em;
-      font-weight: 600;
-      text-align: center;
     }
 
     @keyframes pulse-duplicate {
@@ -199,10 +208,141 @@
       100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
     }
 
+    .rule-input {
+      width: 100%;
+      min-width: 120px;
+      height: 32px;
+      padding: 4px 8px;
+      font-size: 0.875rem;
+    }
+
+    .rule-textarea {
+      width: 100%;
+      min-width: 120px;
+      min-height: 32px;
+      padding: 4px 8px;
+      font-size: 0.875rem;
+      resize: none;
+      font-family: inherit;
+      line-height: 1.4;
+    }
+
+    .rule-select {
+      width: 100%;
+      min-width: 100px;
+      height: 32px;
+      padding: 4px 8px;
+      font-size: 0.875rem;
+    }
+
+    .rule-actions {
+      display: flex;
+      gap: 4px;
+      justify-content: flex-end;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+    }
+
+    .icon-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .duplicate-btn:hover {
+      background: rgba(52, 152, 219, 0.2);
+    }
+
+    .delete-btn:hover {
+      background: rgba(231, 76, 60, 0.2);
+    }
+
+    .duplicate-warning {
+      background: #E74C3C;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .scripts-output {
+      margin-top: 32px;
+      display: none;
+    }
+
+    .script-block {
+      background: #34495E;
+      border: 1px solid rgba(189, 195, 199, 0.3);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .script-header {
+      background: #2C3E50;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      font-weight: 600;
+    }
+
+    .script-content {
+      width: 100%;
+      height: 150px;
+      padding: 12px;
+      border: none;
+      background: #2C3E50;
+      color: white;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 0.875rem;
+      resize: vertical;
+      line-height: 1.4;
+    }
+
+    .add-rule-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #2ECC71;
+      color: white;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      margin-bottom: 16px;
+    }
+
+    .add-rule-btn:hover {
+      background: #27AE60;
+      transform: scale(1.05);
+    }
+
     @media (max-width: 768px) {
       .container {
         margin: 20px;
-        padding: 20px;
+        padding: 16px;
+      }
+
+      .mandatory-fields {
+        grid-template-columns: 1fr;
       }
 
       .action-buttons {
@@ -211,77 +351,17 @@
 
       .btn {
         width: 100%;
+        justify-content: center;
       }
 
-      .rules-grid {
-        grid-template-columns: 1fr;
+      .rules-table {
+        font-size: 0.75rem;
       }
-    }
 
-    #output {
-      display: none;
-    }
-
-    .script-block {
-      background: #34495E;
-      border: 1px solid #456789;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      padding: 15px;
-    }
-
-    .script-header {
-      background: #2C3E50;
-      padding: 15px;
-      border-radius: 8px 8px 0 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: white;
-    }
-
-    .script-output {
-      width: 100%;
-      height: 150px;
-      padding: 10px;
-      border: none;
-      background: #2C3E50;
-      color: white;
-      font-family: monospace;
-      resize: vertical;
-      border-radius: 0 0 8px 8px;
-    }
-
-    .icon-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 24px;
-      height: 24px;
-    }
-
-    .duplicate-btn svg {
-      stroke: #3498db;
-    }
-    .duplicate-btn:hover svg {
-      stroke: #2980b9;
-    }
-
-    .delete-btn svg {
-      stroke: #e74c3c;
-    }
-    .delete-btn:hover svg {
-      stroke: #c0392b;
-    }
-
-    .form-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
+      .rules-table th,
+      .rules-table td {
+        padding: 6px 4px;
+      }
     }
   </style>
 </head>
@@ -290,10 +370,11 @@
     <h1>One Click Onboarding</h1>
 
     <div class="info-box">
-      ⚠️ Ces trois champs sont obligatoires, vous ne pouvez pas commencer à les saisir sans les avoir remplis.
+      <span style="color: #E67E22;">⚠️</span>
+      <span>Ces trois champs sont obligatoires, vous ne pouvez pas commencer à les saisir sans les avoir remplis.</span>
     </div>
 
-    <div class="mandatory">
+    <div class="mandatory-fields">
       <div class="form-group">
         <label>Département <span class="required">*</span></label>
         <input type="text" id="department" maxlength="4" placeholder="Département (1-4 chars)">
@@ -310,19 +391,34 @@
       </div>
     </div>
 
-    <div class="rules-grid" id="rulesContainer">
-      <!-- Les règles seront ajoutées ici dynamiquement -->
+    <div class="rules-container">
+      <button class="add-rule-btn" onclick="addRule()" title="Ajouter une règle">+</button>
+      
+      <table class="rules-table" id="rulesTable" style="display: none;">
+        <thead>
+          <tr>
+            <th>Source IP</th>
+            <th>Destination IP</th>
+            <th>Protocole</th>
+            <th>Service</th>
+            <th>Port</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="rulesContainer">
+          <!-- Les règles seront ajoutées ici dynamiquement -->
+        </tbody>
+      </table>
     </div>
 
     <div class="action-buttons">
-      <button class="add-button" onclick="addRule()" title="Ajouter une règle">+</button>
-      <button class="btn btn-delete" onclick="deleteRules()">Supprimer</button>
-      <button class="btn btn-resume" onclick="resumeDraft()">Reprendre brouillon</button>
-      <button class="btn btn-verify" onclick="verifyRules()">Vérifier</button>
-      <button class="btn btn-generate" onclick="generateScripts()">Générer Scripts</button>
+      <button class="btn btn-danger" onclick="deleteRules()">Supprimer</button>
+      <button class="btn btn-outline" onclick="resumeDraft()">Reprendre brouillon</button>
+      <button class="btn btn-outline" onclick="verifyRules()">Vérifier</button>
+      <button class="btn btn-primary" onclick="generateScripts()">Générer Scripts</button>
     </div>
 
-    <div id="output">
+    <div id="output" class="scripts-output">
       <!-- Les scripts générés apparaîtront ici -->
     </div>
   </div>
@@ -347,7 +443,6 @@
 
     function calculateTextareaHeight(value) {
       if (!value || value.trim() === '') return 1;
-      
       const ips = value.split(',').filter(ip => ip.trim() !== '');
       return Math.max(1, ips.length);
     }
@@ -394,61 +489,60 @@
       const sourceIPHeight = calculateTextareaHeight(rule.sourceIP);
       const destIPHeight = calculateTextareaHeight(rule.destIP);
       
-      const ruleDiv = document.createElement('div');
-      ruleDiv.className = `rule ${isDuplicate ? 'duplicate-row' : ''}`;
-      ruleDiv.innerHTML = `
-        <div class="form-group">
-          <label>Source IP</label>
+      const row = document.createElement('tr');
+      row.className = `rule-row ${isDuplicate ? 'duplicate-row' : ''}`;
+      row.innerHTML = `
+        <td>
           <textarea 
-            class="ip-textarea" 
+            class="rule-textarea" 
             rows="${sourceIPHeight}" 
             onchange="updateRule(${index}, 'sourceIP', formatIPsForStorage(this.value))"
             oninput="adjustTextareaHeight(this, ${index}, 'sourceIP')"
+            placeholder="IP source"
           >${formatIPsForDisplay(rule.sourceIP)}</textarea>
-        </div>
-        <div class="form-group">
-          <label>Destination IP</label>
+          ${isDuplicate ? '<div class="duplicate-warning">⚠️ Dupliqué</div>' : ''}
+        </td>
+        <td>
           <textarea 
-            class="ip-textarea" 
+            class="rule-textarea" 
             rows="${destIPHeight}" 
             onchange="updateRule(${index}, 'destIP', formatIPsForStorage(this.value))"
             oninput="adjustTextareaHeight(this, ${index}, 'destIP')"
+            placeholder="IP destination"
           >${formatIPsForDisplay(rule.destIP)}</textarea>
-        </div>
-        <div class="form-group">
-          <label>Protocol</label>
-          <select onchange="updateRule(${index}, 'protocol', this.value)">
+        </td>
+        <td>
+          <select class="rule-select" onchange="updateRule(${index}, 'protocol', this.value)">
             <option value="tcp" ${rule.protocol === 'tcp' ? 'selected' : ''}>TCP</option>
             <option value="udp" ${rule.protocol === 'udp' ? 'selected' : ''}>UDP</option>
             <option value="icmp" ${rule.protocol === 'icmp' ? 'selected' : ''}>ICMP</option>
           </select>
-        </div>
-        <div class="form-group">
-          <label>Service</label>
-          <input type="text" value="${rule.service}" onchange="updateRule(${index}, 'service', this.value)">
-        </div>
-        <div class="form-group">
-          <label>Port</label>
-          <input type="number" min="1" max="65535" value="${rule.port}" onchange="updateRule(${index}, 'port', this.value)">
-        </div>
-        <div class="form-actions">
-          <button class="icon-btn duplicate-btn" onclick="duplicateRow(${index})" title="Dupliquer la ligne">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#3498db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-            </svg>
-          </button>
-          <button class="icon-btn delete-btn" onclick="deleteRule(${index})" title="Supprimer la règle">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 6h18"></path>
-              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-            </svg>
-          </button>
-        </div>
-        ${isDuplicate ? '<div class="duplicate-warning">⚠️ Ligne dupliquée détectée</div>' : ''}
+        </td>
+        <td>
+          <input type="text" class="rule-input" value="${rule.service}" onchange="updateRule(${index}, 'service', this.value)" placeholder="Service">
+        </td>
+        <td>
+          <input type="number" class="rule-input" min="1" max="65535" value="${rule.port}" onchange="updateRule(${index}, 'port', this.value)" placeholder="Port">
+        </td>
+        <td>
+          <div class="rule-actions">
+            <button class="icon-btn duplicate-btn" onclick="duplicateRow(${index})" title="Dupliquer la ligne">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#3498db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+            </button>
+            <button class="icon-btn delete-btn" onclick="deleteRule(${index})" title="Supprimer la règle">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </td>
       `;
-      return ruleDiv;
+      return row;
     }
 
     function adjustTextareaHeight(textarea, index, field) {
@@ -459,15 +553,22 @@
 
     function refreshRulesDisplay() {
       const container = document.getElementById('rulesContainer');
+      const table = document.getElementById('rulesTable');
+      
       container.innerHTML = '';
-      rules.forEach((rule, index) => {
-        container.appendChild(createRuleElement(rule, index));
-      });
+      
+      if (rules.length > 0) {
+        table.style.display = 'table';
+        rules.forEach((rule, index) => {
+          container.appendChild(createRuleElement(rule, index));
+        });
+      } else {
+        table.style.display = 'none';
+      }
       
       const duplicateIndices = detectDuplicateRows();
       if (duplicateIndices.size > 0) {
-        const duplicateCount = duplicateIndices.size;
-        console.log(`${duplicateCount} lignes dupliquées détectées`);
+        console.log(`${duplicateIndices.size} lignes dupliquées détectées`);
       }
     }
 
@@ -553,7 +654,7 @@
               <div class="script-header">
                 <span>Script ${index + 1}</span>
               </div>
-              <textarea class="script-output" readonly>${script}</textarea>
+              <textarea class="script-content" readonly>${script}</textarea>
             `;
             output.appendChild(scriptBlock);
           })
