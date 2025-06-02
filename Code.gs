@@ -144,18 +144,24 @@ function importCSV(csvData) {
 // Function to export CSV with header lines and modified data
 function exportCSV(modifiedLines) {
   try {
-    // If we want to use the raw CSV content instead, we can parse it again here
-    // For now, continuing with the current approach of headerLinesCache + modified lines
     const csvData = headerLinesCache.slice(); // Clone headers
     
     console.log("CSV Header Lines (originales, non modifiées):", JSON.stringify(headerLinesCache));
     
     modifiedLines.forEach(rule => {
-      csvData.push([
-        '', '', '', rule.sourceIP, '', '', rule.destIP, rule.protocol,
-        rule.service, rule.port, rule.authentication, rule.flowEncryption,
-        rule.classification, rule.appCode
-      ]);
+      // Handle multiple IPs by splitting and creating separate rows for each combination
+      const sourceIPs = rule.sourceIP.split('\n').filter(ip => ip.trim());
+      const destIPs = rule.destIP.split('\n').filter(ip => ip.trim());
+      
+      sourceIPs.forEach(srcIP => {
+        destIPs.forEach(dstIP => {
+          csvData.push([
+            '', '', '', srcIP.trim(), '', '', dstIP.trim(), rule.protocol,
+            rule.service, rule.port, rule.authentication, rule.flowEncryption,
+            rule.classification, rule.appCode
+          ]);
+        });
+      });
     });
     
     console.log("CSV Data exportée (11 premières lignes + lignes modifiées):", 
@@ -183,22 +189,32 @@ function generateScripts(options) {
       };
     }
     
-    const scripts = csvRows.map((row, index) => {
-      return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
+    const scripts = [];
+    
+    csvRows.forEach((row, index) => {
+      // Handle multiple IPs in source and destination
+      const sourceIPs = row.sourceIP.split('\n').filter(ip => ip.trim());
+      const destIPs = row.destIP.split('\n').filter(ip => ip.trim());
+      
+      sourceIPs.forEach(srcIP => {
+        destIPs.forEach(dstIP => {
+          scripts.push(`curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
   -H "Authorization: Bearer <TON_TOKEN>" \\
   -H "Content-Type: application/json" \\
   -d '{
     "source": {
-      "ip": "${row.sourceIP.split('/')[0]}"
+      "ip": "${srcIP.trim().split('/')[0]}"
     },
     "destination": {
-      "ip": "${row.destIP}"
+      "ip": "${dstIP.trim()}"
     },
     "service": {
       "protocol": "${row.protocol.toUpperCase()}",
       "port": ${row.port}
     }
-  }'`;
+  }'`);
+        });
+      });
     });
     
     return {

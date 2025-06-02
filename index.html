@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -284,42 +285,41 @@
       border: none;
     }
 
-    /* Largeurs fixes pour chaque colonne compactes */
     .rules-table th:nth-child(1),
     .rules-table td:nth-child(1) { 
       width: 140px;
       text-align: center;
-    } /* Source IP - réduit et centré */
+    }
     
     .rules-table th:nth-child(2),
     .rules-table td:nth-child(2) { 
       width: 140px;
       text-align: center;
-    } /* IP Destination - réduit et centré */
+    }
     
     .rules-table th:nth-child(3),
-    .rules-table td:nth-child(3) { width: 90px; } /* Protocol - réduit */
+    .rules-table td:nth-child(3) { width: 90px; }
     
     .rules-table th:nth-child(4),
-    .rules-table td:nth-child(4) { width: 100px; } /* Service - réduit */
+    .rules-table td:nth-child(4) { width: 100px; }
     
     .rules-table th:nth-child(5),
-    .rules-table td:nth-child(5) { width: 70px; } /* Port - réduit */
+    .rules-table td:nth-child(5) { width: 70px; }
     
     .rules-table th:nth-child(6),
-    .rules-table td:nth-child(6) { width: 110px; } /* Authentication - réduit */
+    .rules-table td:nth-child(6) { width: 110px; }
     
     .rules-table th:nth-child(7),
-    .rules-table td:nth-child(7) { width: 110px; } /* Flow Encryption - réduit */
+    .rules-table td:nth-child(7) { width: 110px; }
     
     .rules-table th:nth-child(8),
-    .rules-table td:nth-child(8) { width: 100px; } /* Classification - réduit */
+    .rules-table td:nth-child(8) { width: 100px; }
     
     .rules-table th:nth-child(9),
-    .rules-table td:nth-child(9) { width: 80px; } /* APP Code - réduit */
+    .rules-table td:nth-child(9) { width: 80px; }
     
     .rules-table th:nth-child(10),
-    .rules-table td:nth-child(10) { width: 120px; } /* Manage ligne - réduit */
+    .rules-table td:nth-child(10) { width: 120px; }
 
     .ip-field {
       width: 120px;
@@ -723,13 +723,13 @@
 
     <div id="actionBar" class="action-buttons">
       <button class="btn-delete" onclick="deleteForm()">Delete</button>
-      <button class="btn-verify" onclick="verifyFields()">
+      <button class="btn-verify" onclick="verifyAndMergeRules()">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
           <polyline points="17 21 17 13 7 13 7 21"/>
           <polyline points="7 3 7 8 15 8"/>
         </svg>
-        Verify
+        Verify & Merge
       </button>
       <button class="btn-save" onclick="saveNES()">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -756,7 +756,6 @@
     </div>
   </div>
 
-  <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   <script>
     let currentRules = [];
 
@@ -834,7 +833,7 @@
 
     function calculateRowsForIPs(ipString) {
       if (!ipString) return 1;
-      const ips = ipString.split(',').filter(ip => ip.trim());
+      const ips = ipString.split(/[\n,]/).filter(ip => ip.trim());
       return Math.max(1, Math.min(ips.length, 6));
     }
 
@@ -915,7 +914,7 @@
       }
     }
 
-    function verifyFields() {
+    function verifyAndMergeRules() {
       const department = document.getElementById('department').value;
       const projectCode = document.getElementById('projectCode').value;
       const email = document.getElementById('email').value;
@@ -938,49 +937,20 @@
         isValid = false;
       }
 
-      currentRules.forEach(rule => {
-        const validation = validateRow(rule);
-        rule.isValid = validation.isValid;
-        rule.errors = validation.errors;
-      });
-
-      // Fonction pour vérifier l'overlap d'IPs avec CIDR
-      function ipOverlapWithCIDR(ipList1, ipList2) {
-        const ips1 = ipList1.map(ip => ip.trim()).filter(Boolean);
-        const ips2 = ipList2.map(ip => ip.trim()).filter(Boolean);
-        for (let ip1 of ips1) {
-          for (let ip2 of ips2) {
-            if (cidrOverlap(ip1, ip2)) {
-              return true;
-            }
-          }
-        }
-        return false;
+      if (!isValid) {
+        alert('Errors:\n' + errors.join('\n'));
+        return;
       }
 
-      function cidrOverlap(cidr1, cidr2) {
-        const [ip1, mask1] = cidr1.split('/');
-        const [ip2, mask2] = cidr2.split('/');
-        if (!ip1 || !ip2) return false;
-
-        const subnet1 = ipToInt(ip1) & (mask1 ? -1 << (32 - parseInt(mask1)) : 0xffffffff);
-        const subnet2 = ipToInt(ip2) & (mask2 ? -1 << (32 - parseInt(mask2)) : 0xffffffff);
-
-        const mask = Math.min(mask1 ? parseInt(mask1) : 32, mask2 ? parseInt(mask2) : 32);
-        return subnet1 === subnet2;
-      }
-
-      function ipToInt(ip) {
-        return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0);
-      }
-
-      // Fusion intelligente avec overlap CIDR
+      // Fonction de fusion intelligente des IPs
       const grouped = [];
+
       currentRules.forEach(rule => {
-        const srcIPs = rule.sourceIP.split(',').map(ip => ip.trim()).filter(Boolean);
-        const dstIPs = rule.destIP.split(',').map(ip => ip.trim()).filter(Boolean);
+        const srcIPs = rule.sourceIP.split(/[\n,]/).map(ip => ip.trim()).filter(Boolean);
+        const dstIPs = rule.destIP.split(/[\n,]/).map(ip => ip.trim()).filter(Boolean);
 
         let foundGroup = false;
+
         for (let group of grouped) {
           if (
             group.protocol === rule.protocol &&
@@ -991,11 +961,14 @@
             group.classification === rule.classification &&
             group.appCode === rule.appCode
           ) {
-            if (
-              ipOverlapWithCIDR(group.sourceIPs, srcIPs) &&
-              ipOverlapWithCIDR(group.destIPs, dstIPs)
-            ) {
+            // Fusionner IPs sources si destination identique
+            if (arraysEqual(group.destIPs, dstIPs)) {
               group.sourceIPs = Array.from(new Set([...group.sourceIPs, ...srcIPs]));
+              foundGroup = true;
+              break;
+            }
+            // Fusionner IPs destinations si source identique
+            else if (arraysEqual(group.sourceIPs, srcIPs)) {
               group.destIPs = Array.from(new Set([...group.destIPs, ...dstIPs]));
               foundGroup = true;
               break;
@@ -1018,9 +991,10 @@
         }
       });
 
+      // Créer les règles fusionnées
       currentRules = grouped.map(group => ({
-        sourceIP: group.sourceIPs.join(', '),
-        destIP: group.destIPs.join(', '),
+        sourceIP: group.sourceIPs.join('\n'),
+        destIP: group.destIPs.join('\n'),
         protocol: group.protocol,
         service: group.service,
         port: group.port,
@@ -1032,6 +1006,7 @@
         errors: []
       }));
 
+      // Valider les règles fusionnées
       currentRules.forEach(rule => {
         const validation = validateRow(rule);
         rule.isValid = validation.isValid;
@@ -1039,12 +1014,14 @@
       });
 
       displayRules(currentRules);
+      alert('Fusion terminée ! Les IPs ont été regroupées de manière intelligente.\nNombre de règles après fusion: ' + currentRules.length);
+    }
 
-      if (!isValid) {
-        alert('Errors:\n' + errors.join('\n'));
-      } else {
-        alert('Vérification terminée. Règles fusionnées de manière intelligente (avec CIDR).');
-      }
+    function arraysEqual(a, b) {
+      if (a.length !== b.length) return false;
+      const sortedA = [...a].sort();
+      const sortedB = [...b].sort();
+      return sortedA.every((val, index) => val === sortedB[index]);
     }
     
     function generateScripts() {
@@ -1054,32 +1031,42 @@
       
       if (currentRules.length > 0) {
         currentRules.forEach((rule, index) => {
-          const scriptDiv = document.createElement('div');
-          scriptDiv.className = 'script-item';
+          // Gérer les IPs multiples pour la génération de scripts
+          const sourceIPs = rule.sourceIP.split('\n').filter(ip => ip.trim());
+          const destIPs = rule.destIP.split('\n').filter(ip => ip.trim());
           
-          const script = generateScriptForRow(rule);
-          scriptDiv.innerHTML = `
-            <div class="script-content">${script}</div>
-            <div class="script-actions">
-              <button class="copy-btn" onclick="copyGeneratedScript(${index})">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-                Copy
-              </button>
-              <button class="delete-btn" onclick="deleteGeneratedScript(${index})">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3 6h18"></path>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
-                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
-                Delete
-              </button>
-            </div>
-          `;
-          
-          scriptsOutput.appendChild(scriptDiv);
+          sourceIPs.forEach((srcIP, srcIndex) => {
+            destIPs.forEach((dstIP, dstIndex) => {
+              const scriptDiv = document.createElement('div');
+              scriptDiv.className = 'script-item';
+              
+              const script = generateScriptForIPs(srcIP.trim(), dstIP.trim(), rule);
+              const scriptIndex = index + '_' + srcIndex + '_' + dstIndex;
+              
+              scriptDiv.innerHTML = `
+                <div class="script-content">${script}</div>
+                <div class="script-actions">
+                  <button class="copy-btn" onclick="copyScript('${scriptIndex}', \`${script}\`)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copy
+                  </button>
+                  <button class="delete-btn" onclick="deleteGeneratedScript(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 6h18"></path>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Delete
+                  </button>
+                </div>
+              `;
+              
+              scriptsOutput.appendChild(scriptDiv);
+            });
+          });
         });
         
         scriptsOutput.style.display = 'block';
@@ -1088,21 +1075,20 @@
       }
     }
 
-    function generateScriptForRow(rule) {
+    function generateScriptForIPs(sourceIP, destIP, rule) {
       return `curl -k -X POST "https://api/query" \\
 -H "Content-Type: application/json" \\
 -H "Authorization: Bearer " \\
 -d '{
-  "source": "${rule.sourceIP}",
-  "destination": "${rule.destIP}",
+  "source": "${sourceIP}",
+  "destination": "${destIP}",
   "protocol": "${rule.protocol}",
   "port": "${rule.port}",
   "service": "${rule.service}"
 }'`;
     }
 
-    function copyGeneratedScript(index) {
-      const script = generateScriptForRow(currentRules[index]);
+    function copyScript(scriptIndex, script) {
       navigator.clipboard.writeText(script)
         .then(() => {
           alert('Script copié dans le presse-papier');
@@ -1113,11 +1099,10 @@
         });
     }
 
-    function deleteGeneratedScript(index) {
-      console.log('Deleting script at index:', index);
-      const scriptItems = document.querySelectorAll('.script-item');
-      if (index < scriptItems.length) {
-        scriptItems[index].remove();
+    function deleteGeneratedScript(button) {
+      const scriptItem = button.closest('.script-item');
+      if (scriptItem) {
+        scriptItem.remove();
         if (document.querySelectorAll('.script-item').length === 0) {
           document.getElementById('scriptsOutput').style.display = 'none';
         }
@@ -1128,10 +1113,10 @@
       console.log('validateRow called with:', rule);
       const errors = [];
       
-      if (!validateIP(rule.sourceIP)) {
+      if (!validateIPs(rule.sourceIP)) {
         errors.push("Invalid source IP");
       }
-      if (!validateIP(rule.destIP)) {
+      if (!validateIPs(rule.destIP)) {
         errors.push("Invalid destination IP");
       }
       if (!validatePort(rule.port)) {
@@ -1141,11 +1126,10 @@
       return { isValid: errors.length === 0, errors };
     }
     
-    function validateIP(ip) {
-      if (!ip) return false;
+    function validateIPs(ipString) {
+      if (!ipString) return false;
       
-      // Handle multiple IPs separated by commas
-      const ips = ip.split(',').map(i => i.trim()).filter(i => i);
+      const ips = ipString.split(/[\n,]/).map(i => i.trim()).filter(i => i);
       if (ips.length === 0) return false;
       
       return ips.every(singleIp => {
@@ -1154,13 +1138,11 @@
         
         if (!match) return false;
         
-        // Check that each octet is between 0 and 255
         for (let i = 1; i <= 4; i++) {
           const octet = parseInt(match[i]);
           if (octet < 0 || octet > 255) return false;
         }
         
-        // Check CIDR notation if present
         if (match[5]) {
           const cidr = parseInt(match[5].substring(1));
           if (cidr < 0 || cidr > 32) return false;
