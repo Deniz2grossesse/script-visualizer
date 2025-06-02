@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -256,7 +255,7 @@
       width: 100%;
       margin-top: 20px;
       border-collapse: separate;
-      border-spacing: 12px;
+      border-spacing: 6px;
       table-layout: fixed;
       border: 2px solid #34495E;
       border-radius: 8px;
@@ -267,7 +266,7 @@
 
     .rules-table th,
     .rules-table td {
-      padding: 24px 20px;
+      padding: 8px 12px;
       text-align: left;
       border: none;
       vertical-align: top;
@@ -279,62 +278,62 @@
       background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
       color: #fff;
       font-weight: 600;
-      font-size: 13px;
+      font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       border: none;
     }
 
-    /* Largeurs fixes pour chaque colonne avec plus d'espace et centrage des IP */
+    /* Largeurs fixes pour chaque colonne compactes */
     .rules-table th:nth-child(1),
     .rules-table td:nth-child(1) { 
-      width: 200px;
+      width: 140px;
       text-align: center;
-    } /* Source IP - centré */
+    } /* Source IP - réduit et centré */
     
     .rules-table th:nth-child(2),
     .rules-table td:nth-child(2) { 
-      width: 200px;
+      width: 140px;
       text-align: center;
-    } /* IP Destination - centré */
+    } /* IP Destination - réduit et centré */
     
     .rules-table th:nth-child(3),
-    .rules-table td:nth-child(3) { width: 120px; } /* Protocol */
+    .rules-table td:nth-child(3) { width: 90px; } /* Protocol - réduit */
     
     .rules-table th:nth-child(4),
-    .rules-table td:nth-child(4) { width: 140px; } /* Service */
+    .rules-table td:nth-child(4) { width: 100px; } /* Service - réduit */
     
     .rules-table th:nth-child(5),
-    .rules-table td:nth-child(5) { width: 100px; } /* Port */
+    .rules-table td:nth-child(5) { width: 70px; } /* Port - réduit */
     
     .rules-table th:nth-child(6),
-    .rules-table td:nth-child(6) { width: 140px; } /* Authentication */
+    .rules-table td:nth-child(6) { width: 110px; } /* Authentication - réduit */
     
     .rules-table th:nth-child(7),
-    .rules-table td:nth-child(7) { width: 150px; } /* Flow Encryption */
+    .rules-table td:nth-child(7) { width: 110px; } /* Flow Encryption - réduit */
     
     .rules-table th:nth-child(8),
-    .rules-table td:nth-child(8) { width: 140px; } /* Classification */
+    .rules-table td:nth-child(8) { width: 100px; } /* Classification - réduit */
     
     .rules-table th:nth-child(9),
-    .rules-table td:nth-child(9) { width: 120px; } /* APP Code */
+    .rules-table td:nth-child(9) { width: 80px; } /* APP Code - réduit */
     
     .rules-table th:nth-child(10),
-    .rules-table td:nth-child(10) { width: 160px; } /* Manage ligne */
+    .rules-table td:nth-child(10) { width: 120px; } /* Manage ligne - réduit */
 
     .ip-field {
-      width: 160px;
+      width: 120px;
       background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%);
       border: 2px solid rgba(52, 152, 219, 0.2);
       border-radius: 6px;
       color: #fff;
-      padding: 16px;
+      padding: 8px 10px;
       resize: none;
       overflow-y: auto;
       line-height: 1.6;
       font-family: 'Courier New', monospace;
       font-size: 12px;
-      min-height: 60px;
+      min-height: 40px;
       transition: all 0.3s ease;
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
       margin: 0 auto;
@@ -366,12 +365,12 @@
     .rules-table td input,
     .rules-table td select {
       width: 100%;
-      padding: 14px 16px;
+      padding: 6px 10px;
       background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%);
       border: 2px solid rgba(255, 255, 255, 0.1);
       border-radius: 6px;
       color: #fff;
-      font-size: 13px;
+      font-size: 12px;
       transition: all 0.3s ease;
       margin: 0;
     }
