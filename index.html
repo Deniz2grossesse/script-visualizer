@@ -915,26 +915,6 @@
       }
     }
 
-    function resumeDraft() {
-      google.script.run
-        .withSuccessHandler((response) => {
-          if (response.success && response.data) {
-            const data = response.data;
-            document.getElementById('department').value = data.department || '';
-            document.getElementById('projectCode').value = data.projectCode || '';
-            document.getElementById('email').value = data.email || '';
-            if (data.rules) {
-              currentRules = data.rules;
-              displayRules(currentRules);
-            }
-          } else {
-            alert('Aucun brouillon trouvé');
-          }
-        })
-        .withFailureHandler(handleError)
-        .getDraft();
-    }
-
     function verifyFields() {
       const department = document.getElementById('department').value;
       const projectCode = document.getElementById('projectCode').value;
@@ -958,75 +938,100 @@
         isValid = false;
       }
 
-      // Validation ligne par ligne
       currentRules.forEach(rule => {
         const validation = validateRow(rule);
         rule.isValid = validation.isValid;
         rule.errors = validation.errors;
       });
 
-      // Fonction pour normaliser les IPs (tri et nettoyage)
-      function normalizeIPs(ipString) {
-        if (!ipString) return '';
-        return ipString
-          .split(',')
-          .map(ip => ip.trim())
-          .filter(ip => ip)
-          .sort()
-          .join(',');
+      // Fonction pour vérifier l'overlap d'IPs avec CIDR
+      function ipOverlapWithCIDR(ipList1, ipList2) {
+        const ips1 = ipList1.map(ip => ip.trim()).filter(Boolean);
+        const ips2 = ipList2.map(ip => ip.trim()).filter(Boolean);
+        for (let ip1 of ips1) {
+          for (let ip2 of ips2) {
+            if (cidrOverlap(ip1, ip2)) {
+              return true;
+            }
+          }
+        }
+        return false;
       }
 
-      // Regroupement automatique intelligent
-      const grouped = {};
+      function cidrOverlap(cidr1, cidr2) {
+        const [ip1, mask1] = cidr1.split('/');
+        const [ip2, mask2] = cidr2.split('/');
+        if (!ip1 || !ip2) return false;
 
+        const subnet1 = ipToInt(ip1) & (mask1 ? -1 << (32 - parseInt(mask1)) : 0xffffffff);
+        const subnet2 = ipToInt(ip2) & (mask2 ? -1 << (32 - parseInt(mask2)) : 0xffffffff);
+
+        const mask = Math.min(mask1 ? parseInt(mask1) : 32, mask2 ? parseInt(mask2) : 32);
+        return subnet1 === subnet2;
+      }
+
+      function ipToInt(ip) {
+        return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0);
+      }
+
+      // Fusion intelligente avec overlap CIDR
+      const grouped = [];
       currentRules.forEach(rule => {
-        const normalizedSourceIP = normalizeIPs(rule.sourceIP);
-        const normalizedDestIP = normalizeIPs(rule.destIP);
+        const srcIPs = rule.sourceIP.split(',').map(ip => ip.trim()).filter(Boolean);
+        const dstIPs = rule.destIP.split(',').map(ip => ip.trim()).filter(Boolean);
 
-        // Clé de regroupement incluant toutes les dimensions importantes
-        const key = [
-          normalizedSourceIP,
-          normalizedDestIP,
-          rule.protocol,
-          rule.service,
-          rule.port,
-          rule.authentication,
-          rule.flowEncryption,
-          rule.classification,
-          rule.appCode
-        ].join('|');
+        let foundGroup = false;
+        for (let group of grouped) {
+          if (
+            group.protocol === rule.protocol &&
+            group.service === rule.service &&
+            group.port === rule.port &&
+            group.authentication === rule.authentication &&
+            group.flowEncryption === rule.flowEncryption &&
+            group.classification === rule.classification &&
+            group.appCode === rule.appCode
+          ) {
+            if (
+              ipOverlapWithCIDR(group.sourceIPs, srcIPs) &&
+              ipOverlapWithCIDR(group.destIPs, dstIPs)
+            ) {
+              group.sourceIPs = Array.from(new Set([...group.sourceIPs, ...srcIPs]));
+              group.destIPs = Array.from(new Set([...group.destIPs, ...dstIPs]));
+              foundGroup = true;
+              break;
+            }
+          }
+        }
 
-        if (!grouped[key]) {
-          grouped[key] = {
-            ...rule,
-            sourceIPs: new Set(normalizedSourceIP ? normalizedSourceIP.split(',') : []),
-            destIPs: new Set(normalizedDestIP ? normalizedDestIP.split(',') : [])
-          };
-        } else {
-          // Fusionne les IPs source et destination si la ligne est strictement identique
-          if (normalizedSourceIP) {
-            normalizedSourceIP.split(',').forEach(ip => grouped[key].sourceIPs.add(ip));
-          }
-          if (normalizedDestIP) {
-            normalizedDestIP.split(',').forEach(ip => grouped[key].destIPs.add(ip));
-          }
+        if (!foundGroup) {
+          grouped.push({
+            protocol: rule.protocol,
+            service: rule.service,
+            port: rule.port,
+            authentication: rule.authentication,
+            flowEncryption: rule.flowEncryption,
+            classification: rule.classification,
+            appCode: rule.appCode,
+            sourceIPs: srcIPs,
+            destIPs: dstIPs
+          });
         }
       });
 
-      // Reconstruction de currentRules à partir du regroupement
-      const originalLength = currentRules.length;
-      currentRules = Object.values(grouped).map(group => {
-        return {
-          ...group,
-          sourceIP: Array.from(group.sourceIPs).filter(ip => ip).join(', '),
-          destIP: Array.from(group.destIPs).filter(ip => ip).join(', '),
-          isValid: true,
-          errors: [],
-          isDuplicate: false
-        };
-      });
+      currentRules = grouped.map(group => ({
+        sourceIP: group.sourceIPs.join(', '),
+        destIP: group.destIPs.join(', '),
+        protocol: group.protocol,
+        service: group.service,
+        port: group.port,
+        authentication: group.authentication,
+        flowEncryption: group.flowEncryption,
+        classification: group.classification,
+        appCode: group.appCode,
+        isValid: true,
+        errors: []
+      }));
 
-      // Vérification des lignes après regroupement
       currentRules.forEach(rule => {
         const validation = validateRow(rule);
         rule.isValid = validation.isValid;
@@ -1038,12 +1043,7 @@
       if (!isValid) {
         alert('Errors:\n' + errors.join('\n'));
       } else {
-        const duplicatesRemoved = originalLength > currentRules.length;
-        if (duplicatesRemoved) {
-          alert('Vérification terminée. Doublons supprimés et lignes fusionnées de manière intelligente.');
-        } else {
-          alert('Vérification terminée. Aucun doublon détecté.');
-        }
+        alert('Vérification terminée. Règles fusionnées de manière intelligente (avec CIDR).');
       }
     }
     
