@@ -1,3 +1,4 @@
+
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -69,8 +70,17 @@ function importCSV(csvData) {
           return null; // Ligne ignorée si un champ est manquant
         }
         
-        var sourceIPs = (row[3] || '').split(',').map(ip => ip.trim()).filter(ip => ip);
-        var destIPs = (row[6] || '').split(',').map(ip => ip.trim()).filter(ip => ip);
+        // Amélioration du parsing des IPs pour gérer virgules ET retours à la ligne
+        var sourceIPs = (row[3] || '')
+          .split(/[\n,]+/)
+          .map(ip => ip.trim())
+          .filter(ip => ip);
+          
+        var destIPs = (row[6] || '')
+          .split(/[\n,]+/)
+          .map(ip => ip.trim())
+          .filter(ip => ip);
+          
         var combinations = [];
 
         if (sourceIPs.length === 0) sourceIPs = [''];
