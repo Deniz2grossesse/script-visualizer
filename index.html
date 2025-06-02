@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -257,12 +258,17 @@
     }
 
     .ip-field {
-      min-width: 150px;
-      min-height: 40px;
+      width: 100%;
+      background-color: #34495E;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      color: #fff;
+      padding: 8px;
+      resize: none;
+      overflow-y: hidden;
       line-height: 1.4;
       font-family: monospace;
-      resize: none;
-      overflow: hidden;
+      min-height: 40px;
     }
     
     .protocol-field {
@@ -290,8 +296,7 @@
     }
 
     .rules-table td input,
-    .rules-table td select,
-    .rules-table td textarea {
+    .rules-table td select {
       width: 100%;
       padding: 8px;
       background-color: #34495E;
@@ -300,9 +305,9 @@
       color: #fff;
     }
 
-    .rules-table td textarea:focus,
     .rules-table td input:focus,
-    .rules-table td select:focus {
+    .rules-table td select:focus,
+    .ip-field:focus {
       outline: none;
       border-color: #3498db;
       background-color: #2C3E50;
@@ -659,6 +664,11 @@
   <script>
     let currentRules = [];
 
+    function autoResize(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
     function showLoading() {
       document.getElementById('loadingMessage').classList.add('visible');
     }
@@ -750,11 +760,6 @@
       newRules[index].errors = validation.errors;
       
       currentRules = newRules;
-      
-      // Re-render only if it's an IP field to update textarea height
-      if (field === 'sourceIP' || field === 'destIP') {
-        displayRules(currentRules);
-      }
     }
 
     function addNewLine() {
@@ -1094,7 +1099,7 @@
             <td>
               <textarea 
                 rows="${sourceIPRows}"
-                onchange="updateRule(${index}, 'sourceIP', this.value)" 
+                oninput="autoResize(this); updateRule(${index}, 'sourceIP', this.value)" 
                 placeholder="e.g., 192.168.1.0/24"
                 class="ip-field"
               >${formatIPsForDisplay(rule.sourceIP || '')}</textarea>
@@ -1102,7 +1107,7 @@
             <td>
               <textarea 
                 rows="${destIPRows}"
-                onchange="updateRule(${index}, 'destIP', this.value)" 
+                oninput="autoResize(this); updateRule(${index}, 'destIP', this.value)" 
                 placeholder="e.g., 10.0.0.1"
                 class="ip-field"
               >${formatIPsForDisplay(rule.destIP || '')}</textarea>
@@ -1179,6 +1184,13 @@
         });
         
         table.style.display = 'table';
+        
+        // Auto-resize all textareas after rendering
+        setTimeout(() => {
+          document.querySelectorAll('.ip-field').forEach(textarea => {
+            autoResize(textarea);
+          });
+        }, 0);
       } else {
         table.style.display = 'none';
       }
