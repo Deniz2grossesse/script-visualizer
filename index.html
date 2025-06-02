@@ -1,244 +1,505 @@
-
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <base target="_top">
-  <title>One Click Onboarding</title>
+  <title>Network Rules Generator</title>
   <style>
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: 'Roboto', Arial, sans-serif;
       margin: 0;
-      padding: 0;
+      padding: 20px;
       background: #212121;
-      color: #BDC3C7;
-      min-height: 100vh;
+      color: #fff;
     }
-
+    
     .container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 24px;
-      background: #34495E;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-      margin-top: 40px;
-      margin-bottom: 40px;
-    }
-
-    h1 {
-      color: white;
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 32px;
-      text-align: center;
-    }
-
-    .info-box {
-      background: #2C3E50;
-      border: 1px solid rgba(189, 195, 199, 0.3);
-      color: #BDC3C7;
-      padding: 16px;
+      padding: 30px;
+      background: #1A1F2C;
       border-radius: 8px;
-      margin-bottom: 32px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+      text-align: center;
+      color: #ffffff;
+      margin-bottom: 30px;
+      font-size: 32px;
+      font-weight: 500;
+    }
+    
+    .alert {
+      background-color: #2B3E50;
+      padding: 16px;
+      border-radius: 6px;
+      margin-bottom: 40px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
+      font-size: 14px;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
-
-    .mandatory-fields {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 24px;
-      margin-bottom: 40px;
-      max-width: 800px;
+    
+    .alert-icon {
+      color: #f39c12;
     }
-
+    
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 30px;
+      max-width: 25%;
     }
-
+    
     label {
       display: block;
       margin-bottom: 8px;
-      color: white;
+      color: #ffffff;
+      font-size: 14px;
       font-weight: 500;
-      font-size: 0.875rem;
+      white-space: nowrap;
     }
-
+    
     .required {
-      color: #ef4444;
+      color: #f39c12;
       margin-left: 4px;
     }
-
+    
     input[type="text"],
-    input[type="email"],
-    input[type="number"],
-    select,
-    textarea {
+    input[type="email"] {
       width: 100%;
       padding: 12px;
-      border: 1px solid rgba(189, 195, 199, 0.3);
-      border-radius: 8px;
-      font-size: 1rem;
-      background: #34495E;
-      color: white;
-      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background-color: #2B3E50;
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 14px;
       box-sizing: border-box;
+      transition: all 0.2s ease;
     }
-
-    input::placeholder,
-    textarea::placeholder {
-      color: rgba(189, 195, 199, 0.5);
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
+    
+    input[type="text"]:focus,
+    input[type="email"]:focus {
       outline: none;
-      border-color: #E67E22;
-      box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.2);
+      border-color: #3498db;
+      background-color: #34495E;
     }
-
-    .action-buttons {
+    
+    ::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 30px;
+    }
+    
+    .top-buttons {
       display: flex;
       justify-content: flex-end;
       gap: 12px;
-      margin: 32px 0;
-      flex-wrap: wrap;
+      margin-bottom: 40px;
     }
-
-    .btn {
-      padding: 12px 24px;
+    
+    button {
+      padding: 10px 20px;
       border: none;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      font-weight: 600;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 500;
       cursor: pointer;
-      transition: all 0.3s ease;
+      text-align: center;
+      min-width: 40px;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-add {
+      background-color: #2ECC71;
+      color: white;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
+      padding: 12px 24px;
+      min-width: 40px;
     }
-
-    .btn-primary {
-      background: #E67E22;
+    
+    .btn-add span {
+      font-size: 20px;
+      line-height: 1;
+      margin-top: -2px;
+    }
+    
+    .btn-add:hover {
+      background-color: #27AE60;
+    }
+    
+    .btn-import {
+      background-color: #E67E22;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      min-width: 40px;
+    }
+    
+    .btn-import span {
+      font-size: 18px;
+      line-height: 1;
+    }
+    
+    .btn-import:hover {
+      background-color: #D35400;
+    }
+    
+    .btn-delete {
+      background-color: transparent;
+      color: #ff4757;
+      border: 2px solid #ff4757;
+      padding: 12px 35px;
+    }
+    
+    .btn-delete:hover {
+      background-color: #ff4757;
       color: white;
     }
-
-    .btn-primary:hover {
-      background: #D35400;
-      transform: translateY(-1px);
+    
+    .btn-resume {
+      background-color: transparent;
+      color: #fff;
+      border: 2px solid #666;
+      padding: 12px 35px;
     }
-
-    .btn-secondary {
-      background: #2ECC71;
+    
+    .btn-resume:hover {
+      background-color: #666;
       color: white;
     }
-
-    .btn-secondary:hover {
-      background: #27AE60;
-      transform: translateY(-1px);
+    
+    .btn-verify {
+      background-color: transparent;
+      color: #3498db;
+      border: 2px solid #3498db;
+      padding: 12px 35px;
     }
-
-    .btn-outline {
-      background: transparent;
-      color: #BDC3C7;
-      border: 1px solid rgba(189, 195, 199, 0.3);
-    }
-
-    .btn-outline:hover {
-      background: rgba(255, 255, 255, 0.1);
-      transform: translateY(-1px);
-    }
-
-    .btn-danger {
-      background: #E74C3C;
+    
+    .btn-verify:hover {
+      background-color: #3498db;
       color: white;
     }
-
-    .btn-danger:hover {
-      background: #C0392B;
-      transform: translateY(-1px);
+    
+    .btn-generate {
+      background-color: #F08B32;
+      color: white;
+      padding: 12px 60px 12px 35px;
+      position: relative;
+      border-radius: 25px;
+      min-width: 40px;
     }
-
-    .rules-container {
-      margin-top: 32px;
+    
+    .btn-generate:hover {
+      background-color: #E67E22;
+    }
+    
+    .btn-generate::after {
+      content: "→";
+      position: absolute;
+      right: 25px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 40px;
+    }
+    
+    #actionBar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #1A1F2C;
+      padding: 15px 30px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+    }
+    
+    body {
+      padding-bottom: 90px;
     }
 
     .rules-table {
       width: 100%;
+      margin-top: 20px;
       border-collapse: collapse;
-      margin-bottom: 20px;
+    }
+
+    .rules-table th,
+    .rules-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .rules-table th {
-      background: #2C3E50;
-      color: white;
-      padding: 12px 8px;
-      text-align: left;
-      font-weight: 600;
-      font-size: 0.875rem;
-      border-bottom: 2px solid #34495E;
+      background-color: #2B3E50;
+      color: #fff;
+      font-weight: 500;
     }
 
-    .rules-table td {
+    .ip-field {
+      min-width: 150px;
+    }
+    
+    .protocol-field {
+      width: 120px;
+    }
+    
+    .service-field {
+      width: 130px;
+    }
+    
+    .port-field {
+      width: 80px;
+    }
+    
+    .select-field {
+      width: 130px;
+    }
+    
+    .appcode-field {
+      width: 100px;
+    }
+
+    .rules-table tbody tr:hover {
+      background-color: rgba(52, 152, 219, 0.1);
+    }
+
+    .rules-table td input,
+    .rules-table td select {
+      width: 100%;
       padding: 8px;
-      border-bottom: 1px solid #2C3E50;
-      vertical-align: top;
+      background-color: #34495E;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      color: #fff;
     }
 
-    .rules-table tr:hover {
-      background: rgba(44, 62, 80, 0.5);
+    .scripts-container {
+      margin-top: 20px;
+      background-color: #2B3E50;
+      padding: 15px;
+      border-radius: 6px;
+      display: none;
     }
 
-    .rule-row {
-      transition: all 0.3s ease;
+    .script-item {
+      background-color: #34495E;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 4px;
+      position: relative;
     }
 
-    .rule-row.duplicate-row {
-      background: rgba(231, 76, 60, 0.2) !important;
-      border: 2px solid #E74C3C !important;
-      animation: pulse-duplicate 2s infinite;
+    .script-content {
+      white-space: pre;
+      font-family: monospace;
+      color: #fff;
+      background-color: #1A1F2C;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      overflow-x: auto;
     }
 
-    @keyframes pulse-duplicate {
-      0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
-      70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
-    }
-
-    .rule-input {
-      width: 100%;
-      min-width: 120px;
-      height: 32px;
-      padding: 4px 8px;
-      font-size: 0.875rem;
-    }
-
-    .rule-textarea {
-      width: 100%;
-      min-width: 120px;
-      min-height: 32px;
-      padding: 4px 8px;
-      font-size: 0.875rem;
-      resize: none;
-      font-family: inherit;
-      line-height: 1.4;
-    }
-
-    .rule-select {
-      width: 100%;
-      min-width: 100px;
-      height: 32px;
-      padding: 4px 8px;
-      font-size: 0.875rem;
-    }
-
-    .rule-actions {
+    .script-actions {
       display: flex;
-      gap: 4px;
       justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .copy-btn {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 80px;
+      justify-content: center;
+    }
+
+    .copy-btn:hover {
+      background-color: #2980b9;
+    }
+
+    .copy-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 80px;
+      justify-content: center;
+    }
+
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
+
+    .delete-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .delete-row-btn {
+      background: none;
+      border: none;
+      color: #e74c3c;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+    }
+
+    .delete-row-btn:hover {
+      color: #c0392b;
+    }
+
+    .delete-row-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: #e74c3c;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      display: block;
+    }
+
+    .duplicate-btn {
+      background: none;
+      border: none;
+      border-radius: 4px;
+      padding: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .duplicate-btn svg {
+      stroke: #3498db;
+    }
+
+    .duplicate-btn:hover svg {
+      stroke: #2980b9;
+    }
+
+    .trash-icon {
+      color: #e74c3c;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+    }
+
+    .trash-icon svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: #e74c3c;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      display: block;
+    }
+
+    .error-message {
+      color: #e74c3c;
+      margin-top: 5px;
+      font-size: 12px;
+    }
+
+    .success-message {
+      color: #2ecc71;
+      margin-top: 5px;
+      font-size: 12px;
+    }
+
+    .loading-message {
+      display: none;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 20px;
+      border-radius: 5px;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      text-align: center;
+    }
+
+    .loading-message.visible {
+      display: block;
+    }
+
+    .btn-save {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      padding: 12px 35px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-save:hover {
+      background-color: #219a52;
+    }
+
+    .btn-save svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .duplicate-row {
+      background-color: rgba(255, 0, 0, 0.1);
+      border: 2px solid #ff4d4d;
     }
 
     .icon-btn {
@@ -246,122 +507,25 @@
       border: none;
       cursor: pointer;
       padding: 4px;
-      border-radius: 4px;
-      transition: all 0.2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 28px;
-      height: 28px;
+      width: 24px;
+      height: 24px;
     }
 
-    .icon-btn:hover {
-      transform: scale(1.1);
+    .add-btn svg {
+      stroke: #2ECC71;
+    }
+    .add-btn:hover svg {
+      stroke: #27AE60;
     }
 
-    .duplicate-btn:hover {
-      background: rgba(52, 152, 219, 0.2);
+    .duplicate-btn svg {
+      stroke: #3498db;
     }
-
-    .delete-btn:hover {
-      background: rgba(231, 76, 60, 0.2);
-    }
-
-    .duplicate-warning {
-      background: #E74C3C;
-      color: white;
-      padding: 4px 8px;
-      border-radius: 4px;
-      margin-top: 4px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-align: center;
-    }
-
-    .scripts-output {
-      margin-top: 32px;
-      display: none;
-    }
-
-    .script-block {
-      background: #34495E;
-      border: 1px solid rgba(189, 195, 199, 0.3);
-      border-radius: 8px;
-      margin-bottom: 16px;
-      overflow: hidden;
-    }
-
-    .script-header {
-      background: #2C3E50;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: white;
-      font-weight: 600;
-    }
-
-    .script-content {
-      width: 100%;
-      height: 150px;
-      padding: 12px;
-      border: none;
-      background: #2C3E50;
-      color: white;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      font-size: 0.875rem;
-      resize: vertical;
-      line-height: 1.4;
-    }
-
-    .add-rule-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #2ECC71;
-      color: white;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-      margin-bottom: 16px;
-    }
-
-    .add-rule-btn:hover {
-      background: #27AE60;
-      transform: scale(1.05);
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        margin: 20px;
-        padding: 16px;
-      }
-
-      .mandatory-fields {
-        grid-template-columns: 1fr;
-      }
-
-      .action-buttons {
-        flex-direction: column;
-      }
-
-      .btn {
-        width: 100%;
-        justify-content: center;
-      }
-
-      .rules-table {
-        font-size: 0.75rem;
-      }
-
-      .rules-table th,
-      .rules-table td {
-        padding: 6px 4px;
-      }
+    .duplicate-btn:hover svg {
+      stroke: #2980b9;
     }
   </style>
 </head>
@@ -369,372 +533,656 @@
   <div class="container">
     <h1>One Click Onboarding</h1>
 
-    <div class="info-box">
-      <span style="color: #E67E22;">⚠️</span>
-      <span>Ces trois champs sont obligatoires, vous ne pouvez pas commencer à les saisir sans les avoir remplis.</span>
+    <div class="top-buttons">
+      <button class="btn-add" onclick="addNewLine()">
+        <span>+</span>
+        Add a Line
+      </button>
+      <button class="btn-import" onclick="importCSV()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        Import CSV
+      </button>
     </div>
 
-    <div class="mandatory-fields">
-      <div class="form-group">
-        <label>Département <span class="required">*</span></label>
-        <input type="text" id="department" maxlength="4" placeholder="Département (1-4 chars)">
-      </div>
-
-      <div class="form-group">
-        <label>Code Projet/Application <span class="required">*</span></label>
-        <input type="text" id="projectCode" maxlength="4" placeholder="Code projet (1-4 chars)">
-      </div>
-
-      <div class="form-group">
-        <label>Email du demandeur <span class="required">*</span></label>
-        <input type="email" id="email" placeholder="Adresse email">
-      </div>
+    <div class="alert">
+      <span class="alert-icon">⚠️</span>
+      <span>These three fields are mandatory, you cannot start entering them without having filled them in.</span>
     </div>
 
-    <div class="rules-container">
-      <button class="add-rule-btn" onclick="addRule()" title="Ajouter une règle">+</button>
-      
-      <table class="rules-table" id="rulesTable" style="display: none;">
-        <thead>
-          <tr>
-            <th>Source IP</th>
-            <th>Destination IP</th>
-            <th>Protocole</th>
-            <th>Service</th>
-            <th>Port</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="rulesContainer">
-          <!-- Les règles seront ajoutées ici dynamiquement -->
-        </tbody>
-      </table>
+    <div class="form-group">
+      <label>Department <span class="required">*</span></label>
+      <input 
+        type="text" 
+        id="department" 
+        maxlength="4" 
+        placeholder="Department (1-4 chars)"
+      >
     </div>
 
-    <div class="action-buttons">
-      <button class="btn btn-danger" onclick="deleteRules()">Supprimer</button>
-      <button class="btn btn-outline" onclick="resumeDraft()">Reprendre brouillon</button>
-      <button class="btn btn-outline" onclick="verifyRules()">Vérifier</button>
-      <button class="btn btn-primary" onclick="generateScripts()">Générer Scripts</button>
+    <div class="form-group">
+      <label>Project/Application Code <span class="required">*</span></label>
+      <input 
+        type="text" 
+        id="projectCode" 
+        maxlength="4" 
+        placeholder="Project code (1-4 chars)"
+      >
     </div>
 
-    <div id="output" class="scripts-output">
-      <!-- Les scripts générés apparaîtront ici -->
+    <div class="form-group">
+      <label>Requester's Email <span class="required">*</span></label>
+      <input 
+        type="email" 
+        id="email" 
+        placeholder="Email address"
+      >
+    </div>
+
+    <table id="rulesTable" class="rules-table" style="display: none;">
+      <thead>
+        <tr>
+          <th>Source IP</th>
+          <th>IP Destination</th>
+          <th>Protocol</th>
+          <th>Service</th>
+          <th>Port</th>
+          <th>Authentication</th>
+          <th>Flow Encryption</th>
+          <th>Classification</th>
+          <th>APP Code</th>
+          <th style="text-align: right;">Manage ligne</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+
+    <div id="scriptsOutput" class="scripts-container"></div>
+
+    <div id="actionBar" class="action-buttons">
+      <button class="btn-delete" onclick="deleteForm()">Delete</button>
+      <button class="btn-resume" onclick="resumeDraft()">Resume Draft</button>
+      <button class="btn-verify" onclick="verifyFields()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Verify
+      </button>
+      <button class="btn-save" onclick="saveNES()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Save NES
+      </button>
+      <button class="btn-generate" onclick="generateScripts()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <path d="M14 2v6h6"/>
+          <path d="M8 16h8"/>
+          <path d="M8 12h8"/>
+          <path d="M8 8h4"/>
+        </svg>
+        Generate Scripts
+      </button>
+    </div>
+
+    <div id="loadingMessage" class="loading-message">
+      File is loading...
     </div>
   </div>
 
+  <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   <script>
-    let rules = [];
+    let currentRules = [];
 
-    function addRule() {
-      const rule = {
-        sourceIP: '',
-        destIP: '',
-        protocol: 'tcp',
-        service: '',
-        port: '',
-        authentication: 'no',
-        encryption: 'no',
-        classification: 'yellow'
-      };
-      rules.push(rule);
-      refreshRulesDisplay();
+    function showLoading() {
+      document.getElementById('loadingMessage').classList.add('visible');
     }
 
-    function calculateTextareaHeight(value) {
-      if (!value || value.trim() === '') return 1;
-      const ips = value.split(',').filter(ip => ip.trim() !== '');
-      return Math.max(1, ips.length);
+    function hideLoading() {
+      document.getElementById('loadingMessage').classList.remove('visible');
     }
 
-    function formatIPsForDisplay(value) {
-      if (!value) return '';
-      return value.split(',').map(ip => ip.trim()).join('\n');
+    function importCSV() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.csv';
+      input.addEventListener('change', handleFileSelect);
+      input.click();
     }
 
-    function formatIPsForStorage(value) {
-      if (!value) return '';
-      return value.split('\n').map(ip => ip.trim()).filter(ip => ip !== '').join(',');
-    }
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        showLoading();
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          const content = e.target.result;
+          google.script.run
+            .withSuccessHandler(function(response) {
+              hideLoading();
+              if (response.success) {
+                currentRules = response.data;
+                displayRules(currentRules);
+                document.getElementById('department').value = response.department || '';
+                document.getElementById('projectCode').value = response.projectCode || '';
+                document.getElementById('email').value = response.requesterEmail || '';
+                alert(response.message);
+              } else {
+                alert(response.message || "Erreur lors de l'import");
+              }
+            })
+            .withFailureHandler(function(error) {
+              hideLoading();
+              console.error("Erreur:", error);
+              alert("Erreur lors de l'import du fichier");
+            })
+            .handleFileSelect(content);
+        };
+        
+        reader.onerror = function(e) {
+          hideLoading();
+          console.error("Erreur lors de la lecture du fichier:", e);
+          alert("Erreur lors de la lecture du fichier");
+        };
 
-    function detectDuplicateRows() {
-      const duplicateIndices = new Set();
-      
-      for (let i = 0; i < rules.length; i++) {
-        for (let j = i + 1; j < rules.length; j++) {
-          const rule1 = rules[i];
-          const rule2 = rules[j];
-          
-          if (rule1.sourceIP === rule2.sourceIP &&
-              rule1.destIP === rule2.destIP &&
-              rule1.protocol === rule2.protocol &&
-              rule1.service === rule2.service &&
-              rule1.port === rule2.port &&
-              rule1.authentication === rule2.authentication &&
-              rule1.encryption === rule2.encryption &&
-              rule1.classification === rule2.classification) {
-            duplicateIndices.add(i);
-            duplicateIndices.add(j);
-          }
-        }
-      }
-      
-      return duplicateIndices;
-    }
-
-    function createRuleElement(rule, index) {
-      const duplicateIndices = detectDuplicateRows();
-      const isDuplicate = duplicateIndices.has(index);
-      
-      const sourceIPHeight = calculateTextareaHeight(rule.sourceIP);
-      const destIPHeight = calculateTextareaHeight(rule.destIP);
-      
-      const row = document.createElement('tr');
-      row.className = `rule-row ${isDuplicate ? 'duplicate-row' : ''}`;
-      row.innerHTML = `
-        <td>
-          <textarea 
-            class="rule-textarea" 
-            rows="${sourceIPHeight}" 
-            onchange="updateRule(${index}, 'sourceIP', formatIPsForStorage(this.value))"
-            oninput="adjustTextareaHeight(this, ${index}, 'sourceIP')"
-            placeholder="IP source"
-          >${formatIPsForDisplay(rule.sourceIP)}</textarea>
-          ${isDuplicate ? '<div class="duplicate-warning">⚠️ Dupliqué</div>' : ''}
-        </td>
-        <td>
-          <textarea 
-            class="rule-textarea" 
-            rows="${destIPHeight}" 
-            onchange="updateRule(${index}, 'destIP', formatIPsForStorage(this.value))"
-            oninput="adjustTextareaHeight(this, ${index}, 'destIP')"
-            placeholder="IP destination"
-          >${formatIPsForDisplay(rule.destIP)}</textarea>
-        </td>
-        <td>
-          <select class="rule-select" onchange="updateRule(${index}, 'protocol', this.value)">
-            <option value="tcp" ${rule.protocol === 'tcp' ? 'selected' : ''}>TCP</option>
-            <option value="udp" ${rule.protocol === 'udp' ? 'selected' : ''}>UDP</option>
-            <option value="icmp" ${rule.protocol === 'icmp' ? 'selected' : ''}>ICMP</option>
-          </select>
-        </td>
-        <td>
-          <input type="text" class="rule-input" value="${rule.service}" onchange="updateRule(${index}, 'service', this.value)" placeholder="Service">
-        </td>
-        <td>
-          <input type="number" class="rule-input" min="1" max="65535" value="${rule.port}" onchange="updateRule(${index}, 'port', this.value)" placeholder="Port">
-        </td>
-        <td>
-          <div class="rule-actions">
-            <button class="icon-btn duplicate-btn" onclick="duplicateRow(${index})" title="Dupliquer la ligne">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#3498db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-              </svg>
-            </button>
-            <button class="icon-btn delete-btn" onclick="deleteRule(${index})" title="Supprimer la règle">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 6h18"></path>
-                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-              </svg>
-            </button>
-          </div>
-        </td>
-      `;
-      return row;
-    }
-
-    function adjustTextareaHeight(textarea, index, field) {
-      const value = textarea.value;
-      const newHeight = calculateTextareaHeight(formatIPsForStorage(value));
-      textarea.rows = newHeight;
-    }
-
-    function refreshRulesDisplay() {
-      const container = document.getElementById('rulesContainer');
-      const table = document.getElementById('rulesTable');
-      
-      container.innerHTML = '';
-      
-      if (rules.length > 0) {
-        table.style.display = 'table';
-        rules.forEach((rule, index) => {
-          container.appendChild(createRuleElement(rule, index));
-        });
-      } else {
-        table.style.display = 'none';
-      }
-      
-      const duplicateIndices = detectDuplicateRows();
-      if (duplicateIndices.size > 0) {
-        console.log(`${duplicateIndices.size} lignes dupliquées détectées`);
+        reader.readAsText(file);
       }
     }
 
     function updateRule(index, field, value) {
-      rules[index][field] = value;
-      refreshRulesDisplay();
+      console.log('updateRule called', { index, field, value });
+      const newRules = [...currentRules];
+      newRules[index] = {
+        ...newRules[index],
+        [field]: value
+      };
+      
+      const validation = validateRow(newRules[index]);
+      newRules[index].isValid = validation.isValid;
+      newRules[index].errors = validation.errors;
+      
+      currentRules = newRules;
+      displayRules(currentRules);
+    }
+
+    function addNewLine() {
+      console.log('Adding new line to currentRules');
+      currentRules.push({
+        sourceIP: '',
+        destIP: '',
+        protocol: 'TCP',
+        service: '',
+        port: '',
+        authentication: 'No',
+        flowEncryption: 'No',
+        classification: 'Yellow',
+        appCode: '',
+        isValid: false,
+        errors: []
+      });
+      displayRules(currentRules);
     }
 
     function duplicateRow(index) {
-      const newRule = { ...rules[index] };
-      rules.splice(index + 1, 0, newRule);
-      refreshRulesDisplay();
-    }
-
-    function deleteRule(index) {
-      if (confirm('Êtes-vous sûr de vouloir supprimer cette règle ?')) {
-        rules.splice(index, 1);
-        refreshRulesDisplay();
+      console.log('Duplicating row at index:', index);
+      if (index >= 0 && index < currentRules.length) {
+        const duplicatedRow = {...currentRules[index]};
+        currentRules.splice(index + 1, 0, duplicatedRow);
+        displayRules(currentRules);
+        toast("Row duplicated successfully");
       }
     }
 
-    function verifyRules() {
-      const department = document.getElementById('department').value;
-      const projectCode = document.getElementById('projectCode').value;
-      const email = document.getElementById('email').value;
-
-      if (!department || !projectCode || !email) {
-        alert('Veuillez remplir tous les champs obligatoires');
-        return;
+    function deleteRow(index) {
+      console.log('Deleting row at index:', index);
+      if (index >= 0 && index < currentRules.length) {
+        currentRules.splice(index, 1);
+        displayRules(currentRules);
+        toast("Row deleted successfully");
       }
-
-      google.script.run
-        .withSuccessHandler(function(results) {
-          let hasErrors = false;
-          results.forEach(result => {
-            if (!result.isValid) {
-              hasErrors = true;
-              alert(`Erreur dans la règle ${result.ruleIndex + 1}: ${result.errors.join(', ')}`);
-            }
-          });
-          if (!hasErrors) {
-            alert('Toutes les règles sont valides');
-          }
-        })
-        .withFailureHandler(function(error) {
-          alert('Erreur lors de la vérification: ' + error);
-        })
-        .verifyRules(rules);
     }
 
-    function generateScripts() {
-      const department = document.getElementById('department').value;
-      const projectCode = document.getElementById('projectCode').value;
-      const email = document.getElementById('email').value;
+    function toast(message) {
+      alert(message);
+    }
 
-      if (!department || !projectCode || !email) {
-        alert('Veuillez remplir tous les champs obligatoires');
-        return;
-      }
-
-      if (rules.length === 0) {
-        alert('Veuillez ajouter au moins une règle');
-        return;
-      }
-
-      const output = document.getElementById('output');
-      output.innerHTML = '';
-      output.style.display = 'block';
-
-      rules.forEach((rule, index) => {
-        const scriptData = { 
-          ...rule,
-          department,
-          projectCode,
-          email
-        };
-
+    function deleteForm() {
+      if (confirm('Voulez-vous vraiment supprimer le formulaire ?')) {
         google.script.run
-          .withSuccessHandler(function(script) {
-            const scriptBlock = document.createElement('div');
-            scriptBlock.className = 'script-block';
-            scriptBlock.innerHTML = `
-              <div class="script-header">
-                <span>Script ${index + 1}</span>
-              </div>
-              <textarea class="script-content" readonly>${script}</textarea>
-            `;
-            output.appendChild(scriptBlock);
+          .withSuccessHandler(() => {
+            document.getElementById('department').value = '';
+            document.getElementById('projectCode').value = '';
+            document.getElementById('email').value = '';
+            currentRules = [];
+            document.getElementById('rulesTable').style.display = 'none';
+            document.getElementById('scriptsOutput').style.display = 'none';
           })
-          .withFailureHandler(function(error) {
-            alert('Erreur lors de la génération du script: ' + error);
-          })
-          .generateScript(scriptData);
-      });
-    }
-
-    function saveDraft() {
-      const department = document.getElementById('department').value;
-      const projectCode = document.getElementById('projectCode').value;
-      const email = document.getElementById('email').value;
-
-      if (!department || !projectCode || !email) {
-        alert('Veuillez remplir tous les champs obligatoires avant de sauvegarder');
-        return;
+          .withFailureHandler(handleError)
+          .deleteForm();
       }
-
-      const rulesWithMetadata = rules.map(rule => ({
-        ...rule,
-        department,
-        projectCode,
-        email
-      }));
-
-      google.script.run
-        .withSuccessHandler(function(response) {
-          if (response.success) {
-            alert('Brouillon sauvegardé avec succès');
-          } else {
-            alert('Erreur lors de la sauvegarde: ' + response.message);
-          }
-        })
-        .withFailureHandler(function(error) {
-          alert('Erreur lors de la sauvegarde: ' + error);
-        })
-        .saveDraft(rulesWithMetadata);
     }
 
     function resumeDraft() {
       google.script.run
-        .withSuccessHandler(function(response) {
-          if (response.success && response.data.length > 0) {
-            const lastRow = response.data[response.data.length - 1];
-            document.getElementById('department').value = lastRow[0];
-            document.getElementById('projectCode').value = lastRow[1];
-            document.getElementById('email').value = lastRow[2];
-
-            rules = response.data.map(row => ({
-              sourceIP: row[3],
-              destIP: row[4],
-              protocol: row[5],
-              service: row[6],
-              port: row[7],
-              appCode: row[8]
-            }));
-
-            refreshRulesDisplay();
+        .withSuccessHandler((response) => {
+          if (response.success && response.data) {
+            const data = response.data;
+            document.getElementById('department').value = data.department || '';
+            document.getElementById('projectCode').value = data.projectCode || '';
+            document.getElementById('email').value = data.email || '';
+            if (data.rules) {
+              currentRules = data.rules;
+              displayRules(currentRules);
+            }
           } else {
             alert('Aucun brouillon trouvé');
           }
         })
-        .withFailureHandler(function(error) {
-          alert('Erreur lors de la récupération du brouillon: ' + error);
-        })
-        .getDraftRules();
+        .withFailureHandler(handleError)
+        .getDraft();
     }
 
-    function deleteRules() {
-      if (confirm('Êtes-vous sûr de vouloir supprimer toutes les règles ?')) {
-        rules = [];
-        refreshRulesDisplay();
-        document.getElementById('output').style.display = 'none';
+    function verifyFields() {
+      const department = document.getElementById('department').value;
+      const projectCode = document.getElementById('projectCode').value;
+      const email = document.getElementById('email').value;
+
+      let isValid = true;
+      let errors = [];
+
+      if (!department || department.length > 4) {
+        errors.push('Department must be between 1 and 4 characters');
+        isValid = false;
+      }
+
+      if (!projectCode || projectCode.length > 4) {
+        errors.push('Project code must be between 1 and 4 characters');
+        isValid = false;
+      }
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errors.push('Invalid email');
+        isValid = false;
+      }
+
+      // Validation ligne par ligne
+      currentRules.forEach(rule => {
+        const validation = validateRow(rule);
+        rule.isValid = validation.isValid;
+        rule.errors = validation.errors;
+      });
+
+      // Fonction pour normaliser les IPs (tri et nettoyage)
+      function normalizeIPs(ipString) {
+        if (!ipString) return '';
+        return ipString
+          .split(',')
+          .map(ip => ip.trim())
+          .filter(ip => ip)
+          .sort()
+          .join(',');
+      }
+
+      // Regroupement automatique intelligent
+      const grouped = {};
+
+      currentRules.forEach(rule => {
+        const normalizedSourceIP = normalizeIPs(rule.sourceIP);
+        const normalizedDestIP = normalizeIPs(rule.destIP);
+
+        // Clé de regroupement incluant toutes les dimensions importantes
+        const key = [
+          normalizedSourceIP,
+          normalizedDestIP,
+          rule.protocol,
+          rule.service,
+          rule.port,
+          rule.authentication,
+          rule.flowEncryption,
+          rule.classification,
+          rule.appCode
+        ].join('|');
+
+        if (!grouped[key]) {
+          grouped[key] = {
+            ...rule,
+            sourceIPs: new Set(normalizedSourceIP ? normalizedSourceIP.split(',') : []),
+            destIPs: new Set(normalizedDestIP ? normalizedDestIP.split(',') : [])
+          };
+        } else {
+          // Fusionne les IPs source et destination si la ligne est strictement identique
+          if (normalizedSourceIP) {
+            normalizedSourceIP.split(',').forEach(ip => grouped[key].sourceIPs.add(ip));
+          }
+          if (normalizedDestIP) {
+            normalizedDestIP.split(',').forEach(ip => grouped[key].destIPs.add(ip));
+          }
+        }
+      });
+
+      // Reconstruction de currentRules à partir du regroupement
+      const originalLength = currentRules.length;
+      currentRules = Object.values(grouped).map(group => {
+        return {
+          ...group,
+          sourceIP: Array.from(group.sourceIPs).filter(ip => ip).join(', '),
+          destIP: Array.from(group.destIPs).filter(ip => ip).join(', '),
+          isValid: true,
+          errors: [],
+          isDuplicate: false
+        };
+      });
+
+      // Vérification des lignes après regroupement
+      currentRules.forEach(rule => {
+        const validation = validateRow(rule);
+        rule.isValid = validation.isValid;
+        rule.errors = validation.errors;
+      });
+
+      displayRules(currentRules);
+
+      if (!isValid) {
+        alert('Errors:\n' + errors.join('\n'));
+      } else {
+        const duplicatesRemoved = originalLength > currentRules.length;
+        if (duplicatesRemoved) {
+          alert('Vérification terminée. Doublons supprimés et lignes fusionnées de manière intelligente.');
+        } else {
+          alert('Vérification terminée. Aucun doublon détecté.');
+        }
+      }
+    }
+    
+    function generateScripts() {
+      console.log('generateScripts called with csvRows:', currentRules);
+      const scriptsOutput = document.getElementById('scriptsOutput');
+      scriptsOutput.innerHTML = '';
+      
+      if (currentRules.length > 0) {
+        currentRules.forEach((rule, index) => {
+          const scriptDiv = document.createElement('div');
+          scriptDiv.className = 'script-item';
+          
+          const script = generateScriptForRow(rule);
+          scriptDiv.innerHTML = `
+            <div class="script-content">${script}</div>
+            <div class="script-actions">
+              <button class="copy-btn" onclick="copyGeneratedScript(${index})">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Copy
+              </button>
+              <button class="delete-btn" onclick="deleteGeneratedScript(${index})">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                Delete
+              </button>
+            </div>
+          `;
+          
+          scriptsOutput.appendChild(scriptDiv);
+        });
+        
+        scriptsOutput.style.display = 'block';
+      } else {
+        scriptsOutput.style.display = 'none';
       }
     }
 
-    // Ajouter une première règle au chargement
-    window.onload = addRule;
+    function generateScriptForRow(rule) {
+      return `curl -k -X POST "https://api/query" \\
+-H "Content-Type: application/json" \\
+-H "Authorization: Bearer " \\
+-d '{
+  "source": "${rule.sourceIP}",
+  "destination": "${rule.destIP}",
+  "protocol": "${rule.protocol}",
+  "port": "${rule.port}",
+  "service": "${rule.service}"
+}'`;
+    }
+
+    function copyGeneratedScript(index) {
+      const script = generateScriptForRow(currentRules[index]);
+      navigator.clipboard.writeText(script)
+        .then(() => {
+          alert('Script copié dans le presse-papier');
+        })
+        .catch(err => {
+          console.error('Erreur lors de la copie:', err);
+          alert('Erreur lors de la copie du script');
+        });
+    }
+
+    function deleteGeneratedScript(index) {
+      console.log('Deleting script at index:', index);
+      const scriptItems = document.querySelectorAll('.script-item');
+      if (index < scriptItems.length) {
+        scriptItems[index].remove();
+        if (document.querySelectorAll('.script-item').length === 0) {
+          document.getElementById('scriptsOutput').style.display = 'none';
+        }
+      }
+    }
+    
+    function validateRow(rule) {
+      console.log('validateRow called with:', rule);
+      const errors = [];
+      
+      if (!validateIP(rule.sourceIP)) {
+        errors.push("Invalid source IP");
+      }
+      if (!validateIP(rule.destIP)) {
+        errors.push("Invalid destination IP");
+      }
+      if (!validatePort(rule.port)) {
+        errors.push("Invalid port");
+      }
+      
+      return { isValid: errors.length === 0, errors };
+    }
+    
+    function validateIP(ip) {
+      if (!ip) return false;
+      
+      const ipRegex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(\/\d{1,2})?$/;
+      const match = ip.match(ipRegex);
+      
+      if (!match) return false;
+      
+      // Check that each octet is between 0 and 255
+      for (let i = 1; i <= 4; i++) {
+        const octet = parseInt(match[i]);
+        if (octet < 0 || octet > 255) return false;
+      }
+      
+      // Check CIDR notation if present
+      if (match[5]) {
+        const cidr = parseInt(match[5].substring(1));
+        if (cidr < 0 || cidr > 32) return false;
+      }
+      
+      return true;
+    }
+    
+    function validatePort(port) {
+      if (!port) return false;
+      
+      const portNum = parseInt(port);
+      return !isNaN(portNum) && portNum >= 1 && portNum <= 65535;
+    }
+    
+    function displayRules(rules) {
+      console.log('displayRules called with:', rules);
+      const table = document.getElementById('rulesTable');
+      const tbody = table.querySelector('tbody');
+      tbody.innerHTML = '';
+      
+      if (rules.length > 0) {
+        rules.forEach((rule, index) => {
+          const row = document.createElement('tr');
+          row.className = rule.isDuplicate ? 'duplicate-row' : '';
+          
+          row.innerHTML = `
+            <td>
+              <input type="text" value="${rule.sourceIP || ''}" 
+                onchange="updateRule(${index}, 'sourceIP', this.value)" 
+                placeholder="e.g., 192.168.1.0/24"
+                class="ip-field" />
+            </td>
+            <td>
+              <input type="text" value="${rule.destIP || ''}" 
+                onchange="updateRule(${index}, 'destIP', this.value)" 
+                placeholder="e.g., 10.0.0.1"
+                class="ip-field" />
+            </td>
+            <td>
+              <select onchange="updateRule(${index}, 'protocol', this.value)" class="protocol-field">
+                <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
+                <option value="UDP" ${rule.protocol === 'UDP' ? 'selected' : ''}>UDP</option>
+                <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
+              </select>
+            </td>
+            <td>
+              <input type="text" value="${rule.service || ''}" 
+                onchange="updateRule(${index}, 'service', this.value)" 
+                placeholder="Service name"
+                class="service-field" />
+            </td>
+            <td>
+              <input type="text" value="${rule.port || ''}" 
+                onchange="updateRule(${index}, 'port', this.value)" 
+                placeholder="e.g., 443"
+                class="port-field" />
+            </td>
+            <td>
+              <select onchange="updateRule(${index}, 'authentication', this.value)" class="select-field">
+                <option value="No" ${rule.authentication === 'No' ? 'selected' : ''}>No</option>
+                <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
+              </select>
+            </td>
+            <td>
+              <select onchange="updateRule(${index}, 'flowEncryption', this.value)" class="select-field">
+                <option value="No" ${rule.flowEncryption === 'No' ? 'selected' : ''}>No</option>
+                <option value="Yes" ${rule.flowEncryption === 'Yes' ? 'selected' : ''}>Yes</option>
+              </select>
+            </td>
+            <td>
+              <select onchange="updateRule(${index}, 'classification', this.value)" class="select-field">
+                <option value="Yellow" ${rule.classification === 'Yellow' ? 'selected' : ''}>Yellow</option>
+                <option value="Amber" ${rule.classification === 'Amber' ? 'selected' : ''}>Amber</option>
+                <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
+              </select>
+            </td>
+            <td>
+              <input type="text" value="${rule.appCode || ''}" 
+                onchange="updateRule(${index}, 'appCode', this.value)" 
+                placeholder="App code"
+                class="appcode-field" />
+            </td>
+            <td>
+              <div style="display: flex; gap: 5px; justify-content: flex-end;">
+                <button class="icon-btn add-btn" onclick="addNewLine()" title="Add new line">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#2ECC71" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 1v14M1 8h14"/>
+                  </svg>
+                </button>
+                <button class="duplicate-btn" onclick="duplicateRow(${index})" title="Duplicate row">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </button>
+                <button class="delete-row-btn" onclick="deleteRow(${index})" title="Delete row">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          `;
+          
+          tbody.appendChild(row);
+        });
+        
+        const duplicateButtons = tbody.querySelectorAll('.duplicate-btn');
+        duplicateButtons.forEach(btn => {
+          btn.addEventListener('click', function () {
+            const i = parseInt(this.getAttribute('data-index'));
+            duplicateRow(i);
+          });
+        });
+        
+        table.style.display = 'table';
+      } else {
+        table.style.display = 'none';
+      }
+    }
+    
+    function saveNES() {
+      const department = document.getElementById('department').value;
+      const projectCode = document.getElementById('projectCode').value;
+      const email = document.getElementById('email').value;
+      
+      if (!department || !projectCode || !email) {
+        alert('Please fill in all required fields (Department, Project Code, and Email)');
+        return;
+      }
+      
+      if (currentRules.length === 0) {
+        alert('No rules to save. Please add at least one rule.');
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler((response) => {
+          if (response.success) {
+            alert('NES saved successfully');
+          } else {
+            alert(response.message || 'Error saving NES');
+          }
+        })
+        .withFailureHandler((error) => {
+          console.error('Error saving NES:', error);
+          alert('Error saving NES');
+        })
+        .saveNES({
+          department,
+          projectCode,
+          email,
+          rules: currentRules
+        });
+    }
+    
+    function handleError(error) {
+      console.error('Error:', error);
+      alert('An error occurred: ' + error);
+    }
+
+    window.addEventListener('load', () => {
+      if (currentRules.length === 0) {
+        addNewLine();
+      }
+    });
   </script>
 </body>
 </html>
