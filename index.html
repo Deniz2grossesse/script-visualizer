@@ -834,15 +834,14 @@
           .join(',');
       }
 
-      // Regroupement avec clé incluant source et destination
+      // Regroupement automatique intelligent
       const grouped = {};
 
       currentRules.forEach(rule => {
-        // Normalisation des IPs pour la clé
         const normalizedSourceIP = normalizeIPs(rule.sourceIP);
         const normalizedDestIP = normalizeIPs(rule.destIP);
-        
-        // Clé de regroupement incluant les IPs source et destination
+
+        // Clé de regroupement incluant toutes les dimensions importantes
         const key = [
           normalizedSourceIP,
           normalizedDestIP,
@@ -858,20 +857,27 @@
         if (!grouped[key]) {
           grouped[key] = {
             ...rule,
-            sourceIP: normalizedSourceIP,
-            destIP: normalizedDestIP
+            sourceIPs: new Set(normalizedSourceIP ? normalizedSourceIP.split(',') : []),
+            destIPs: new Set(normalizedDestIP ? normalizedDestIP.split(',') : [])
           };
         } else {
-          // Si même clé exacte, on garde la première occurrence
-          // (pas de fusion d'IPs car elles sont déjà identiques)
-          console.log('Duplicate rule found and merged:', rule);
+          // Fusionne les IPs source et destination si la ligne est strictement identique
+          if (normalizedSourceIP) {
+            normalizedSourceIP.split(',').forEach(ip => grouped[key].sourceIPs.add(ip));
+          }
+          if (normalizedDestIP) {
+            normalizedDestIP.split(',').forEach(ip => grouped[key].destIPs.add(ip));
+          }
         }
       });
 
       // Reconstruction de currentRules à partir du regroupement
+      const originalLength = currentRules.length;
       currentRules = Object.values(grouped).map(group => {
         return {
           ...group,
+          sourceIP: Array.from(group.sourceIPs).filter(ip => ip).join(', '),
+          destIP: Array.from(group.destIPs).filter(ip => ip).join(', '),
           isValid: true,
           errors: [],
           isDuplicate: false
@@ -890,9 +896,9 @@
       if (!isValid) {
         alert('Errors:\n' + errors.join('\n'));
       } else {
-        const duplicatesRemoved = Object.keys(grouped).length < currentRules.length;
+        const duplicatesRemoved = originalLength > currentRules.length;
         if (duplicatesRemoved) {
-          alert('Vérification terminée. Doublons supprimés tout en préservant la directionnalité des flux.');
+          alert('Vérification terminée. Doublons supprimés et lignes fusionnées de manière intelligente.');
         } else {
           alert('Vérification terminée. Aucun doublon détecté.');
         }
