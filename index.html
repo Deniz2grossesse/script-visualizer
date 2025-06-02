@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,15 +11,16 @@
       padding: 20px;
       background: #212121;
       color: #fff;
+      min-width: 1400px;
     }
     
     .container {
-      max-width: 1200px;
+      width: 1400px;
       margin: 0 auto;
       padding: 30px;
       background: #1A1F2C;
       border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
     }
     
     h1 {
@@ -50,7 +50,7 @@
     
     .form-group {
       margin-bottom: 30px;
-      max-width: 25%;
+      width: 300px;
     }
     
     label {
@@ -71,13 +71,13 @@
     input[type="email"] {
       width: 100%;
       padding: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.15);
       background-color: #2B3E50;
       border-radius: 6px;
       color: #ffffff;
       font-size: 14px;
       box-sizing: border-box;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
     }
     
     input[type="text"]:focus,
@@ -85,6 +85,7 @@
       outline: none;
       border-color: #3498db;
       background-color: #34495E;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
     }
     
     ::placeholder {
@@ -114,7 +115,7 @@
       cursor: pointer;
       text-align: center;
       min-width: 40px;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
     }
     
     .btn-add {
@@ -136,6 +137,8 @@
     
     .btn-add:hover {
       background-color: #27AE60;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
     }
     
     .btn-import {
@@ -156,6 +159,8 @@
     
     .btn-import:hover {
       background-color: #D35400;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(230, 126, 34, 0.3);
     }
     
     .btn-delete {
@@ -168,6 +173,8 @@
     .btn-delete:hover {
       background-color: #ff4757;
       color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
     }
     
     .btn-resume {
@@ -180,6 +187,8 @@
     .btn-resume:hover {
       background-color: #666;
       color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 102, 102, 0.3);
     }
     
     .btn-verify {
@@ -192,6 +201,8 @@
     .btn-verify:hover {
       background-color: #3498db;
       color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
     }
     
     .btn-generate {
@@ -205,6 +216,8 @@
     
     .btn-generate:hover {
       background-color: #E67E22;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(240, 139, 50, 0.3);
     }
     
     .btn-generate::after {
@@ -231,6 +244,7 @@
       padding: 15px 30px;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       z-index: 1000;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
     }
     
     body {
@@ -241,103 +255,153 @@
       width: 100%;
       margin-top: 20px;
       border-collapse: collapse;
+      table-layout: fixed;
+      border: 2px solid #34495E;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     }
 
     .rules-table th,
     .rules-table td {
-      padding: 12px;
+      padding: 12px 8px;
       text-align: left;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       vertical-align: top;
     }
 
     .rules-table th {
-      background-color: #2B3E50;
+      background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
       color: #fff;
-      font-weight: 500;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #3498db;
     }
+
+    /* Largeurs fixes pour chaque colonne */
+    .rules-table th:nth-child(1),
+    .rules-table td:nth-child(1) { width: 180px; } /* Source IP */
+    
+    .rules-table th:nth-child(2),
+    .rules-table td:nth-child(2) { width: 180px; } /* IP Destination */
+    
+    .rules-table th:nth-child(3),
+    .rules-table td:nth-child(3) { width: 100px; } /* Protocol */
+    
+    .rules-table th:nth-child(4),
+    .rules-table td:nth-child(4) { width: 120px; } /* Service */
+    
+    .rules-table th:nth-child(5),
+    .rules-table td:nth-child(5) { width: 80px; } /* Port */
+    
+    .rules-table th:nth-child(6),
+    .rules-table td:nth-child(6) { width: 120px; } /* Authentication */
+    
+    .rules-table th:nth-child(7),
+    .rules-table td:nth-child(7) { width: 130px; } /* Flow Encryption */
+    
+    .rules-table th:nth-child(8),
+    .rules-table td:nth-child(8) { width: 120px; } /* Classification */
+    
+    .rules-table th:nth-child(9),
+    .rules-table td:nth-child(9) { width: 100px; } /* APP Code */
+    
+    .rules-table th:nth-child(10),
+    .rules-table td:nth-child(10) { width: 140px; } /* Manage ligne */
 
     .ip-field {
       width: 100%;
-      background-color: #34495E;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
+      background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%);
+      border: 2px solid rgba(52, 152, 219, 0.2);
+      border-radius: 6px;
       color: #fff;
-      padding: 8px;
+      padding: 10px;
       resize: none;
       overflow-y: hidden;
-      line-height: 1.4;
-      font-family: monospace;
-      min-height: 40px;
+      line-height: 1.5;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      min-height: 42px;
+      max-height: 150px;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .ip-field:focus {
+      outline: none;
+      border-color: #3498db;
+      background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1);
+      transform: scale(1.02);
+    }
+
+    .ip-field::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+      font-style: italic;
     }
     
-    .protocol-field {
-      width: 120px;
-    }
-    
-    .service-field {
-      width: 130px;
-    }
-    
-    .port-field {
-      width: 80px;
-    }
-    
-    .select-field {
-      width: 130px;
-    }
-    
-    .appcode-field {
-      width: 100px;
+    .rules-table tbody tr {
+      background-color: #1A1F2C;
+      transition: all 0.3s ease;
     }
 
     .rules-table tbody tr:hover {
-      background-color: rgba(52, 152, 219, 0.1);
+      background: linear-gradient(135deg, #2C3E50 0%, #1A1F2C 100%);
+      transform: scale(1.005);
+      box-shadow: 0 2px 8px rgba(52, 152, 219, 0.15);
     }
 
     .rules-table td input,
     .rules-table td select {
       width: 100%;
-      padding: 8px;
-      background-color: #34495E;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 10px;
+      background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%);
+      border: 2px solid rgba(255, 255, 255, 0.1);
       border-radius: 4px;
       color: #fff;
+      font-size: 12px;
+      transition: all 0.3s ease;
     }
 
     .rules-table td input:focus,
-    .rules-table td select:focus,
-    .ip-field:focus {
+    .rules-table td select:focus {
       outline: none;
       border-color: #3498db;
-      background-color: #2C3E50;
+      background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
     }
 
     .scripts-container {
       margin-top: 20px;
-      background-color: #2B3E50;
-      padding: 15px;
-      border-radius: 6px;
+      background: linear-gradient(135deg, #2B3E50 0%, #34495E 100%);
+      padding: 20px;
+      border-radius: 8px;
       display: none;
+      border: 2px solid #3498db;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     }
 
     .script-item {
-      background-color: #34495E;
-      padding: 15px;
+      background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%);
+      padding: 20px;
       margin-bottom: 15px;
-      border-radius: 4px;
+      border-radius: 6px;
       position: relative;
+      border: 1px solid rgba(52, 152, 219, 0.3);
     }
 
     .script-content {
       white-space: pre;
-      font-family: monospace;
+      font-family: 'Courier New', monospace;
       color: #fff;
-      background-color: #1A1F2C;
+      background: linear-gradient(135deg, #1A1F2C 0%, #2C3E50 100%);
       padding: 15px;
       border-radius: 4px;
       margin-bottom: 10px;
       overflow-x: auto;
+      border: 1px solid rgba(52, 152, 219, 0.2);
     }
 
     .script-actions {
@@ -348,22 +412,24 @@
     }
 
     .copy-btn {
-      background-color: #3498db;
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
       color: white;
       border: none;
       border-radius: 4px;
-      padding: 6px 12px;
+      padding: 8px 16px;
       cursor: pointer;
       font-size: 12px;
       display: flex;
       align-items: center;
       gap: 6px;
-      min-width: 80px;
+      width: 80px;
       justify-content: center;
+      transition: all 0.3s ease;
     }
 
     .copy-btn:hover {
-      background-color: #2980b9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
     }
 
     .copy-btn svg {
@@ -372,22 +438,24 @@
     }
 
     .delete-btn {
-      background-color: #e74c3c;
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
       color: white;
       border: none;
       border-radius: 4px;
-      padding: 6px 12px;
+      padding: 8px 16px;
       cursor: pointer;
       font-size: 12px;
       display: flex;
       align-items: center;
       gap: 6px;
-      min-width: 80px;
+      width: 80px;
       justify-content: center;
+      transition: all 0.3s ease;
     }
 
     .delete-btn:hover {
-      background-color: #c0392b;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
     }
 
     .delete-btn svg {
@@ -400,16 +468,19 @@
       border: none;
       color: #e74c3c;
       cursor: pointer;
-      padding: 4px;
+      padding: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      transition: all 0.3s ease;
     }
 
     .delete-row-btn:hover {
-      color: #c0392b;
+      background-color: rgba(231, 76, 60, 0.2);
+      transform: scale(1.1);
     }
 
     .delete-row-btn svg {
@@ -427,19 +498,23 @@
       background: none;
       border: none;
       border-radius: 4px;
-      padding: 4px;
+      padding: 6px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 28px;
+      height: 28px;
+      transition: all 0.3s ease;
+    }
+
+    .duplicate-btn:hover {
+      background-color: rgba(52, 152, 219, 0.2);
+      transform: scale(1.1);
     }
 
     .duplicate-btn svg {
       stroke: #3498db;
-    }
-
-    .duplicate-btn:hover svg {
-      stroke: #2980b9;
     }
 
     .trash-icon {
@@ -467,26 +542,30 @@
       color: #e74c3c;
       margin-top: 5px;
       font-size: 12px;
+      font-weight: 500;
     }
 
     .success-message {
       color: #2ecc71;
       margin-top: 5px;
       font-size: 12px;
+      font-weight: 500;
     }
 
     .loading-message {
       display: none;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.8);
       color: white;
-      padding: 20px;
-      border-radius: 5px;
+      padding: 30px;
+      border-radius: 8px;
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       z-index: 1000;
       text-align: center;
+      border: 2px solid #3498db;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
     }
 
     .loading-message.visible {
@@ -494,7 +573,7 @@
     }
 
     .btn-save {
-      background-color: #27ae60;
+      background: linear-gradient(135deg, #27ae60 0%, #219a52 100%);
       color: white;
       border: none;
       border-radius: 25px;
@@ -505,11 +584,12 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
     }
 
     .btn-save:hover {
-      background-color: #219a52;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
     }
 
     .btn-save svg {
@@ -518,34 +598,44 @@
     }
 
     .duplicate-row {
-      background-color: rgba(255, 0, 0, 0.1);
-      border: 2px solid #ff4d4d;
+      background: linear-gradient(135deg, rgba(255, 0, 0, 0.15) 0%, rgba(255, 0, 0, 0.1) 100%) !important;
+      border: 2px solid #ff4d4d !important;
+      animation: pulse-error 2s infinite;
+    }
+
+    @keyframes pulse-error {
+      0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
     }
 
     .icon-btn {
       background: none;
       border: none;
       cursor: pointer;
-      padding: 4px;
+      padding: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .add-btn:hover {
+      background-color: rgba(46, 204, 113, 0.2);
+      transform: scale(1.1);
     }
 
     .add-btn svg {
       stroke: #2ECC71;
-    }
-    .add-btn:hover svg {
-      stroke: #27AE60;
+      stroke-width: 2.5;
     }
 
     .duplicate-btn svg {
       stroke: #3498db;
-    }
-    .duplicate-btn:hover svg {
-      stroke: #2980b9;
+      stroke-width: 2;
     }
   </style>
 </head>
@@ -666,7 +756,8 @@
 
     function autoResize(textarea) {
       textarea.style.height = 'auto';
-      textarea.style.height = textarea.scrollHeight + 'px';
+      const newHeight = Math.min(Math.max(textarea.scrollHeight, 42), 150);
+      textarea.style.height = newHeight + 'px';
     }
 
     function showLoading() {
@@ -738,13 +829,12 @@
     function calculateRowsForIPs(ipString) {
       if (!ipString) return 1;
       const ips = ipString.split(',').filter(ip => ip.trim());
-      return Math.max(1, ips.length);
+      return Math.max(1, Math.min(ips.length, 6));
     }
 
     function updateRule(index, field, value) {
       console.log('updateRule called', { index, field, value });
       
-      // Convert textarea newlines to comma-separated for IP fields
       if (field === 'sourceIP' || field === 'destIP') {
         value = formatIPsForStorage(value);
       }
@@ -1100,20 +1190,22 @@
               <textarea 
                 rows="${sourceIPRows}"
                 oninput="autoResize(this); updateRule(${index}, 'sourceIP', this.value)" 
-                placeholder="e.g., 192.168.1.0/24"
+                placeholder="192.168.1.0/24"
                 class="ip-field"
+                title="Enter IP addresses, one per line"
               >${formatIPsForDisplay(rule.sourceIP || '')}</textarea>
             </td>
             <td>
               <textarea 
                 rows="${destIPRows}"
                 oninput="autoResize(this); updateRule(${index}, 'destIP', this.value)" 
-                placeholder="e.g., 10.0.0.1"
+                placeholder="10.0.0.1"
                 class="ip-field"
+                title="Enter IP addresses, one per line"
               >${formatIPsForDisplay(rule.destIP || '')}</textarea>
             </td>
             <td>
-              <select onchange="updateRule(${index}, 'protocol', this.value)" class="protocol-field">
+              <select onchange="updateRule(${index}, 'protocol', this.value)">
                 <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
                 <option value="UDP" ${rule.protocol === 'UDP' ? 'selected' : ''}>UDP</option>
                 <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
@@ -1122,29 +1214,27 @@
             <td>
               <input type="text" value="${rule.service || ''}" 
                 onchange="updateRule(${index}, 'service', this.value)" 
-                placeholder="Service name"
-                class="service-field" />
+                placeholder="Service" />
             </td>
             <td>
               <input type="text" value="${rule.port || ''}" 
                 onchange="updateRule(${index}, 'port', this.value)" 
-                placeholder="e.g., 443"
-                class="port-field" />
+                placeholder="443" />
             </td>
             <td>
-              <select onchange="updateRule(${index}, 'authentication', this.value)" class="select-field">
+              <select onchange="updateRule(${index}, 'authentication', this.value)">
                 <option value="No" ${rule.authentication === 'No' ? 'selected' : ''}>No</option>
                 <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
               </select>
             </td>
             <td>
-              <select onchange="updateRule(${index}, 'flowEncryption', this.value)" class="select-field">
+              <select onchange="updateRule(${index}, 'flowEncryption', this.value)">
                 <option value="No" ${rule.flowEncryption === 'No' ? 'selected' : ''}>No</option>
                 <option value="Yes" ${rule.flowEncryption === 'Yes' ? 'selected' : ''}>Yes</option>
               </select>
             </td>
             <td>
-              <select onchange="updateRule(${index}, 'classification', this.value)" class="select-field">
+              <select onchange="updateRule(${index}, 'classification', this.value)">
                 <option value="Yellow" ${rule.classification === 'Yellow' ? 'selected' : ''}>Yellow</option>
                 <option value="Amber" ${rule.classification === 'Amber' ? 'selected' : ''}>Amber</option>
                 <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
@@ -1153,13 +1243,12 @@
             <td>
               <input type="text" value="${rule.appCode || ''}" 
                 onchange="updateRule(${index}, 'appCode', this.value)" 
-                placeholder="App code"
-                class="appcode-field" />
+                placeholder="Code" />
             </td>
             <td>
-              <div style="display: flex; gap: 5px; justify-content: flex-end;">
+              <div style="display: flex; gap: 4px; justify-content: flex-end;">
                 <button class="icon-btn add-btn" onclick="addNewLine()" title="Add new line">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#2ECC71" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#2ECC71" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M8 1v14M1 8h14"/>
                   </svg>
                 </button>
@@ -1185,7 +1274,6 @@
         
         table.style.display = 'table';
         
-        // Auto-resize all textareas after rendering
         setTimeout(() => {
           document.querySelectorAll('.ip-field').forEach(textarea => {
             autoResize(textarea);
