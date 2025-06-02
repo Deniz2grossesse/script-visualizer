@@ -16,9 +16,38 @@ function addRule() {
   refreshRulesDisplay();
 }
 
+function detectDuplicateRows() {
+  const duplicateIndices = new Set();
+  
+  for (let i = 0; i < rules.length; i++) {
+    for (let j = i + 1; j < rules.length; j++) {
+      const rule1 = rules[i];
+      const rule2 = rules[j];
+      
+      // Compare all fields for strict equality
+      if (rule1.sourceIP === rule2.sourceIP &&
+          rule1.destIP === rule2.destIP &&
+          rule1.protocol === rule2.protocol &&
+          rule1.service === rule2.service &&
+          rule1.port === rule2.port &&
+          rule1.authentication === rule2.authentication &&
+          rule1.encryption === rule2.encryption &&
+          rule1.classification === rule2.classification) {
+        duplicateIndices.add(i);
+        duplicateIndices.add(j);
+      }
+    }
+  }
+  
+  return duplicateIndices;
+}
+
 function createRuleElement(rule, index) {
+  const duplicateIndices = detectDuplicateRows();
+  const isDuplicate = duplicateIndices.has(index);
+  
   const ruleDiv = document.createElement('div');
-  ruleDiv.className = 'rule';
+  ruleDiv.className = `rule ${isDuplicate ? 'duplicate-row' : ''}`;
   ruleDiv.innerHTML = `
     <div class="form-group">
       <label>Source IP</label>
@@ -59,6 +88,7 @@ function createRuleElement(rule, index) {
         </svg>
       </button>
     </div>
+    ${isDuplicate ? '<div class="duplicate-warning">⚠️ Ligne dupliquée détectée</div>' : ''}
   `;
   return ruleDiv;
 }
@@ -69,10 +99,19 @@ function refreshRulesDisplay() {
   rules.forEach((rule, index) => {
     container.appendChild(createRuleElement(rule, index));
   });
+  
+  // Show duplicate count if any
+  const duplicateIndices = detectDuplicateRows();
+  if (duplicateIndices.size > 0) {
+    const duplicateCount = duplicateIndices.size;
+    console.log(`${duplicateCount} lignes dupliquées détectées`);
+  }
 }
 
 function updateRule(index, field, value) {
   rules[index][field] = value;
+  // Refresh display to update duplicate detection in real-time
+  refreshRulesDisplay();
 }
 
 function duplicateRow(index) {
@@ -234,3 +273,5 @@ function deleteRules() {
 // Ajouter une première règle au chargement
 window.onload = addRule;
 </script>
+
+</initial_code>
