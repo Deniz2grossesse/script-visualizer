@@ -1,3 +1,4 @@
+
 <script>
 let rules = [];
 
@@ -14,6 +15,26 @@ function addRule() {
   };
   rules.push(rule);
   refreshRulesDisplay();
+}
+
+function calculateTextareaHeight(value) {
+  if (!value || value.trim() === '') return 1;
+  
+  // Count IPs by splitting on commas and filtering out empty strings
+  const ips = value.split(',').filter(ip => ip.trim() !== '');
+  return Math.max(1, ips.length);
+}
+
+function formatIPsForDisplay(value) {
+  if (!value) return '';
+  // Replace commas with newlines for display
+  return value.split(',').map(ip => ip.trim()).join('\n');
+}
+
+function formatIPsForStorage(value) {
+  if (!value) return '';
+  // Replace newlines with commas for storage
+  return value.split('\n').map(ip => ip.trim()).filter(ip => ip !== '').join(',');
 }
 
 function detectDuplicateRows() {
@@ -46,16 +67,29 @@ function createRuleElement(rule, index) {
   const duplicateIndices = detectDuplicateRows();
   const isDuplicate = duplicateIndices.has(index);
   
+  const sourceIPHeight = calculateTextareaHeight(rule.sourceIP);
+  const destIPHeight = calculateTextareaHeight(rule.destIP);
+  
   const ruleDiv = document.createElement('div');
   ruleDiv.className = `rule ${isDuplicate ? 'duplicate-row' : ''}`;
   ruleDiv.innerHTML = `
     <div class="form-group">
       <label>Source IP</label>
-      <input type="text" value="${rule.sourceIP}" onchange="updateRule(${index}, 'sourceIP', this.value)">
+      <textarea 
+        class="ip-textarea" 
+        rows="${sourceIPHeight}" 
+        onchange="updateRule(${index}, 'sourceIP', formatIPsForStorage(this.value))"
+        oninput="adjustTextareaHeight(this, ${index}, 'sourceIP')"
+      >${formatIPsForDisplay(rule.sourceIP)}</textarea>
     </div>
     <div class="form-group">
       <label>Destination IP</label>
-      <input type="text" value="${rule.destIP}" onchange="updateRule(${index}, 'destIP', this.value)">
+      <textarea 
+        class="ip-textarea" 
+        rows="${destIPHeight}" 
+        onchange="updateRule(${index}, 'destIP', formatIPsForStorage(this.value))"
+        oninput="adjustTextareaHeight(this, ${index}, 'destIP')"
+      >${formatIPsForDisplay(rule.destIP)}</textarea>
     </div>
     <div class="form-group">
       <label>Protocol</label>
@@ -91,6 +125,12 @@ function createRuleElement(rule, index) {
     ${isDuplicate ? '<div class="duplicate-warning">⚠️ Ligne dupliquée détectée</div>' : ''}
   `;
   return ruleDiv;
+}
+
+function adjustTextareaHeight(textarea, index, field) {
+  const value = textarea.value;
+  const newHeight = calculateTextareaHeight(formatIPsForStorage(value));
+  textarea.rows = newHeight;
 }
 
 function refreshRulesDisplay() {
@@ -273,5 +313,3 @@ function deleteRules() {
 // Ajouter une première règle au chargement
 window.onload = addRule;
 </script>
-
-</initial_code>

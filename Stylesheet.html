@@ -59,7 +59,8 @@
   input[type="text"],
   input[type="email"],
   input[type="number"],
-  select {
+  select,
+  .ip-textarea {
     width: 100%;
     padding: 12px;
     border: 1px solid #456789;
@@ -68,14 +69,23 @@
     background: #3A5875;
     color: #ECF0F1;
     transition: border-color 0.3s ease;
+    resize: none;
   }
 
-  input::placeholder {
+  .ip-textarea {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.4;
+    min-height: 44px;
+  }
+
+  input::placeholder,
+  .ip-textarea::placeholder {
     color: #8FA3B5;
   }
 
   input:focus,
-  select:focus {
+  select:focus,
+  .ip-textarea:focus {
     outline: none;
     border-color: #3498DB;
     box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
