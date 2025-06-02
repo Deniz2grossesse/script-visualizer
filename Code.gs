@@ -1,4 +1,3 @@
-
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -202,51 +201,6 @@ function generateScripts(options) {
     return {
       success: false,
       message: "Erreur lors de la génération des scripts: " + e.toString()
-    };
-  }
-}
-
-// Function to save the form as a draft
-function saveDraft(formData) {
-  try {
-    console.log("saveDraft called with data:", JSON.stringify(formData));
-    userDraft = formData;
-    
-    return {
-      success: true,
-      message: "Brouillon sauvegardé avec succès"
-    };
-  } catch (e) {
-    console.error("Erreur saveDraft:", e.toString());
-    return {
-      success: false,
-      message: "Erreur lors de la sauvegarde: " + e.toString()
-    };
-  }
-}
-
-// Function to retrieve the saved draft
-function getDraft() {
-  try {
-    console.log("getDraft called");
-    
-    if (!userDraft) {
-      return {
-        success: false,
-        message: "Aucun brouillon trouvé"
-      };
-    }
-    
-    return {
-      success: true,
-      data: userDraft,
-      message: "Brouillon récupéré avec succès"
-    };
-  } catch (e) {
-    console.error("Erreur getDraft:", e.toString());
-    return {
-      success: false,
-      message: "Erreur lors de la récupération: " + e.toString()
     };
   }
 }
