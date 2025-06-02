@@ -823,11 +823,29 @@
         rule.errors = validation.errors;
       });
 
-      // Regroupement
+      // Fonction pour normaliser les IPs (tri et nettoyage)
+      function normalizeIPs(ipString) {
+        if (!ipString) return '';
+        return ipString
+          .split(',')
+          .map(ip => ip.trim())
+          .filter(ip => ip)
+          .sort()
+          .join(',');
+      }
+
+      // Regroupement avec clé incluant source et destination
       const grouped = {};
 
       currentRules.forEach(rule => {
+        // Normalisation des IPs pour la clé
+        const normalizedSourceIP = normalizeIPs(rule.sourceIP);
+        const normalizedDestIP = normalizeIPs(rule.destIP);
+        
+        // Clé de regroupement incluant les IPs source et destination
         const key = [
+          normalizedSourceIP,
+          normalizedDestIP,
           rule.protocol,
           rule.service,
           rule.port,
@@ -840,20 +858,13 @@
         if (!grouped[key]) {
           grouped[key] = {
             ...rule,
-            sourceIP: new Set(rule.sourceIP ? rule.sourceIP.split(',').map(s => s.trim()) : []),
-            destIP: new Set(rule.destIP ? rule.destIP.split(',').map(s => s.trim()) : [])
+            sourceIP: normalizedSourceIP,
+            destIP: normalizedDestIP
           };
         } else {
-          if (rule.sourceIP) {
-            rule.sourceIP.split(',').forEach(ip => {
-              if (ip.trim()) grouped[key].sourceIP.add(ip.trim());
-            });
-          }
-          if (rule.destIP) {
-            rule.destIP.split(',').forEach(ip => {
-              if (ip.trim()) grouped[key].destIP.add(ip.trim());
-            });
-          }
+          // Si même clé exacte, on garde la première occurrence
+          // (pas de fusion d'IPs car elles sont déjà identiques)
+          console.log('Duplicate rule found and merged:', rule);
         }
       });
 
@@ -861,8 +872,6 @@
       currentRules = Object.values(grouped).map(group => {
         return {
           ...group,
-          sourceIP: Array.from(group.sourceIP).filter(ip => ip).join(', '),
-          destIP: Array.from(group.destIP).filter(ip => ip).join(', '),
           isValid: true,
           errors: [],
           isDuplicate: false
@@ -881,7 +890,12 @@
       if (!isValid) {
         alert('Errors:\n' + errors.join('\n'));
       } else {
-        alert('Vérification terminée. Lignes fusionnées et validées.');
+        const duplicatesRemoved = Object.keys(grouped).length < currentRules.length;
+        if (duplicatesRemoved) {
+          alert('Vérification terminée. Doublons supprimés tout en préservant la directionnalité des flux.');
+        } else {
+          alert('Vérification terminée. Aucun doublon détecté.');
+        }
       }
     }
     
