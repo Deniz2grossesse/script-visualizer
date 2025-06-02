@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -254,20 +255,24 @@
     .rules-table {
       width: 100%;
       margin-top: 20px;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 8px;
       table-layout: fixed;
       border: 2px solid #34495E;
       border-radius: 8px;
       overflow: hidden;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      background: #34495E;
     }
 
     .rules-table th,
     .rules-table td {
-      padding: 12px 8px;
+      padding: 20px 16px;
       text-align: left;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border: none;
       vertical-align: top;
+      background: #1A1F2C;
+      border-radius: 6px;
     }
 
     .rules-table th {
@@ -277,39 +282,39 @@
       font-size: 13px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      border-bottom: 2px solid #3498db;
+      border: none;
     }
 
-    /* Largeurs fixes pour chaque colonne */
+    /* Largeurs fixes pour chaque colonne avec plus d'espace */
     .rules-table th:nth-child(1),
-    .rules-table td:nth-child(1) { width: 180px; } /* Source IP */
+    .rules-table td:nth-child(1) { width: 200px; } /* Source IP - augmenté */
     
     .rules-table th:nth-child(2),
-    .rules-table td:nth-child(2) { width: 180px; } /* IP Destination */
+    .rules-table td:nth-child(2) { width: 200px; } /* IP Destination - augmenté */
     
     .rules-table th:nth-child(3),
-    .rules-table td:nth-child(3) { width: 100px; } /* Protocol */
+    .rules-table td:nth-child(3) { width: 120px; } /* Protocol - augmenté */
     
     .rules-table th:nth-child(4),
-    .rules-table td:nth-child(4) { width: 120px; } /* Service */
+    .rules-table td:nth-child(4) { width: 140px; } /* Service - augmenté */
     
     .rules-table th:nth-child(5),
-    .rules-table td:nth-child(5) { width: 80px; } /* Port */
+    .rules-table td:nth-child(5) { width: 100px; } /* Port - augmenté */
     
     .rules-table th:nth-child(6),
-    .rules-table td:nth-child(6) { width: 120px; } /* Authentication */
+    .rules-table td:nth-child(6) { width: 140px; } /* Authentication - augmenté */
     
     .rules-table th:nth-child(7),
-    .rules-table td:nth-child(7) { width: 130px; } /* Flow Encryption */
+    .rules-table td:nth-child(7) { width: 150px; } /* Flow Encryption - augmenté */
     
     .rules-table th:nth-child(8),
-    .rules-table td:nth-child(8) { width: 120px; } /* Classification */
+    .rules-table td:nth-child(8) { width: 140px; } /* Classification - augmenté */
     
     .rules-table th:nth-child(9),
-    .rules-table td:nth-child(9) { width: 100px; } /* APP Code */
+    .rules-table td:nth-child(9) { width: 120px; } /* APP Code - augmenté */
     
     .rules-table th:nth-child(10),
-    .rules-table td:nth-child(10) { width: 140px; } /* Manage ligne */
+    .rules-table td:nth-child(10) { width: 160px; } /* Manage ligne - augmenté */
 
     .ip-field {
       width: 100%;
@@ -317,14 +322,13 @@
       border: 2px solid rgba(52, 152, 219, 0.2);
       border-radius: 6px;
       color: #fff;
-      padding: 10px;
+      padding: 16px;
       resize: none;
-      overflow-y: hidden;
-      line-height: 1.5;
+      overflow-y: auto;
+      line-height: 1.6;
       font-family: 'Courier New', monospace;
       font-size: 12px;
-      min-height: 42px;
-      max-height: 150px;
+      min-height: 60px;
       transition: all 0.3s ease;
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
     }
@@ -334,7 +338,6 @@
       border-color: #3498db;
       background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
       box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1);
-      transform: scale(1.02);
     }
 
     .ip-field::placeholder {
@@ -343,26 +346,26 @@
     }
     
     .rules-table tbody tr {
-      background-color: #1A1F2C;
+      background-color: transparent;
       transition: all 0.3s ease;
     }
 
-    .rules-table tbody tr:hover {
+    .rules-table tbody tr:hover td {
       background: linear-gradient(135deg, #2C3E50 0%, #1A1F2C 100%);
-      transform: scale(1.005);
       box-shadow: 0 2px 8px rgba(52, 152, 219, 0.15);
     }
 
     .rules-table td input,
     .rules-table td select {
       width: 100%;
-      padding: 8px 10px;
+      padding: 14px 16px;
       background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%);
       border: 2px solid rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
+      border-radius: 6px;
       color: #fff;
-      font-size: 12px;
+      font-size: 13px;
       transition: all 0.3s ease;
+      margin: 0;
     }
 
     .rules-table td input:focus,
@@ -468,19 +471,18 @@
       border: none;
       color: #e74c3c;
       cursor: pointer;
-      padding: 6px;
+      padding: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 4px;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
       transition: all 0.3s ease;
     }
 
     .delete-row-btn:hover {
       background-color: rgba(231, 76, 60, 0.2);
-      transform: scale(1.1);
     }
 
     .delete-row-btn svg {
@@ -497,20 +499,19 @@
     .duplicate-btn {
       background: none;
       border: none;
-      border-radius: 4px;
-      padding: 6px;
+      border-radius: 6px;
+      padding: 8px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       transition: all 0.3s ease;
     }
 
     .duplicate-btn:hover {
       background-color: rgba(52, 152, 219, 0.2);
-      transform: scale(1.1);
     }
 
     .duplicate-btn svg {
@@ -613,19 +614,18 @@
       background: none;
       border: none;
       cursor: pointer;
-      padding: 6px;
+      padding: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 4px;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
       transition: all 0.3s ease;
     }
 
     .add-btn:hover {
       background-color: rgba(46, 204, 113, 0.2);
-      transform: scale(1.1);
     }
 
     .add-btn svg {
