@@ -1,8 +1,9 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Network, Shield, ArrowRight, Plus, Lock, FileCode, AlertTriangle, Check, X, Upload, Trash2, Copy, CopyPlus } from "lucide-react";
+import { ArrowRight, Plus, FileCode, AlertTriangle, Check, X, Upload, Trash2, Copy } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface FieldError {
@@ -12,10 +13,6 @@ interface FieldError {
 
 interface FormErrors {
   email: FieldError;
-  sourceIP: FieldError;
-  destIP: FieldError;
-  service: FieldError;
-  port: FieldError;
   department: FieldError;
   projectCode: FieldError;
 }
@@ -40,19 +37,17 @@ const Index = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [generatedScripts, setGeneratedScripts] = useState<{ id: number; script: string }[]>([]);
   const [csvRows, setCsvRows] = useState<CSVRow[]>([]);
-  const [currentRow, setCurrentRow] = useState(1);
   
   // États pour les métadonnées
   const [department, setDepartment] = useState('');
   const [projectCode, setProjectCode] = useState('');
   const [email, setEmail] = useState('');
   
+  // Flag pour vérifier qu'un fichier XLSX a été importé
+  const [dataHasBeenImported, setDataHasBeenImported] = useState(false);
+  
   const [errors, setErrors] = useState<FormErrors>({
     email: { error: false, message: '' },
-    sourceIP: { error: false, message: '' },
-    destIP: { error: false, message: '' },
-    service: { error: false, message: '' },
-    port: { error: false, message: '' },
     department: { error: false, message: '' },
     projectCode: { error: false, message: '' },
   });
@@ -173,6 +168,7 @@ const Index = () => {
         .withSuccessHandler((response) => {
           if (response.success) {
             setCsvRows(response.data);
+            setDataHasBeenImported(true); // Activer le flag d'import
             // Mettre à jour les métadonnées depuis la réponse
             setDepartment(response.department || '');
             setProjectCode(response.projectCode || '');
@@ -266,23 +262,15 @@ const Index = () => {
     setCsvRows(newRows);
   };
 
-  const generateScriptForRow = (row: CSVRow, rowIndex: number): string => {
-    console.log('generateScriptForRow called for row:', rowIndex);
-    return `curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
-  -H "Authorization: Bearer <TON_TOKEN>" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "source": {
-      "ip": "${row.sourceIP.split('/')[0]}"
-    },
-    "destination": {
-      "ip": "${row.destIP}"
-    },
-    "service": {
-      "protocol": "${row.protocol.toUpperCase()}",
-      "port": ${row.port}
-    }
-  }'`;
+  const handleDeleteAll = () => {
+    console.log('handleDeleteAll called');
+    setCsvRows([]);
+    setGeneratedScripts([]);
+    setDataHasBeenImported(false);
+    toast({
+      title: "Données supprimées",
+      description: "Toutes les données ont été supprimées avec succès."
+    });
   };
 
   const handleGenerateScript = () => {
@@ -336,6 +324,16 @@ const Index = () => {
 
   const handleSaveNES = () => {
     console.log('handleSaveNES called - validating fields and data');
+    
+    // Vérifier qu'un fichier XLSX a été importé
+    if (!dataHasBeenImported) {
+      toast({
+        variant: "destructive",
+        title: "Import requis",
+        description: "Veuillez d'abord importer un fichier XLSX avant de sauvegarder."
+      });
+      return;
+    }
     
     // Validation des champs obligatoires
     const isDepartmentValid = validateDepartment(department);
@@ -662,6 +660,7 @@ const Index = () => {
 
         <div className="flex flex-wrap justify-end gap-3">
           <Button 
+            onClick={handleDeleteAll}
             variant="outline" 
             className="text-[#E74C3C] hover:bg-[#E74C3C]/20 border-[#E74C3C] transition-colors"
           >
@@ -716,6 +715,14 @@ const Index = () => {
                         Copy
                       </Button>
                       <Button 
+                        onClick={() => {
+                          const newScripts = generatedScripts.filter(s => s.id !== id);
+                          setGeneratedScripts(newScripts);
+                          toast({
+                            title: "Script supprimé",
+                            description: "Le script a été supprimé avec succès."
+                          });
+                        }}
                         size="sm"
                         className="bg-red-500 hover:bg-red-600 text-white flex items-center gap-1.5"
                       >

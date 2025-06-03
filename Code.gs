@@ -8,9 +8,29 @@ function doGet() {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-// Global variables to store header lines and raw XLSX content
-var headerLinesCache = [];
-var userDraft = null;   // To store the draft for a user
+// Functions to manage header lines cache with PropertiesService
+function setHeaderLinesCache(headerLines) {
+  try {
+    const props = PropertiesService.getUserProperties();
+    props.setProperty("headerLinesCache", JSON.stringify(headerLines));
+    console.log("Header lines cached successfully:", headerLines.length, "lines");
+  } catch (e) {
+    console.error("Error caching header lines:", e.toString());
+  }
+}
+
+function getHeaderLinesCache() {
+  try {
+    const props = PropertiesService.getUserProperties();
+    const json = props.getProperty("headerLinesCache");
+    const result = json ? JSON.parse(json) : [];
+    console.log("Retrieved header lines from cache:", result.length, "lines");
+    return result;
+  } catch (e) {
+    console.error("Error retrieving header lines from cache:", e.toString());
+    return [];
+  }
+}
 
 // Function to sanitize data for JSON serialization
 function sanitizeData(data) {
@@ -97,8 +117,9 @@ function importXLSX(base64Data, fileName) {
     console.log("Extracted projectCode:", projectCode);
     console.log("Extracted requesterEmail:", requesterEmail);
 
-    // Sauvegarder les 11 premières lignes (sanitized)
-    headerLinesCache = sanitizedData.slice(0, 11);
+    // Sauvegarder les 11 premières lignes avec PropertiesService
+    const headerLines = sanitizedData.slice(0, 11);
+    setHeaderLinesCache(headerLines);
     
     // Compteurs pour les lignes valides et ignorées
     var validRows = 0;
@@ -185,7 +206,7 @@ function importXLSX(base64Data, fileName) {
     return { 
       success: true, 
       data: processedData,
-      headerLines: headerLinesCache,
+      headerLines: headerLines,
       message: validRows + " lignes valides importées, " + skippedRows + " lignes ignorées (champs manquants ou colonnes A-L vides)",
       department: department,
       projectCode: projectCode,
@@ -197,60 +218,6 @@ function importXLSX(base64Data, fileName) {
       success: false, 
       message: "Erreur lors de l'import XLSX: " + e.toString() 
     };
-  }
-}
-
-// Function to export XLSX with header lines and modified data (remplace exportCSV)
-function exportXLSX(modifiedLines) {
-  try {
-    console.log("Début export XLSX avec", modifiedLines.length, "lignes modifiées");
-    
-    // Créer un nouveau Spreadsheet
-    const spreadsheet = SpreadsheetApp.create('Export_NES_' + new Date().getTime());
-    const sheet = spreadsheet.getActiveSheet();
-    
-    console.log("XLSX Header Lines (originales, non modifiées):", JSON.stringify(headerLinesCache));
-    
-    // Ajouter les 11 lignes d'en-tête
-    for (let i = 0; i < headerLinesCache.length; i++) {
-      sheet.getRange(i + 1, 1, 1, headerLinesCache[i].length).setValues([headerLinesCache[i]]);
-    }
-    
-    // Ajouter les données modifiées à partir de la ligne 12
-    let rowIndex = 12;
-    
-    modifiedLines.forEach(rule => {
-      // Handle multiple IPs by splitting and creating separate rows for each combination
-      const sourceIPs = rule.sourceIP.split('\n').filter(ip => ip.trim());
-      const destIPs = rule.destIP.split('\n').filter(ip => ip.trim());
-      
-      sourceIPs.forEach(srcIP => {
-        destIPs.forEach(dstIP => {
-          const rowData = [
-            '', '', '', srcIP.trim(), '', '', dstIP.trim(), rule.protocol,
-            rule.service, rule.port, rule.authentication, rule.flowEncryption,
-            rule.classification, rule.appCode
-          ];
-          
-          sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
-          rowIndex++;
-        });
-      });
-    });
-    
-    console.log("XLSX Data exportée (11 premières lignes + lignes modifiées):", 
-                "Nombre total de lignes: " + rowIndex,
-                "Premières lignes: " + JSON.stringify(headerLinesCache.slice(0, 3)));
-    
-    // Export XLSX et nettoyage
-    const spreadsheetId = spreadsheet.getId();
-    const blob = DriveApp.getFileById(spreadsheetId).getBlob();
-    DriveApp.getFileById(spreadsheetId).setTrashed(true);
-    
-    return blob;
-  } catch (e) {
-    console.error('Erreur exportXLSX:', e.toString());
-    throw new Error('Erreur lors de la génération XLSX: ' + e.toString());
   }
 }
 
@@ -309,26 +276,6 @@ function generateScripts(options) {
   }
 }
 
-// Function to delete the form data
-function deleteForm() {
-  try {
-    console.log("deleteForm called");
-    headerLinesCache = [];
-    userDraft = null;
-    
-    return {
-      success: true,
-      message: "Formulaire supprimé avec succès"
-    };
-  } catch (e) {
-    console.error("Erreur deleteForm:", e.toString());
-    return {
-      success: false,
-      message: "Erreur lors de la suppression: " + e.toString()
-    };
-  }
-}
-
 // Function to save the Network Equipment Sheet and return Google Sheets URL
 function saveNES(formData) {
   try {
@@ -341,6 +288,17 @@ function saveNES(formData) {
       };
     }
     
+    // Récupérer les en-têtes depuis PropertiesService
+    const headerLines = getHeaderLinesCache();
+    
+    if (!headerLines || headerLines.length < 11) {
+      console.log("⚠️ En-têtes manquants ou insuffisants dans le cache");
+      return {
+        success: false,
+        message: "En-têtes manquants. Veuillez d'abord importer un fichier XLSX."
+      };
+    }
+    
     // Créer un nouveau Spreadsheet complètement vide
     const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
     const spreadsheet = SpreadsheetApp.create(`NES_${formData.department}_${formData.projectCode}_${timestamp}`);
@@ -348,21 +306,13 @@ function saveNES(formData) {
     
     console.log("✅ Nouveau Spreadsheet créé - ID:", spreadsheet.getId());
     
-    // Ajouter les 11 lignes d'en-tête depuis headerLinesCache
-    if (headerLinesCache && headerLinesCache.length >= 11) {
-      for (let i = 0; i < 11; i++) {
-        if (headerLinesCache[i] && headerLinesCache[i].length > 0) {
-          sheet.getRange(i + 1, 1, 1, headerLinesCache[i].length).setValues([headerLinesCache[i]]);
-        }
+    // Ajouter les 11 lignes d'en-tête depuis le cache
+    for (let i = 0; i < 11; i++) {
+      if (headerLines[i] && headerLines[i].length > 0) {
+        sheet.getRange(i + 1, 1, 1, headerLines[i].length).setValues([headerLines[i]]);
       }
-      console.log("✅ 11 lignes d'en-tête ajoutées");
-    } else {
-      console.log("⚠️ headerLinesCache manquant ou insuffisant");
-      return {
-        success: false,
-        message: "En-têtes manquants. Veuillez d'abord importer un fichier XLSX."
-      };
     }
+    console.log("✅ 11 lignes d'en-tête ajoutées depuis le cache");
     
     // Mettre à jour les métadonnées dans les en-têtes
     sheet.getRange(5, 3).setValue(formData.department);  // C5
