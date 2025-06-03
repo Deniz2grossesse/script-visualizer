@@ -1,3 +1,4 @@
+
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -340,33 +341,41 @@ function saveNES(formData) {
       };
     }
     
-    // Créer d'abord le fichier XLSX temporaire avec les headers originaux
-    const xlsxBlob = exportXLSX([]);  // Export vide pour avoir juste les headers
-    
-    // Créer un nouveau Spreadsheet à partir du XLSX (pour conserver le formatage)
+    // Créer un nouveau Spreadsheet complètement vide
     const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
-    const convertedFile = Drive.Files.insert({
-      title: `NES_${formData.department}_${formData.projectCode}_${timestamp}`,
-      mimeType: 'application/vnd.google-apps.spreadsheet'
-    }, xlsxBlob);
-    
-    const spreadsheetId = convertedFile.id;
-    const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    const spreadsheet = SpreadsheetApp.create(`NES_${formData.department}_${formData.projectCode}_${timestamp}`);
     const sheet = spreadsheet.getActiveSheet();
     
-    // Mettre à jour les informations dans les headers (lignes 5 et 6)
+    console.log("✅ Nouveau Spreadsheet créé - ID:", spreadsheet.getId());
+    
+    // Ajouter les 11 lignes d'en-tête depuis headerLinesCache
+    if (headerLinesCache && headerLinesCache.length >= 11) {
+      for (let i = 0; i < 11; i++) {
+        if (headerLinesCache[i] && headerLinesCache[i].length > 0) {
+          sheet.getRange(i + 1, 1, 1, headerLinesCache[i].length).setValues([headerLinesCache[i]]);
+        }
+      }
+      console.log("✅ 11 lignes d'en-tête ajoutées");
+    } else {
+      console.log("⚠️ headerLinesCache manquant ou insuffisant");
+      return {
+        success: false,
+        message: "En-têtes manquants. Veuillez d'abord importer un fichier XLSX."
+      };
+    }
+    
+    // Mettre à jour les métadonnées dans les en-têtes
     sheet.getRange(5, 3).setValue(formData.department);  // C5
     sheet.getRange(5, 10).setValue(formData.projectCode); // J5
     sheet.getRange(6, 10).setValue(formData.email);       // J6
     
-    // Effacer tout à partir de la ligne 12
-    const lastRow = sheet.getLastRow();
-    if (lastRow > 11) {
-      const rangeToDelete = sheet.getRange(12, 1, lastRow - 11, sheet.getLastColumn());
-      rangeToDelete.clear();
-    }
+    console.log("✅ Métadonnées mises à jour:", {
+      department: formData.department,
+      projectCode: formData.projectCode,
+      email: formData.email
+    });
     
-    // Ajouter les nouvelles règles à partir de la ligne 12
+    // Ajouter les règles à partir de la ligne 12
     let rowIndex = 12;
     formData.rules.forEach(rule => {
       // Handle multiple IPs by splitting and creating separate rows for each combination
@@ -387,16 +396,17 @@ function saveNES(formData) {
       });
     });
     
+    console.log("✅ Règles ajoutées:", formData.rules.length, "règles, lignes créées:", rowIndex - 12);
+    
     const spreadsheetUrl = spreadsheet.getUrl();
     
-    console.log("✅ NES Google Sheets créé avec succès - ID:", spreadsheetId);
-    console.log("✅ URL:", spreadsheetUrl);
+    console.log("✅ NES Google Sheets créé avec succès - URL:", spreadsheetUrl);
     
     // Retourner l'URL pour ouvrir le Google Sheets
     return {
       success: true,
       url: spreadsheetUrl,
-      spreadsheetId: spreadsheetId,
+      spreadsheetId: spreadsheet.getId(),
       message: "NES créé avec succès dans Google Sheets"
     };
   } catch (e) {
