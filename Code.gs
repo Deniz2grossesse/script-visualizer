@@ -1,4 +1,3 @@
-
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -248,35 +247,6 @@ function deleteForm() {
     return {
       success: false,
       message: "Erreur lors de la suppression: " + e.toString()
-    };
-  }
-}
-
-// Function to save the Network Equipment Sheet
-function saveNES(formData) {
-  try {
-    console.log("saveNES called with data:", JSON.stringify(formData));
-    
-    if (!formData.department || !formData.projectCode || !formData.email || !formData.rules || formData.rules.length === 0) {
-      return {
-        success: false,
-        message: "Données incomplètes"
-      };
-    }
-    
-    // Save the NES (in a real app, this would save to a database or file)
-    // For now, we'll just save it as a draft
-    userDraft = formData;
-    
-    return {
-      success: true,
-      message: "NES sauvegardé avec succès"
-    };
-  } catch (e) {
-    console.error("Erreur saveNES:", e.toString());
-    return {
-      success: false,
-      message: "Erreur lors de la sauvegarde du NES: " + e.toString()
     };
   }
 }

@@ -290,43 +290,6 @@ const Index = () => {
       .generateScripts({ csvRows: validRows });
   };
 
-  const handleSaveNES = () => {
-    console.log('handleSaveNES called with csvRows:', csvRows);
-    if (csvRows.length === 0) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Aucune ligne à sauvegarder. Veuillez ajouter des données."
-      });
-      return;
-    }
-
-    google.script.run
-      .withSuccessHandler((csvContent) => {
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'export_onboarding.csv';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        toast({
-          title: "Succès",
-          description: "Fichier CSV sauvegardé avec succès."
-        });
-      })
-      .withFailureHandler((error) => {
-        console.error('Error in saveNES:', error);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Erreur lors de la sauvegarde du fichier CSV"
-        });
-      })
-      .exportCSV(csvRows);
-  };
-
   return (
     <div className="min-h-screen bg-[#212121] text-[#BDC3C7] font-sans p-6">
       <div className="w-[1200px] mx-auto bg-[#34495E] rounded-lg p-8 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
@@ -351,13 +314,6 @@ const Index = () => {
           >
             <Upload className="w-4 h-4" />
             Importer CSV
-          </Button>
-          <Button
-            onClick={handleSaveNES}
-            className="flex items-center gap-2 bg-[#27ae60] hover:bg-[#219a52] text-white"
-          >
-            <FileCode className="w-4 h-4" />
-            Save NES
           </Button>
           <input
             ref={fileInputRef}
