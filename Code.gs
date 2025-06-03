@@ -1,3 +1,4 @@
+
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -7,11 +8,9 @@ function doGet() {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-// Global variables to store header lines and raw content
+// Global variables to store header lines and raw CSV content
 var headerLinesCache = [];
 var rawCSVContent = "";  // Contains the raw CSV file
-var rawXLSXContent = "";  // Contains the raw XLSX content
-var originalGoogleSheetId = "";  // Store original Google Sheet ID for format preservation
 var userDraft = null;   // To store the draft for a user
 
 function handleFileSelect(fileData) {
@@ -29,87 +28,19 @@ function handleFileSelect(fileData) {
   return importCSV(fileData);
 }
 
-function importGoogleSheet(fileId) {
-  console.log("importGoogleSheet called with fileId:", fileId);
+function importCSV(csvData) {
+  console.log("importCSV called");
   try {
-    // Verify access and open the spreadsheet
-    var spreadsheet = SpreadsheetApp.openById(fileId);
-    var sheet = spreadsheet.getSheets()[0]; // First sheet
-    
-    // Get all data from the sheet
-    var lastRow = sheet.getLastRow();
-    var lastColumn = sheet.getLastColumn();
-    
-    if (lastRow < 12) {
-      throw new Error("Le fichier Google Sheet doit contenir au moins 12 lignes");
-    }
-    
-    var data = sheet.getRange(1, 1, lastRow, lastColumn).getValues();
-    console.log("Google Sheet data loaded:", data.length, "rows");
-    
-    // Store the original Google Sheet ID for format preservation
-    originalGoogleSheetId = fileId;
-    
-    // Process the data using the same logic as CSV import
-    return processImportedData(data, "Google Sheet");
-  } catch(e) {
-    console.error("Erreur lors de l'import Google Sheet:", e.toString());
-    return { 
-      success: false, 
-      message: "Erreur lors de l'import Google Sheet: " + e.toString() 
-    };
-  }
-}
+    console.log("Début de l'import CSV");
+    console.log("Type des données reçues:", typeof csvData);
+    console.log("Longueur des données:", csvData.length);
 
-function convertXLSXToGoogleSheet(xlsxBlob, fileName) {
-  console.log("convertXLSXToGoogleSheet called");
-  try {
-    // Create a new Google Sheet from the XLSX blob
-    var file = DriveApp.createFile(xlsxBlob).setName(fileName + "_converted");
-    
-    // Convert to Google Sheets format
-    var resource = {
-      title: fileName + "_converted",
-      mimeType: MimeType.GOOGLE_SHEETS
-    };
-    
-    var convertedFile = Drive.Files.copy(resource, file.getId());
-    
-    // Clean up the temporary file
-    DriveApp.getFileById(file.getId()).setTrashed(true);
-    
-    // Import from the converted Google Sheet
-    return importGoogleSheet(convertedFile.id);
-  } catch(e) {
-    console.error("Erreur lors de la conversion XLSX:", e.toString());
-    return { 
-      success: false, 
-      message: "Erreur lors de la conversion XLSX: " + e.toString() 
-    };
-  }
-}
-
-function handleGoogleSheetImport(fileId) {
-  console.log("handleGoogleSheetImport called with fileId:", fileId);
-  
-  if (!fileId || fileId.trim() === "") {
-    return { 
-      success: false, 
-      message: "ID du Google Sheet requis" 
-    };
-  }
-  
-  return importGoogleSheet(fileId.trim());
-}
-
-function processImportedData(data, sourceType) {
-  console.log("processImportedData called for", sourceType);
-  try {
-    console.log("Début du traitement des données");
-    console.log("Nombre de lignes:", data.length);
+    var data = Utilities.parseCsv(csvData);
+    console.log("Nombre de lignes parsées:", data.length);
+    console.log("Première ligne:", data[0]);
 
     if (data.length < 12) {
-      throw new Error("Le fichier doit contenir au moins 12 lignes");
+      throw new Error("Le fichier CSV doit contenir au moins 12 lignes");
     }
 
     // Extract department (C5), projectCode (J5), and requesterEmail (J6)
@@ -141,13 +72,11 @@ function processImportedData(data, sourceType) {
         
         // Amélioration du parsing des IPs pour gérer virgules ET retours à la ligne
         var sourceIPs = (row[3] || '')
-          .toString()
           .split(/[\n,]+/)
           .map(ip => ip.trim())
           .filter(ip => ip);
           
         var destIPs = (row[6] || '')
-          .toString()
           .split(/[\n,]+/)
           .map(ip => ip.trim())
           .filter(ip => ip);
@@ -162,15 +91,15 @@ function processImportedData(data, sourceType) {
             combinations.push({
               sourceIP: srcIP,
               destIP: dstIP,
-              protocol: (row[7] || 'TCP').toString(),
-              service: (row[8] || '').toString(),
-              port: (row[9] || '').toString(),
-              authentication: (row[10] || '').toString().toLowerCase() === 'yes' ? 'Yes' : 'No',
-              flowEncryption: (row[11] || '').toString().toLowerCase() === 'yes' ? 'Yes' : 'No',
-              classification: (row[12] || '').toString().toLowerCase() === 'yellow' ? 'Yellow' : 
-                            (row[12] || '').toString().toLowerCase() === 'amber' ? 'Amber' : 
-                            (row[12] || '').toString().toLowerCase() === 'red' ? 'Red' : 'Yellow',
-              appCode: (row[13] || '').toString()
+              protocol: row[7] || 'TCP',
+              service: row[8] || '',
+              port: row[9] || '',
+              authentication: row[10]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
+              flowEncryption: row[11]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
+              classification: row[12]?.toLowerCase() === 'yellow' ? 'Yellow' : 
+                            row[12]?.toLowerCase() === 'amber' ? 'Amber' : 
+                            row[12]?.toLowerCase() === 'red' ? 'Red' : 'Yellow',
+              appCode: row[13] || ''
             });
           });
         });
@@ -191,61 +120,28 @@ function processImportedData(data, sourceType) {
     console.log("Nombre total de lignes après aplatissement:", allProcessedRows.length);
     
     if (allProcessedRows.length === 0) {
-      throw new Error("Aucune donnée valide trouvée");
+      throw new Error("Aucune donnée valide trouvée dans le CSV");
     }
 
     return { 
       success: true, 
       data: allProcessedRows,
       headerLines: headerLinesCache,
-      message: validRows + " lignes valides importées depuis " + sourceType + ", " + skippedRows + " lignes ignorées (champs manquants)",
+      message: validRows + " lignes valides importées, " + skippedRows + " lignes ignorées (champs manquants)",
       department: department,
       projectCode: projectCode,
       requesterEmail: requesterEmail
     };
   } catch(e) {
-    console.error("Erreur lors du traitement:", e.toString());
+    console.error("Erreur lors de l'import:", e.toString());
     return { 
       success: false, 
-      message: "Erreur lors du traitement: " + e.toString() 
+      message: "Erreur lors de l'import: " + e.toString() 
     };
   }
 }
 
-function importCSV(csvData) {
-  console.log("importCSV called");
-  try {
-    var data = Utilities.parseCsv(csvData);
-    return processImportedData(data, "CSV");
-  } catch(e) {
-    console.error("Erreur lors de l'import CSV:", e.toString());
-    return { 
-      success: false, 
-      message: "Erreur lors de l'import CSV: " + e.toString() 
-    };
-  }
-}
-
-function exportGoogleSheet() {
-  try {
-    if (!originalGoogleSheetId) {
-      throw new Error("Aucun Google Sheet original trouvé");
-    }
-    
-    var spreadsheet = SpreadsheetApp.openById(originalGoogleSheetId);
-    var blob = spreadsheet.getAs('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    
-    return {
-      success: true,
-      data: blob,
-      message: "Google Sheet exporté avec conservation des formats"
-    };
-  } catch(e) {
-    console.error('Erreur exportGoogleSheet:', e.toString());
-    throw new Error('Erreur lors de l\'export Google Sheet');
-  }
-}
-
+// Function to export CSV with header lines and modified data
 function exportCSV(modifiedLines) {
   try {
     const csvData = headerLinesCache.slice(); // Clone headers
@@ -280,6 +176,7 @@ function exportCSV(modifiedLines) {
   }
 }
 
+// Function to generate scripts for network rules
 function generateScripts(options) {
   try {
     console.log("generateScripts called with options:", JSON.stringify(options));
@@ -334,13 +231,12 @@ function generateScripts(options) {
   }
 }
 
+// Function to delete the form data
 function deleteForm() {
   try {
     console.log("deleteForm called");
     headerLinesCache = [];
     rawCSVContent = "";
-    rawXLSXContent = "";
-    originalGoogleSheetId = "";
     userDraft = null;
     
     return {
@@ -356,6 +252,7 @@ function deleteForm() {
   }
 }
 
+// Function to save the Network Equipment Sheet - VERSION AMÉLIORÉE
 function saveNES(formData) {
   try {
     console.log("saveNES called with data:", JSON.stringify(formData));
@@ -368,62 +265,10 @@ function saveNES(formData) {
       };
     }
 
-    // If we have an original Google Sheet, work with it directly
-    if (originalGoogleSheetId) {
-      try {
-        var spreadsheet = SpreadsheetApp.openById(originalGoogleSheetId);
-        var sheet = spreadsheet.getSheets()[0];
-        
-        // Clear existing data from row 12 onwards
-        var lastRow = sheet.getLastRow();
-        if (lastRow > 11) {
-          sheet.deleteRows(12, lastRow - 11);
-        }
-        
-        // Add new rules starting from row 12
-        formData.rules.forEach((rule, index) => {
-          const sourceIPs = (rule.sourceIP || '')
-            .split(/[\n,]+/)
-            .map(ip => ip.trim())
-            .filter(ip => ip)
-            .join('\n');
-
-          const destIPs = (rule.destIP || '')
-            .split(/[\n,]+/)
-            .map(ip => ip.trim())
-            .filter(ip => ip)
-            .join('\n');
-
-          var rowData = [
-            '', '', '', sourceIPs, '', '', destIPs,
-            rule.protocol,
-            rule.service,
-            rule.port,
-            rule.authentication,
-            rule.flowEncryption,
-            rule.classification,
-            rule.appCode
-          ];
-          
-          sheet.getRange(12 + index, 1, 1, rowData.length).setValues([rowData]);
-        });
-        
-        console.log("Google Sheet updated successfully");
-        userDraft = formData;
-        
-        return {
-          success: true,
-          message: "NES sauvegardé dans Google Sheet avec conservation des formats"
-        };
-      } catch(e) {
-        console.error("Erreur sauvegarde Google Sheet:", e.toString());
-        // Fallback to CSV method
-      }
-    }
-
-    // Fallback to CSV method (existing code)
+    // Cloner les 11 premières lignes du tableau (headerLinesCache)
     const csvData = headerLinesCache.slice();
 
+    // Pour chaque règle, on prépare une ligne CSV au format correct
     formData.rules.forEach(rule => {
       const sourceIPs = (rule.sourceIP || '')
         .split(/[\n,]+/)
@@ -449,8 +294,11 @@ function saveNES(formData) {
       ]);
     });
 
+    // Générer le contenu CSV final
     const csvString = csvData.map(row => row.join(',')).join('\r\n');
     rawCSVContent = csvString;
+
+    // On sauvegarde aussi le draft (utile pour recharger)
     userDraft = formData;
 
     console.log("CSV final généré avec succès");

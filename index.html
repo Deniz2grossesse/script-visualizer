@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -46,87 +47,6 @@
     
     .alert-icon {
       color: #f39c12;
-    }
-
-    /* NEW: Import methods selection */
-    .import-methods {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
-      padding: 20px;
-      background: #2B3E50;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .import-method {
-      flex: 1;
-      padding: 15px;
-      background: #34495E;
-      border-radius: 6px;
-      border: 2px solid transparent;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-align: center;
-    }
-
-    .import-method:hover {
-      border-color: #3498db;
-      background: #2C3E50;
-    }
-
-    .import-method.active {
-      border-color: #E67E22;
-      background: #E67E22;
-      color: white;
-    }
-
-    .import-method h3 {
-      margin: 0 0 10px 0;
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .import-method p {
-      margin: 0;
-      font-size: 12px;
-      opacity: 0.8;
-    }
-
-    .google-sheet-input {
-      margin-top: 15px;
-      display: none;
-    }
-
-    .google-sheet-input.active {
-      display: block;
-    }
-
-    .google-sheet-input input {
-      width: 100%;
-      padding: 12px;
-      border: 2px solid rgba(255, 255, 255, 0.15);
-      background-color: #2B3E50;
-      border-radius: 6px;
-      color: #ffffff;
-      font-size: 14px;
-      box-sizing: border-box;
-      margin-bottom: 10px;
-    }
-
-    .google-sheet-input button {
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 10px 20px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: all 0.3s ease;
-    }
-
-    .google-sheet-input button:hover {
-      background-color: #2980b9;
     }
     
     .form-group {
@@ -763,28 +683,12 @@
   <div class="container">
     <h1>One Click Onboarding</h1>
 
-    <!-- NEW: Import method selection -->
-    <div class="import-methods">
-      <div class="import-method active" id="csvMethod" onclick="selectImportMethod('csv')">
-        <h3>📁 CSV File</h3>
-        <p>Upload a CSV file from your computer</p>
-      </div>
-      <div class="import-method" id="googleSheetMethod" onclick="selectImportMethod('googleSheet')">
-        <h3>📊 Google Sheet</h3>
-        <p>Import directly from Google Sheets with format preservation</p>
-        <div class="google-sheet-input" id="googleSheetInput">
-          <input type="text" id="googleSheetId" placeholder="Paste Google Sheet ID or full URL here...">
-          <button onclick="importFromGoogleSheet()">Import Google Sheet</button>
-        </div>
-      </div>
-    </div>
-
     <div class="top-buttons">
       <button class="btn-add" onclick="addNewLine()">
         <span>+</span>
         Add a Line
       </button>
-      <button class="btn-import" onclick="importCSV()" id="csvImportBtn">
+      <button class="btn-import" onclick="importCSV()">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
           <polyline points="14 2 14 8 20 8"/>
@@ -887,70 +791,6 @@
 
   <script>
     let currentRules = [];
-    let selectedImportMethod = 'csv'; // Track selected import method
-
-    // NEW: Import method selection
-    function selectImportMethod(method) {
-      selectedImportMethod = method;
-      
-      // Update visual selection
-      document.getElementById('csvMethod').classList.toggle('active', method === 'csv');
-      document.getElementById('googleSheetMethod').classList.toggle('active', method === 'googleSheet');
-      
-      // Show/hide Google Sheet input
-      document.getElementById('googleSheetInput').classList.toggle('active', method === 'googleSheet');
-      
-      // Update import button text
-      const importBtn = document.getElementById('csvImportBtn');
-      if (method === 'googleSheet') {
-        importBtn.style.display = 'none';
-      } else {
-        importBtn.style.display = 'flex';
-      }
-      
-      console.log('Import method selected:', method);
-    }
-
-    // NEW: Import from Google Sheet
-    function importFromGoogleSheet() {
-      const input = document.getElementById('googleSheetId').value.trim();
-      
-      if (!input) {
-        alert('Please enter a Google Sheet ID or URL');
-        return;
-      }
-      
-      // Extract ID from URL if full URL is provided
-      let fileId = input;
-      const urlMatch = input.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-      if (urlMatch) {
-        fileId = urlMatch[1];
-      }
-      
-      console.log('Importing from Google Sheet ID:', fileId);
-      showLoading();
-      
-      google.script.run
-        .withSuccessHandler(function(response) {
-          hideLoading();
-          if (response.success) {
-            currentRules = response.data;
-            displayRules(currentRules);
-            document.getElementById('department').value = response.department || '';
-            document.getElementById('projectCode').value = response.projectCode || '';
-            document.getElementById('email').value = response.requesterEmail || '';
-            alert(response.message);
-          } else {
-            alert(response.message || "Erreur lors de l'import Google Sheet");
-          }
-        })
-        .withFailureHandler(function(error) {
-          hideLoading();
-          console.error("Erreur:", error);
-          alert("Erreur lors de l'import du Google Sheet: " + error);
-        })
-        .handleGoogleSheetImport(fileId);
-    }
 
     function autoResize(textarea) {
       textarea.style.height = 'auto';
