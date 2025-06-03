@@ -8,39 +8,36 @@ function doGet() {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-// Global variables to store header lines and raw CSV content
+// Global variables to store header lines and raw XLSX content
 var headerLinesCache = [];
-var rawCSVContent = "";  // Contains the raw CSV file
+var rawXLSXData = [];  // Contains the raw XLSX data as 2D array
 var userDraft = null;   // To store the draft for a user
 
-function handleFileSelect(fileData) {
-  console.log("handleFileSelect called with file data length:", fileData ? fileData.length : 0);
-  if (!fileData) {
+function handleXLSXImport(xlsxData) {
+  console.log("handleXLSXImport called with data length:", xlsxData ? xlsxData.length : 0);
+  if (!xlsxData || xlsxData.length === 0) {
     return { 
       success: false, 
-      message: "Aucun fichier sélectionné" 
+      message: "Aucun fichier sélectionné ou fichier vide" 
     };
   }
   
-  // Store the raw CSV content
-  rawCSVContent = fileData;
+  // Store the raw XLSX data
+  rawXLSXData = xlsxData;
   
-  return importCSV(fileData);
+  return importXLSX(xlsxData);
 }
 
-function importCSV(csvData) {
-  console.log("importCSV called");
+function importXLSX(data) {
+  console.log("importXLSX called");
   try {
-    console.log("Début de l'import CSV");
-    console.log("Type des données reçues:", typeof csvData);
-    console.log("Longueur des données:", csvData.length);
-
-    var data = Utilities.parseCsv(csvData);
-    console.log("Nombre de lignes parsées:", data.length);
+    console.log("Début de l'import XLSX");
+    console.log("Type des données reçues:", typeof data);
+    console.log("Nombre de lignes:", data.length);
     console.log("Première ligne:", data[0]);
 
     if (data.length < 12) {
-      throw new Error("Le fichier CSV doit contenir au moins 12 lignes");
+      throw new Error("Le fichier XLSX doit contenir au moins 12 lignes");
     }
 
     // Extract department (C5), projectCode (J5), and requesterEmail (J6)
@@ -72,11 +69,13 @@ function importCSV(csvData) {
         
         // Amélioration du parsing des IPs pour gérer virgules ET retours à la ligne
         var sourceIPs = (row[3] || '')
+          .toString()
           .split(/[\n,]+/)
           .map(ip => ip.trim())
           .filter(ip => ip);
           
         var destIPs = (row[6] || '')
+          .toString()
           .split(/[\n,]+/)
           .map(ip => ip.trim())
           .filter(ip => ip);
@@ -91,15 +90,15 @@ function importCSV(csvData) {
             combinations.push({
               sourceIP: srcIP,
               destIP: dstIP,
-              protocol: row[7] || 'TCP',
-              service: row[8] || '',
-              port: row[9] || '',
-              authentication: row[10]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
-              flowEncryption: row[11]?.toLowerCase() === 'yes' ? 'Yes' : 'No',
-              classification: row[12]?.toLowerCase() === 'yellow' ? 'Yellow' : 
-                            row[12]?.toLowerCase() === 'amber' ? 'Amber' : 
-                            row[12]?.toLowerCase() === 'red' ? 'Red' : 'Yellow',
-              appCode: row[13] || ''
+              protocol: row[7]?.toString() || 'TCP',
+              service: row[8]?.toString() || '',
+              port: row[9]?.toString() || '',
+              authentication: row[10]?.toString().toLowerCase() === 'yes' ? 'Yes' : 'No',
+              flowEncryption: row[11]?.toString().toLowerCase() === 'yes' ? 'Yes' : 'No',
+              classification: row[12]?.toString().toLowerCase() === 'yellow' ? 'Yellow' : 
+                            row[12]?.toString().toLowerCase() === 'amber' ? 'Amber' : 
+                            row[12]?.toString().toLowerCase() === 'red' ? 'Red' : 'Yellow',
+              appCode: row[13]?.toString() || ''
             });
           });
         });
@@ -120,7 +119,7 @@ function importCSV(csvData) {
     console.log("Nombre total de lignes après aplatissement:", allProcessedRows.length);
     
     if (allProcessedRows.length === 0) {
-      throw new Error("Aucune donnée valide trouvée dans le CSV");
+      throw new Error("Aucune donnée valide trouvée dans le fichier XLSX");
     }
 
     return { 
@@ -133,20 +132,20 @@ function importCSV(csvData) {
       requesterEmail: requesterEmail
     };
   } catch(e) {
-    console.error("Erreur lors de l'import:", e.toString());
+    console.error("Erreur lors de l'import XLSX:", e.toString());
     return { 
       success: false, 
-      message: "Erreur lors de l'import: " + e.toString() 
+      message: "Erreur lors de l'import XLSX: " + e.toString() 
     };
   }
 }
 
-// Function to export CSV with header lines and modified data
-function exportCSV(modifiedLines) {
+// Function to prepare data for XLSX export
+function prepareXLSXData(modifiedLines) {
   try {
-    const csvData = headerLinesCache.slice(); // Clone headers
+    const xlsxData = headerLinesCache.slice(); // Clone headers
     
-    console.log("CSV Header Lines (originales, non modifiées):", JSON.stringify(headerLinesCache));
+    console.log("XLSX Header Lines (originales, non modifiées):", JSON.stringify(headerLinesCache));
     
     modifiedLines.forEach(rule => {
       // Handle multiple IPs by splitting and creating separate rows for each combination
@@ -155,7 +154,7 @@ function exportCSV(modifiedLines) {
       
       sourceIPs.forEach(srcIP => {
         destIPs.forEach(dstIP => {
-          csvData.push([
+          xlsxData.push([
             '', '', '', srcIP.trim(), '', '', dstIP.trim(), rule.protocol,
             rule.service, rule.port, rule.authentication, rule.flowEncryption,
             rule.classification, rule.appCode
@@ -164,15 +163,20 @@ function exportCSV(modifiedLines) {
       });
     });
     
-    console.log("CSV Data exportée (11 premières lignes + lignes modifiées):", 
-                "Nombre total de lignes: " + csvData.length,
-                "Premières lignes: " + JSON.stringify(csvData.slice(0, 5)));
+    console.log("XLSX Data préparée (11 premières lignes + lignes modifiées):", 
+                "Nombre total de lignes: " + xlsxData.length,
+                "Premières lignes: " + JSON.stringify(xlsxData.slice(0, 5)));
     
-    const csvString = csvData.map(row => row.join(',')).join('\r\n');
-    return csvString;
+    return {
+      success: true,
+      data: xlsxData
+    };
   } catch (e) {
-    console.error('Erreur exportCSV:', e.toString());
-    throw new Error('Erreur lors de la génération CSV');
+    console.error('Erreur prepareXLSXData:', e.toString());
+    return {
+      success: false,
+      message: 'Erreur lors de la préparation des données XLSX: ' + e.toString()
+    };
   }
 }
 
@@ -236,7 +240,7 @@ function deleteForm() {
   try {
     console.log("deleteForm called");
     headerLinesCache = [];
-    rawCSVContent = "";
+    rawXLSXData = [];
     userDraft = null;
     
     return {
@@ -279,4 +283,37 @@ function saveNES(formData) {
       message: "Erreur lors de la sauvegarde du NES: " + e.toString()
     };
   }
+}
+
+// Legacy functions for backward compatibility (kept for existing functionality)
+function handleFileSelect(fileData) {
+  console.log("handleFileSelect called - redirecting to XLSX handler");
+  // Try to parse as CSV and convert to XLSX format
+  try {
+    var data = Utilities.parseCsv(fileData);
+    return importXLSX(data);
+  } catch(e) {
+    return { 
+      success: false, 
+      message: "Erreur: Veuillez utiliser un fichier XLSX" 
+    };
+  }
+}
+
+function importCSV(csvData) {
+  console.log("importCSV called - redirecting to XLSX handler");
+  try {
+    var data = Utilities.parseCsv(csvData);
+    return importXLSX(data);
+  } catch(e) {
+    return { 
+      success: false, 
+      message: "Erreur: Veuillez utiliser un fichier XLSX" 
+    };
+  }
+}
+
+function exportCSV(modifiedLines) {
+  console.log("exportCSV called - redirecting to XLSX handler");
+  return prepareXLSXData(modifiedLines);
 }
