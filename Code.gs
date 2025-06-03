@@ -328,7 +328,7 @@ function deleteForm() {
   }
 }
 
-// Function to save the Network Equipment Sheet and return blob for download
+// Function to save the Network Equipment Sheet and return Google Sheets URL
 function saveNES(formData) {
   try {
     console.log("saveNES called with data:", JSON.stringify(formData));
@@ -340,8 +340,9 @@ function saveNES(formData) {
       };
     }
     
-    // Créer un nouveau Spreadsheet pour la sauvegarde NES
-    const spreadsheet = SpreadsheetApp.create(`NES_${formData.department}_${formData.projectCode}_${new Date().getTime()}`);
+    // Créer un nouveau Spreadsheet pour la sauvegarde NES (permanent)
+    const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
+    const spreadsheet = SpreadsheetApp.create(`NES_${formData.department}_${formData.projectCode}_${timestamp}`);
     const sheet = spreadsheet.getActiveSheet();
     
     // Ajouter les 11 lignes d'en-tête
@@ -376,15 +377,19 @@ function saveNES(formData) {
       });
     });
     
-    // Export XLSX as blob and cleanup
     const spreadsheetId = spreadsheet.getId();
-    const blob = DriveApp.getFileById(spreadsheetId).getBlob();
-    DriveApp.getFileById(spreadsheetId).setTrashed(true);
+    const spreadsheetUrl = spreadsheet.getUrl();
     
-    console.log("✅ NES blob created successfully");
+    console.log("✅ NES Google Sheets créé avec succès - ID:", spreadsheetId);
+    console.log("✅ URL:", spreadsheetUrl);
     
-    // Return the blob for download
-    return blob;
+    // Retourner l'URL pour ouvrir le Google Sheets
+    return {
+      success: true,
+      url: spreadsheetUrl,
+      spreadsheetId: spreadsheetId,
+      message: "NES créé avec succès dans Google Sheets"
+    };
   } catch (e) {
     console.error("Erreur saveNES:", e.toString());
     return {
