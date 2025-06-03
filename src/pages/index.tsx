@@ -41,6 +41,12 @@ const Index = () => {
   const [generatedScripts, setGeneratedScripts] = useState<{ id: number; script: string }[]>([]);
   const [csvRows, setCsvRows] = useState<CSVRow[]>([]);
   const [currentRow, setCurrentRow] = useState(1);
+  
+  // États pour les métadonnées
+  const [department, setDepartment] = useState('');
+  const [projectCode, setProjectCode] = useState('');
+  const [email, setEmail] = useState('');
+  
   const [errors, setErrors] = useState<FormErrors>({
     email: { error: false, message: '' },
     sourceIP: { error: false, message: '' },
@@ -64,6 +70,30 @@ const Index = () => {
       email: {
         error: !isValid,
         message: isValid ? '' : 'Veuillez entrer un email valide'
+      }
+    }));
+    return isValid;
+  };
+
+  const validateDepartment = (value: string): boolean => {
+    const isValid = value.length >= 1 && value.length <= 4;
+    setErrors(prev => ({
+      ...prev,
+      department: {
+        error: !isValid,
+        message: isValid ? '' : 'Entre 1 et 4 caractères requis'
+      }
+    }));
+    return isValid;
+  };
+
+  const validateProjectCode = (value: string): boolean => {
+    const isValid = value.length >= 1 && value.length <= 4;
+    setErrors(prev => ({
+      ...prev,
+      projectCode: {
+        error: !isValid,
+        message: isValid ? '' : 'Entre 1 et 4 caractères requis'
       }
     }));
     return isValid;
@@ -125,14 +155,28 @@ const Index = () => {
     console.log("Type du fichier:", file.type);
     console.log("Nom du fichier:", file.name);
 
+    // Validation XLSX uniquement
+    if (!file.name.toLowerCase().endsWith('.xlsx')) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Seuls les fichiers .xlsx sont acceptés."
+      });
+      return;
+    }
+
     const reader = new FileReader();
     
     reader.onload = (e) => {
-      const text = e.target?.result as string;
+      const base64Data = e.target?.result as string;
       google.script.run
         .withSuccessHandler((response) => {
           if (response.success) {
             setCsvRows(response.data);
+            // Mettre à jour les métadonnées depuis la réponse
+            setDepartment(response.department || '');
+            setProjectCode(response.projectCode || '');
+            setEmail(response.requesterEmail || '');
             toast({
               title: "Import réussi",
               description: response.message
@@ -153,7 +197,7 @@ const Index = () => {
             description: "Une erreur est survenue lors de l'import du fichier"
           });
         })
-        .handleFileSelect(text);
+        .handleXLSXFileSelect(base64Data, file.name);
     };
     
     reader.onerror = (error) => {
@@ -165,7 +209,7 @@ const Index = () => {
       });
     };
 
-    reader.readAsText(file);
+    reader.readAsDataURL(file);
   };
 
   const addEmptyRow = () => {
@@ -291,7 +335,22 @@ const Index = () => {
   };
 
   const handleSaveNES = () => {
-    console.log('handleSaveNES called with csvRows:', csvRows);
+    console.log('handleSaveNES called - validating fields and data');
+    
+    // Validation des champs obligatoires
+    const isDepartmentValid = validateDepartment(department);
+    const isProjectCodeValid = validateProjectCode(projectCode);
+    const isEmailValid = validateEmail(email);
+    
+    if (!isDepartmentValid || !isProjectCodeValid || !isEmailValid) {
+      toast({
+        variant: "destructive",
+        title: "Erreur de validation",
+        description: "Veuillez remplir correctement tous les champs obligatoires (Department, Project Code, et Email)."
+      });
+      return;
+    }
+    
     if (csvRows.length === 0) {
       toast({
         variant: "destructive",
@@ -301,30 +360,40 @@ const Index = () => {
       return;
     }
 
+    console.log('Calling saveNES with:', { department, projectCode, email, rules: csvRows });
+
     google.script.run
-      .withSuccessHandler((csvContent) => {
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'export_onboarding.csv';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        toast({
-          title: "Succès",
-          description: "Fichier CSV sauvegardé avec succès."
-        });
+      .withSuccessHandler((response) => {
+        console.log('Response from saveNES:', response);
+        if (response.success) {
+          // Ouvrir le Google Sheets dans une nouvelle fenêtre
+          window.open(response.url, '_blank');
+          toast({
+            title: "Succès",
+            description: `${response.message}. Le Google Sheets s'ouvre dans une nouvelle fenêtre.`
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: response.message || "Erreur lors de la sauvegarde du NES"
+          });
+        }
       })
       .withFailureHandler((error) => {
         console.error('Error in saveNES:', error);
         toast({
           variant: "destructive",
           title: "Erreur",
-          description: "Erreur lors de la sauvegarde du fichier CSV"
+          description: "Erreur lors de la sauvegarde du NES"
         });
       })
-      .exportCSV(csvRows);
+      .saveNES({
+        department: department,
+        projectCode: projectCode,
+        email: email,
+        rules: csvRows
+      });
   };
 
   return (
@@ -350,7 +419,7 @@ const Index = () => {
             className="flex items-center gap-2 bg-[#E67E22] hover:bg-[#D35400] text-white"
           >
             <Upload className="w-4 h-4" />
-            Importer CSV
+            Importer XLSX
           </Button>
           <Button
             onClick={handleSaveNES}
@@ -362,7 +431,7 @@ const Index = () => {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".csv"
+            accept=".xlsx"
             onChange={handleFileUpload}
             className="hidden"
           />
@@ -375,23 +444,18 @@ const Index = () => {
             </label>
             <div className="relative">
               <Input 
+                value={department}
                 placeholder="Department (1-4 chars)" 
                 maxLength={4}
                 className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-white/50 pr-10 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
                 onChange={(e) => {
-                  const isValid = e.target.value.length >= 1 && e.target.value.length <= 4;
-                  setErrors(prev => ({
-                    ...prev,
-                    department: {
-                      error: !isValid,
-                      message: isValid ? '' : 'Entre 1 et 4 caractères requis'
-                    }
-                  }));
+                  setDepartment(e.target.value);
+                  validateDepartment(e.target.value);
                 }}
               />
               {errors.department.error ? (
                 <X className="absolute right-3 top-2.5 h-5 w-5 text-destructive" />
-              ) : errors.department.message === '' ? (
+              ) : department && !errors.department.error ? (
                 <Check className="absolute right-3 top-2.5 h-5 w-5 text-green-500" />
               ) : null}
             </div>
@@ -406,23 +470,18 @@ const Index = () => {
             </label>
             <div className="relative">
               <Input 
+                value={projectCode}
                 placeholder="Project code (1-4 chars)" 
                 maxLength={4}
                 className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-[#BDC3C7]/50 pr-10 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
                 onChange={(e) => {
-                  const isValid = e.target.value.length >= 1 && e.target.value.length <= 4;
-                  setErrors(prev => ({
-                    ...prev,
-                    projectCode: {
-                      error: !isValid,
-                      message: isValid ? '' : 'Entre 1 et 4 caractères requis'
-                    }
-                  }));
+                  setProjectCode(e.target.value);
+                  validateProjectCode(e.target.value);
                 }}
               />
               {errors.projectCode.error ? (
                 <X className="absolute right-3 top-2.5 h-5 w-5 text-destructive" />
-              ) : errors.projectCode.message === '' ? (
+              ) : projectCode && !errors.projectCode.error ? (
                 <Check className="absolute right-3 top-2.5 h-5 w-5 text-green-500" />
               ) : null}
             </div>
@@ -437,14 +496,18 @@ const Index = () => {
             </label>
             <div className="relative">
               <Input 
+                value={email}
                 type="email" 
                 placeholder="Email address"
                 className="bg-[#34495E] border-[#BDC3C7]/30 rounded-md text-white placeholder-[#BDC3C7]/50 pr-10 focus:border-[#E67E22] focus:ring-[#E67E22]/50"
-                onChange={(e) => validateEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  validateEmail(e.target.value);
+                }}
               />
               {errors.email.error ? (
                 <X className="absolute right-3 top-2.5 h-5 w-5 text-destructive" />
-              ) : errors.email.message === '' ? (
+              ) : email && !errors.email.error ? (
                 <Check className="absolute right-3 top-2.5 h-5 w-5 text-green-500" />
               ) : null}
             </div>
