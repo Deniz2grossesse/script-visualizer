@@ -12,6 +12,19 @@ function doGet() {
 var headerLinesCache = [];
 var userDraft = null;   // To store the draft for a user
 
+// Function to sanitize data for JSON serialization
+function sanitizeData(data) {
+  return data.map(row => 
+    row.map(cell => {
+      if (cell === null || cell === undefined) return "";
+      if (typeof cell === 'object' && cell instanceof Date) {
+        return cell.toISOString();
+      }
+      return String(cell);
+    })
+  );
+}
+
 function handleXLSXFileSelect(fileBlob, fileName) {
   console.log("handleXLSXFileSelect called with file:", fileName);
   if (!fileBlob) {
@@ -67,17 +80,20 @@ function importXLSX(fileBlob, fileName) {
       throw new Error("Le fichier XLSX doit contenir au moins 12 lignes");
     }
 
+    // Sanitize data before processing
+    const sanitizedData = sanitizeData(data);
+
     // Extract department (C5), projectCode (J5), and requesterEmail (J6)
-    var department = data[4]?.[2] || "";      // Ligne 5, colonne 3 → C5
-    var projectCode = data[4]?.[9] || "";     // Ligne 5, colonne 10 → J5
-    var requesterEmail = data[5]?.[9] || "";  // Ligne 6, colonne 10 → J6
+    var department = sanitizedData[4]?.[2] || "";      // Ligne 5, colonne 3 → C5
+    var projectCode = sanitizedData[4]?.[9] || "";     // Ligne 5, colonne 10 → J5
+    var requesterEmail = sanitizedData[5]?.[9] || "";  // Ligne 6, colonne 10 → J6
     
     console.log("Extracted department:", department);
     console.log("Extracted projectCode:", projectCode);
     console.log("Extracted requesterEmail:", requesterEmail);
 
-    // Sauvegarder les 11 premières lignes
-    headerLinesCache = data.slice(0, 11);
+    // Sauvegarder les 11 premières lignes (sanitized)
+    headerLinesCache = sanitizedData.slice(0, 11);
     
     // Compteurs pour les lignes valides et ignorées
     var validRows = 0;
@@ -86,8 +102,8 @@ function importXLSX(fileBlob, fileName) {
     // Traitement TOUTES les lignes après la ligne 11 (pas d'arrêt)
     var processedData = [];
     
-    for (let i = 11; i < data.length; i++) {
-      const row = data[i];
+    for (let i = 11; i < sanitizedData.length; i++) {
+      const row = sanitizedData[i];
       console.log("Traitement ligne", i + 1, ":", row);
       
       // Vérifie si A à L sont vides ou espaces
