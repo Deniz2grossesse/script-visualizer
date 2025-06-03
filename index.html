@@ -826,10 +826,7 @@
         const reader = new FileReader();
         
         reader.onload = function(e) {
-          const content = e.target.result;
-          
-          // Créer un blob depuis le contenu du fichier
-          const blob = new Blob([content], { type: file.type });
+          const base64Data = e.target.result;
           
           google.script.run
             .withSuccessHandler(function(response) {
@@ -850,7 +847,7 @@
               console.error("Erreur:", error);
               alert("❌ Erreur lors de l'import du fichier XLSX");
             })
-            .handleXLSXFileSelect(blob, file.name);
+            .handleXLSXFileSelect(base64Data, file.name);
         };
         
         reader.onerror = function(e) {
@@ -859,7 +856,8 @@
           alert("❌ Erreur lors de la lecture du fichier XLSX");
         };
 
-        reader.readAsArrayBuffer(file);
+        // Change to readAsDataURL to get Base64 data instead of ArrayBuffer
+        reader.readAsDataURL(file);
       }
     }
 

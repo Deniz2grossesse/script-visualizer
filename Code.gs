@@ -25,19 +25,19 @@ function sanitizeData(data) {
   );
 }
 
-function handleXLSXFileSelect(fileBlob, fileName) {
+function handleXLSXFileSelect(base64Data, fileName) {
   console.log("handleXLSXFileSelect called with file:", fileName);
-  if (!fileBlob) {
+  if (!base64Data) {
     return { 
       success: false, 
       message: "Aucun fichier sélectionné" 
     };
   }
   
-  return importXLSX(fileBlob, fileName);
+  return importXLSX(base64Data, fileName);
 }
 
-function importXLSX(fileBlob, fileName) {
+function importXLSX(base64Data, fileName) {
   console.log("importXLSX called with file:", fileName);
   try {
     console.log("Début de l'import XLSX");
@@ -50,6 +50,11 @@ function importXLSX(fileBlob, fileName) {
       };
     }
 
+    // Convert Base64 data back to blob
+    const base64Content = base64Data.split(',')[1]; // Remove data:application/... part
+    const binaryData = Utilities.base64Decode(base64Content);
+    const fileBlob = Utilities.newBlob(binaryData, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', fileName);
+    
     // Créer un fichier temporaire dans Drive
     const tempFile = DriveApp.createFile(fileBlob);
     const tempFileId = tempFile.getId();
