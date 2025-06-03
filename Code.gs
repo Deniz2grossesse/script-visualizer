@@ -1,3 +1,4 @@
+
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
