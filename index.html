@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <base target="_top">
-  <title>Network Rules Generator - XLSX Only</title>
+  <title>Network Rules Generator</title>
   <style>
     body {
       font-family: 'Roboto', Arial, sans-serif;
@@ -680,27 +681,27 @@
 </head>
 <body>
   <div class="container">
-    <h1>One Click Onboarding - XLSX Exclusif</h1>
+    <h1>One Click Onboarding</h1>
 
     <div class="top-buttons">
       <button class="btn-add" onclick="addNewLine()">
         <span>+</span>
         Add a Line
       </button>
-      <button class="btn-import" onclick="importXLSX()">
+      <button class="btn-import" onclick="importCSV()">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
           <polyline points="14 2 14 8 20 8"/>
           <line x1="12" y1="18" x2="12" y2="12"/>
           <line x1="9" y1="15" x2="15" y2="15"/>
         </svg>
-        Import XLSX
+        Import CSV
       </button>
     </div>
 
     <div class="alert">
       <span class="alert-icon">⚠️</span>
-      <span>Important: Seuls les fichiers XLSX sont acceptés. Le système traite toutes les lignes et ignore uniquement celles où les colonnes A-L sont entièrement vides.</span>
+      <span>These three fields are mandatory, you cannot start entering them without having filled them in.</span>
     </div>
 
     <div class="form-group">
@@ -784,7 +785,7 @@
     </div>
 
     <div id="loadingMessage" class="loading-message">
-      Fichier XLSX en cours de traitement...
+      File is loading...
     </div>
   </div>
 
@@ -805,29 +806,22 @@
       document.getElementById('loadingMessage').classList.remove('visible');
     }
 
-    function importXLSX() {
+    function importCSV() {
       const input = document.createElement('input');
       input.type = 'file';
-      input.accept = '.xlsx'; // Changement: accepte uniquement XLSX
-      input.addEventListener('change', handleXLSXFileSelect);
+      input.accept = '.csv';
+      input.addEventListener('change', handleFileSelect);
       input.click();
     }
 
-    function handleXLSXFileSelect(event) {
+    function handleFileSelect(event) {
       const file = event.target.files[0];
       if (file) {
-        // Validation stricte du format XLSX
-        if (!file.name.toLowerCase().endsWith('.xlsx')) {
-          alert('❌ ERREUR: Seuls les fichiers .xlsx sont acceptés.');
-          return;
-        }
-        
         showLoading();
         const reader = new FileReader();
         
         reader.onload = function(e) {
-          const base64Data = e.target.result;
-          
+          const content = e.target.result;
           google.script.run
             .withSuccessHandler(function(response) {
               hideLoading();
@@ -837,27 +831,26 @@
                 document.getElementById('department').value = response.department || '';
                 document.getElementById('projectCode').value = response.projectCode || '';
                 document.getElementById('email').value = response.requesterEmail || '';
-                alert('✅ ' + response.message);
+                alert(response.message);
               } else {
-                alert('❌ ' + (response.message || "Erreur lors de l'import XLSX"));
+                alert(response.message || "Erreur lors de l'import");
               }
             })
             .withFailureHandler(function(error) {
               hideLoading();
               console.error("Erreur:", error);
-              alert("❌ Erreur lors de l'import du fichier XLSX");
+              alert("Erreur lors de l'import du fichier");
             })
-            .handleXLSXFileSelect(base64Data, file.name);
+            .handleFileSelect(content);
         };
         
         reader.onerror = function(e) {
           hideLoading();
           console.error("Erreur lors de la lecture du fichier:", e);
-          alert("❌ Erreur lors de la lecture du fichier XLSX");
+          alert("Erreur lors de la lecture du fichier");
         };
 
-        // Change to readAsDataURL to get Base64 data instead of ArrayBuffer
-        reader.readAsDataURL(file);
+        reader.readAsText(file);
       }
     }
 
@@ -948,7 +941,6 @@
             currentRules = [];
             document.getElementById('rulesTable').style.display = 'none';
             document.getElementById('scriptsOutput').style.display = 'none';
-            alert('✅ Formulaire supprimé avec succès');
           })
           .withFailureHandler(handleError)
           .deleteForm();
@@ -1319,26 +1311,26 @@
       const email = document.getElementById('email').value;
       
       if (!department || !projectCode || !email) {
-        alert('Veuillez remplir tous les champs obligatoires (Department, Project Code, et Email)');
+        alert('Please fill in all required fields (Department, Project Code, and Email)');
         return;
       }
       
       if (currentRules.length === 0) {
-        alert('Aucune règle à sauvegarder. Veuillez ajouter au moins une règle.');
+        alert('No rules to save. Please add at least one rule.');
         return;
       }
       
       google.script.run
         .withSuccessHandler((response) => {
           if (response.success) {
-            alert('✅ NES sauvegardé avec succès en format XLSX');
+            alert('NES saved successfully');
           } else {
-            alert('❌ ' + (response.message || 'Erreur lors de la sauvegarde du NES'));
+            alert(response.message || 'Error saving NES');
           }
         })
         .withFailureHandler((error) => {
-          console.error('Erreur lors de la sauvegarde NES:', error);
-          alert('❌ Erreur lors de la sauvegarde du NES');
+          console.error('Error saving NES:', error);
+          alert('Error saving NES');
         })
         .saveNES({
           department,
@@ -1350,7 +1342,7 @@
     
     function handleError(error) {
       console.error('Error:', error);
-      alert('Une erreur est survenue: ' + error);
+      alert('An error occurred: ' + error);
     }
 
     window.addEventListener('load', () => {
