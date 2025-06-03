@@ -32,6 +32,29 @@ function getHeaderLinesCache() {
   }
 }
 
+// Functions to manage the permanent Google Sheets ID
+function setPermanentSheetId(sheetId) {
+  try {
+    const props = PropertiesService.getUserProperties();
+    props.setProperty("permanentSheetId", sheetId);
+    console.log("Permanent sheet ID stored:", sheetId);
+  } catch (e) {
+    console.error("Error storing permanent sheet ID:", e.toString());
+  }
+}
+
+function getPermanentSheetId() {
+  try {
+    const props = PropertiesService.getUserProperties();
+    const sheetId = props.getProperty("permanentSheetId");
+    console.log("Retrieved permanent sheet ID:", sheetId);
+    return sheetId;
+  } catch (e) {
+    console.error("Error retrieving permanent sheet ID:", e.toString());
+    return null;
+  }
+}
+
 // Function to sanitize data for JSON serialization
 function sanitizeData(data) {
   return data.map(row => 
@@ -75,23 +98,21 @@ function importXLSX(base64Data, fileName) {
     const binaryData = Utilities.base64Decode(base64Content);
     const fileBlob = Utilities.newBlob(binaryData, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', fileName);
     
-    // Créer un fichier temporaire dans Drive
-    const tempFile = DriveApp.createFile(fileBlob);
-    const tempFileId = tempFile.getId();
-    
-    console.log("Fichier temporaire créé:", tempFileId);
-    
-    // Convertir en Google Sheets pour lecture
+    // Créer le Google Sheets PERMANENT (pas temporaire)
+    const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
     const convertedFile = Drive.Files.insert({
-      title: 'temp_xlsx_' + new Date().getTime(),
+      title: `XLSX_Import_${timestamp}`,
       mimeType: 'application/vnd.google-apps.spreadsheet'
     }, fileBlob);
     
-    const spreadsheetId = convertedFile.id;
-    console.log("✅ Conversion réussie - ID Spreadsheet:", spreadsheetId);
+    const permanentSheetId = convertedFile.id;
+    console.log("✅ Google Sheets PERMANENT créé - ID:", permanentSheetId);
+    
+    // Stocker l'ID du Google Sheets permanent
+    setPermanentSheetId(permanentSheetId);
     
     // Ouvrir et lire les données
-    const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    const spreadsheet = SpreadsheetApp.openById(permanentSheetId);
     const sheet = spreadsheet.getSheets()[0];
     
     if (!sheet) {
@@ -195,10 +216,6 @@ function importXLSX(base64Data, fileName) {
 
     console.log("Nombre total de lignes après traitement:", processedData.length);
     
-    // Nettoyage des fichiers temporaires
-    DriveApp.getFileById(tempFileId).setTrashed(true);
-    DriveApp.getFileById(spreadsheetId).setTrashed(true);
-    
     if (processedData.length === 0) {
       throw new Error("Aucune donnée valide trouvée dans le XLSX");
     }
@@ -210,7 +227,9 @@ function importXLSX(base64Data, fileName) {
       message: validRows + " lignes valides importées, " + skippedRows + " lignes ignorées (champs manquants ou colonnes A-L vides)",
       department: department,
       projectCode: projectCode,
-      requesterEmail: requesterEmail
+      requesterEmail: requesterEmail,
+      permanentSheetId: permanentSheetId,
+      permanentSheetUrl: spreadsheet.getUrl()
     };
   } catch(e) {
     console.error("Erreur lors de l'import XLSX:", e.toString());
@@ -276,7 +295,7 @@ function generateScripts(options) {
   }
 }
 
-// Function to save the Network Equipment Sheet and return Google Sheets URL
+// Function to save the Network Equipment Sheet by updating the permanent Google Sheets
 function saveNES(formData) {
   try {
     console.log("saveNES called with data:", JSON.stringify(formData));
@@ -288,33 +307,33 @@ function saveNES(formData) {
       };
     }
     
-    // Récupérer les en-têtes depuis PropertiesService
-    const headerLines = getHeaderLinesCache();
+    // Récupérer l'ID du Google Sheets permanent
+    const permanentSheetId = getPermanentSheetId();
     
-    if (!headerLines || headerLines.length < 11) {
-      console.log("⚠️ En-têtes manquants ou insuffisants dans le cache");
+    if (!permanentSheetId) {
       return {
         success: false,
-        message: "En-têtes manquants. Veuillez d'abord importer un fichier XLSX."
+        message: "Aucun Google Sheets permanent trouvé. Veuillez d'abord importer un fichier XLSX."
       };
     }
     
-    // Créer un nouveau Spreadsheet complètement vide
-    const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
-    const spreadsheet = SpreadsheetApp.create(`NES_${formData.department}_${formData.projectCode}_${timestamp}`);
+    console.log("✅ Utilisation du Google Sheets permanent - ID:", permanentSheetId);
+    
+    // Ouvrir le Google Sheets permanent existant
+    let spreadsheet;
+    try {
+      spreadsheet = SpreadsheetApp.openById(permanentSheetId);
+    } catch (e) {
+      console.error("Erreur lors de l'ouverture du Google Sheets permanent:", e.toString());
+      return {
+        success: false,
+        message: "Impossible d'ouvrir le Google Sheets permanent. Il a peut-être été supprimé."
+      };
+    }
+    
     const sheet = spreadsheet.getActiveSheet();
     
-    console.log("✅ Nouveau Spreadsheet créé - ID:", spreadsheet.getId());
-    
-    // Ajouter les 11 lignes d'en-tête depuis le cache
-    for (let i = 0; i < 11; i++) {
-      if (headerLines[i] && headerLines[i].length > 0) {
-        sheet.getRange(i + 1, 1, 1, headerLines[i].length).setValues([headerLines[i]]);
-      }
-    }
-    console.log("✅ 11 lignes d'en-tête ajoutées depuis le cache");
-    
-    // Mettre à jour les métadonnées dans les en-têtes
+    // Mettre à jour les métadonnées dans les en-têtes (C5, J5, J6)
     sheet.getRange(5, 3).setValue(formData.department);  // C5
     sheet.getRange(5, 10).setValue(formData.projectCode); // J5
     sheet.getRange(6, 10).setValue(formData.email);       // J6
@@ -325,7 +344,15 @@ function saveNES(formData) {
       email: formData.email
     });
     
-    // Ajouter les règles à partir de la ligne 12
+    // Effacer toutes les lignes après la ligne 11
+    const lastRow = sheet.getLastRow();
+    if (lastRow > 11) {
+      const rangeToDelete = sheet.getRange(12, 1, lastRow - 11, sheet.getLastColumn());
+      rangeToDelete.clear();
+      console.log("✅ Lignes après la ligne 11 effacées (lignes 12 à " + lastRow + ")");
+    }
+    
+    // Ajouter les nouvelles règles à partir de la ligne 12
     let rowIndex = 12;
     formData.rules.forEach(rule => {
       // Handle multiple IPs by splitting and creating separate rows for each combination
@@ -346,24 +373,24 @@ function saveNES(formData) {
       });
     });
     
-    console.log("✅ Règles ajoutées:", formData.rules.length, "règles, lignes créées:", rowIndex - 12);
+    console.log("✅ Nouvelles règles ajoutées:", formData.rules.length, "règles, lignes créées:", rowIndex - 12);
     
     const spreadsheetUrl = spreadsheet.getUrl();
     
-    console.log("✅ NES Google Sheets créé avec succès - URL:", spreadsheetUrl);
+    console.log("✅ NES mis à jour avec succès dans le Google Sheets permanent - URL:", spreadsheetUrl);
     
     // Retourner l'URL pour ouvrir le Google Sheets
     return {
       success: true,
       url: spreadsheetUrl,
-      spreadsheetId: spreadsheet.getId(),
-      message: "NES créé avec succès dans Google Sheets"
+      spreadsheetId: permanentSheetId,
+      message: "NES mis à jour avec succès dans le Google Sheets permanent"
     };
   } catch (e) {
     console.error("Erreur saveNES:", e.toString());
     return {
       success: false,
-      message: "Erreur lors de la sauvegarde du NES: " + e.toString()
+      message: "Erreur lors de la mise à jour du NES: " + e.toString()
     };
   }
 }

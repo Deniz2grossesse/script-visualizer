@@ -1,9 +1,8 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Plus, FileCode, AlertTriangle, Check, X, Upload, Trash2, Copy } from "lucide-react";
+import { ArrowRight, Plus, FileCode, AlertTriangle, Check, X, Upload, Trash2, Copy, ExternalLink } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface FieldError {
@@ -45,6 +44,9 @@ const Index = () => {
   
   // Flag pour vérifier qu'un fichier XLSX a été importé
   const [dataHasBeenImported, setDataHasBeenImported] = useState(false);
+  
+  // État pour stocker l'URL du Google Sheets permanent
+  const [permanentSheetUrl, setPermanentSheetUrl] = useState('');
   
   const [errors, setErrors] = useState<FormErrors>({
     email: { error: false, message: '' },
@@ -168,14 +170,15 @@ const Index = () => {
         .withSuccessHandler((response) => {
           if (response.success) {
             setCsvRows(response.data);
-            setDataHasBeenImported(true); // Activer le flag d'import
+            setDataHasBeenImported(true);
+            setPermanentSheetUrl(response.permanentSheetUrl || '');
             // Mettre à jour les métadonnées depuis la réponse
             setDepartment(response.department || '');
             setProjectCode(response.projectCode || '');
             setEmail(response.requesterEmail || '');
             toast({
               title: "Import réussi",
-              description: response.message
+              description: `${response.message}. Le Google Sheets permanent a été créé.`
             });
           } else {
             toast({
@@ -267,6 +270,7 @@ const Index = () => {
     setCsvRows([]);
     setGeneratedScripts([]);
     setDataHasBeenImported(false);
+    setPermanentSheetUrl('');
     toast({
       title: "Données supprimées",
       description: "Toutes les données ont été supprimées avec succès."
@@ -403,6 +407,25 @@ const Index = () => {
           <AlertTriangle className="inline-block w-5 h-5 mr-2 text-[#E67E22]" />
           <span className="text-[#BDC3C7]">These three fields are mandatory, you cannot start entering them without having filled them in.</span>
         </div>
+
+        {permanentSheetUrl && (
+          <div className="bg-[#2C3E50] border border-green-500/30 rounded-lg p-4 mb-8">
+            <div className="flex items-center gap-2 text-green-400 mb-2">
+              <Check className="w-5 h-5" />
+              <span className="font-semibold">Google Sheets permanent créé</span>
+            </div>
+            <p className="text-[#BDC3C7] mb-3">
+              Votre fichier XLSX a été importé dans un Google Sheets permanent. Vous pouvez le consulter à tout moment.
+            </p>
+            <Button
+              onClick={() => window.open(permanentSheetUrl, '_blank')}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Ouvrir le Google Sheets
+            </Button>
+          </div>
+        )}
 
         <div className="flex justify-end gap-4 mb-6">
           <Button 
