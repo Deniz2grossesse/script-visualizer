@@ -1329,15 +1329,46 @@
         return;
       }
       
+      showLoading();
+      
       google.script.run
-        .withSuccessHandler((response) => {
-          if (response.success) {
-            alert('✅ NES sauvegardé avec succès en format XLSX');
+        .withSuccessHandler((blob) => {
+          hideLoading();
+          if (blob && blob.constructor === Blob) {
+            // Create download link for the XLSX file
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `NES_${department}_${projectCode}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            alert('✅ Fichier NES téléchargé avec succès');
+          } else if (blob && blob.success === false) {
+            alert('❌ ' + (blob.message || 'Erreur lors de la sauvegarde du NES'));
           } else {
-            alert('❌ ' + (response.message || 'Erreur lors de la sauvegarde du NES'));
+            // Handle blob response from Google Apps Script
+            const uint8Array = new Uint8Array(blob);
+            const blobFile = new Blob([uint8Array], { 
+              type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+            });
+            
+            const url = URL.createObjectURL(blobFile);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `NES_${department}_${projectCode}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            alert('✅ Fichier NES téléchargé avec succès');
           }
         })
         .withFailureHandler((error) => {
+          hideLoading();
           console.error('Erreur lors de la sauvegarde NES:', error);
           alert('❌ Erreur lors de la sauvegarde du NES');
         })

@@ -1,4 +1,3 @@
-
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -329,7 +328,7 @@ function deleteForm() {
   }
 }
 
-// Function to save the Network Equipment Sheet (adapté pour XLSX)
+// Function to save the Network Equipment Sheet and return blob for download
 function saveNES(formData) {
   try {
     console.log("saveNES called with data:", JSON.stringify(formData));
@@ -360,23 +359,32 @@ function saveNES(formData) {
     // Ajouter les règles à partir de la ligne 12
     let rowIndex = 12;
     formData.rules.forEach(rule => {
-      const rowData = [
-        '', '', '', rule.sourceIP, '', '', rule.destIP, rule.protocol,
-        rule.service, rule.port, rule.authentication, rule.flowEncryption,
-        rule.classification, rule.appCode
-      ];
-      sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
-      rowIndex++;
+      // Handle multiple IPs by splitting and creating separate rows for each combination
+      const sourceIPs = rule.sourceIP.split('\n').filter(ip => ip.trim());
+      const destIPs = rule.destIP.split('\n').filter(ip => ip.trim());
+      
+      sourceIPs.forEach(srcIP => {
+        destIPs.forEach(dstIP => {
+          const rowData = [
+            '', '', '', srcIP.trim(), '', '', dstIP.trim(), rule.protocol,
+            rule.service, rule.port, rule.authentication, rule.flowEncryption,
+            rule.classification, rule.appCode
+          ];
+          sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
+          rowIndex++;
+        });
+      });
     });
     
+    // Export XLSX as blob and cleanup
     const spreadsheetId = spreadsheet.getId();
-    console.log("✅ NES sauvegardé avec succès en XLSX - ID:", spreadsheetId);
+    const blob = DriveApp.getFileById(spreadsheetId).getBlob();
+    DriveApp.getFileById(spreadsheetId).setTrashed(true);
     
-    return {
-      success: true,
-      spreadsheetId: spreadsheetId,
-      message: "NES sauvegardé avec succès en format XLSX"
-    };
+    console.log("✅ NES blob created successfully");
+    
+    // Return the blob for download
+    return blob;
   } catch (e) {
     console.error("Erreur saveNES:", e.toString());
     return {
