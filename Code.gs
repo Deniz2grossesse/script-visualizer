@@ -252,22 +252,58 @@ function deleteForm() {
   }
 }
 
-// Function to save the Network Equipment Sheet
+// Function to save the Network Equipment Sheet - VERSION AMÉLIORÉE
 function saveNES(formData) {
   try {
     console.log("saveNES called with data:", JSON.stringify(formData));
-    
+
+    // Vérification des champs obligatoires
     if (!formData.department || !formData.projectCode || !formData.email || !formData.rules || formData.rules.length === 0) {
       return {
         success: false,
         message: "Données incomplètes"
       };
     }
-    
-    // Save the NES (in a real app, this would save to a database or file)
-    // For now, we'll just save it as a draft
+
+    // Cloner les 11 premières lignes du tableau (headerLinesCache)
+    const csvData = headerLinesCache.slice();
+
+    // Pour chaque règle, on prépare une ligne CSV au format correct
+    formData.rules.forEach(rule => {
+      const sourceIPs = (rule.sourceIP || '')
+        .split(/[\n,]+/)
+        .map(ip => ip.trim())
+        .filter(ip => ip)
+        .join(',');
+
+      const destIPs = (rule.destIP || '')
+        .split(/[\n,]+/)
+        .map(ip => ip.trim())
+        .filter(ip => ip)
+        .join(',');
+
+      csvData.push([
+        '', '', '', sourceIPs, '', '', destIPs,
+        rule.protocol,
+        rule.service,
+        rule.port,
+        rule.authentication,
+        rule.flowEncryption,
+        rule.classification,
+        rule.appCode
+      ]);
+    });
+
+    // Générer le contenu CSV final
+    const csvString = csvData.map(row => row.join(',')).join('\r\n');
+    rawCSVContent = csvString;
+
+    // On sauvegarde aussi le draft (utile pour recharger)
     userDraft = formData;
-    
+
+    console.log("CSV final généré avec succès");
+    console.log("Nombre total de lignes :", csvData.length);
+
     return {
       success: true,
       message: "NES sauvegardé avec succès"
