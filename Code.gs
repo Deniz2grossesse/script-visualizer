@@ -8,66 +8,125 @@ function doGet() {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-// Global variables to store header lines and raw CSV content
+// Global variables to store header lines and raw XLSX content
 var headerLinesCache = [];
-var rawCSVContent = "";  // Contains the raw CSV file
 var userDraft = null;   // To store the draft for a user
 
-function handleFileSelect(fileData) {
-  console.log("handleFileSelect called with file data length:", fileData ? fileData.length : 0);
-  if (!fileData) {
+// Function to sanitize data for JSON serialization
+function sanitizeData(data) {
+  return data.map(row => 
+    row.map(cell => {
+      if (cell === null || cell === undefined) return "";
+      if (typeof cell === 'object' && cell instanceof Date) {
+        return cell.toISOString();
+      }
+      return String(cell);
+    })
+  );
+}
+
+function handleXLSXFileSelect(base64Data, fileName) {
+  console.log("handleXLSXFileSelect called with file:", fileName);
+  if (!base64Data) {
     return { 
       success: false, 
       message: "Aucun fichier sélectionné" 
     };
   }
   
-  // Store the raw CSV content
-  rawCSVContent = fileData;
-  
-  return importCSV(fileData);
+  return importXLSX(base64Data, fileName);
 }
 
-function importCSV(csvData) {
-  console.log("importCSV called");
+function importXLSX(base64Data, fileName) {
+  console.log("importXLSX called with file:", fileName);
   try {
-    console.log("Début de l'import CSV");
-    console.log("Type des données reçues:", typeof csvData);
-    console.log("Longueur des données:", csvData.length);
-
-    var data = Utilities.parseCsv(csvData);
-    console.log("Nombre de lignes parsées:", data.length);
-    console.log("Première ligne:", data[0]);
-
-    if (data.length < 12) {
-      throw new Error("Le fichier CSV doit contenir au moins 12 lignes");
+    console.log("Début de l'import XLSX");
+    
+    // Validation format .xlsx uniquement
+    if (!fileName.toLowerCase().endsWith('.xlsx')) {
+      return { 
+        success: false, 
+        message: "❌ ERREUR: Seuls les fichiers .xlsx sont acceptés." 
+      };
     }
 
+    // Convert Base64 data back to blob
+    const base64Content = base64Data.split(',')[1]; // Remove data:application/... part
+    const binaryData = Utilities.base64Decode(base64Content);
+    const fileBlob = Utilities.newBlob(binaryData, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', fileName);
+    
+    // Créer un fichier temporaire dans Drive
+    const tempFile = DriveApp.createFile(fileBlob);
+    const tempFileId = tempFile.getId();
+    
+    console.log("Fichier temporaire créé:", tempFileId);
+    
+    // Convertir en Google Sheets pour lecture
+    const convertedFile = Drive.Files.insert({
+      title: 'temp_xlsx_' + new Date().getTime(),
+      mimeType: 'application/vnd.google-apps.spreadsheet'
+    }, fileBlob);
+    
+    const spreadsheetId = convertedFile.id;
+    console.log("✅ Conversion réussie - ID Spreadsheet:", spreadsheetId);
+    
+    // Ouvrir et lire les données
+    const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    const sheet = spreadsheet.getSheets()[0];
+    
+    if (!sheet) {
+      throw new Error("Aucune feuille trouvée dans le fichier XLSX");
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    console.log("Nombre total de lignes extraites:", data.length);
+
+    if (data.length < 12) {
+      throw new Error("Le fichier XLSX doit contenir au moins 12 lignes");
+    }
+
+    // Sanitize data before processing
+    const sanitizedData = sanitizeData(data);
+
     // Extract department (C5), projectCode (J5), and requesterEmail (J6)
-    var department = data[4]?.[2] || "";      // Ligne 5, colonne 3 → C5
-    var projectCode = data[4]?.[9] || "";     // Ligne 5, colonne 10 → J5
-    var requesterEmail = data[5]?.[9] || "";  // Ligne 6, colonne 10 → J6
+    var department = sanitizedData[4]?.[2] || "";      // Ligne 5, colonne 3 → C5
+    var projectCode = sanitizedData[4]?.[9] || "";     // Ligne 5, colonne 10 → J5
+    var requesterEmail = sanitizedData[5]?.[9] || "";  // Ligne 6, colonne 10 → J6
     
     console.log("Extracted department:", department);
     console.log("Extracted projectCode:", projectCode);
     console.log("Extracted requesterEmail:", requesterEmail);
 
-    // Sauvegarder les 11 premières lignes
-    headerLinesCache = data.slice(0, 11);
+    // Sauvegarder les 11 premières lignes (sanitized)
+    headerLinesCache = sanitizedData.slice(0, 11);
     
     // Compteurs pour les lignes valides et ignorées
     var validRows = 0;
     var skippedRows = 0;
     
-    var processedData = data.slice(11).map(function(row, index) {
-      console.log("Traitement ligne", index + 12, ":", row);
+    // Traitement TOUTES les lignes après la ligne 11 (pas d'arrêt)
+    var processedData = [];
+    
+    for (let i = 11; i < sanitizedData.length; i++) {
+      const row = sanitizedData[i];
+      console.log("Traitement ligne", i + 1, ":", row);
+      
+      // Vérifie si A à L sont vides ou espaces
+      const isEmpty = row.slice(0, 12).every(cell => !cell || cell.toString().trim() === '');
+      
+      if (isEmpty) {
+        console.log("Ligne ignorée (colonnes A-L vides) :", row);
+        skippedRows++;
+        // Continue à traiter les lignes suivantes (pas de break)
+        continue;
+      }
       
       if (row.length >= 14) {
         // Champs requis dans une ligne
         if (!row[3] || !row[6] || !row[7] || !row[8] || !row[9] || !row[10] || !row[11] || !row[12] || !row[13]) {
           console.log("Ligne ignorée car un champ est vide :", row);
           skippedRows++;
-          return null; // Ligne ignorée si un champ est manquant
+          continue; // Continue au lieu de return null
         }
         
         // Amélioration du parsing des IPs pour gérer virgules ET retours à la ligne
@@ -106,47 +165,59 @@ function importCSV(csvData) {
 
         console.log("Nombre de combinaisons générées:", combinations.length);
         validRows += combinations.length;
-        return combinations;
+        processedData.push(...combinations);
+      } else {
+        console.log("Ligne ignorée - pas assez de colonnes");
+        skippedRows++;
       }
-      console.log("Ligne ignorée - pas assez de colonnes");
-      skippedRows++;
-      return null;
-    }).filter(function(row) {
-      return row !== null;
-    });
+    }
 
-    // Aplatir toutes les combinaisons
-    var allProcessedRows = processedData.flat();
-    console.log("Nombre total de lignes après aplatissement:", allProcessedRows.length);
+    console.log("Nombre total de lignes après traitement:", processedData.length);
     
-    if (allProcessedRows.length === 0) {
-      throw new Error("Aucune donnée valide trouvée dans le CSV");
+    // Nettoyage des fichiers temporaires
+    DriveApp.getFileById(tempFileId).setTrashed(true);
+    DriveApp.getFileById(spreadsheetId).setTrashed(true);
+    
+    if (processedData.length === 0) {
+      throw new Error("Aucune donnée valide trouvée dans le XLSX");
     }
 
     return { 
       success: true, 
-      data: allProcessedRows,
+      data: processedData,
       headerLines: headerLinesCache,
-      message: validRows + " lignes valides importées, " + skippedRows + " lignes ignorées (champs manquants)",
+      message: validRows + " lignes valides importées, " + skippedRows + " lignes ignorées (champs manquants ou colonnes A-L vides)",
       department: department,
       projectCode: projectCode,
       requesterEmail: requesterEmail
     };
   } catch(e) {
-    console.error("Erreur lors de l'import:", e.toString());
+    console.error("Erreur lors de l'import XLSX:", e.toString());
     return { 
       success: false, 
-      message: "Erreur lors de l'import: " + e.toString() 
+      message: "Erreur lors de l'import XLSX: " + e.toString() 
     };
   }
 }
 
-// Function to export CSV with header lines and modified data
-function exportCSV(modifiedLines) {
+// Function to export XLSX with header lines and modified data (remplace exportCSV)
+function exportXLSX(modifiedLines) {
   try {
-    const csvData = headerLinesCache.slice(); // Clone headers
+    console.log("Début export XLSX avec", modifiedLines.length, "lignes modifiées");
     
-    console.log("CSV Header Lines (originales, non modifiées):", JSON.stringify(headerLinesCache));
+    // Créer un nouveau Spreadsheet
+    const spreadsheet = SpreadsheetApp.create('Export_NES_' + new Date().getTime());
+    const sheet = spreadsheet.getActiveSheet();
+    
+    console.log("XLSX Header Lines (originales, non modifiées):", JSON.stringify(headerLinesCache));
+    
+    // Ajouter les 11 lignes d'en-tête
+    for (let i = 0; i < headerLinesCache.length; i++) {
+      sheet.getRange(i + 1, 1, 1, headerLinesCache[i].length).setValues([headerLinesCache[i]]);
+    }
+    
+    // Ajouter les données modifiées à partir de la ligne 12
+    let rowIndex = 12;
     
     modifiedLines.forEach(rule => {
       // Handle multiple IPs by splitting and creating separate rows for each combination
@@ -155,24 +226,31 @@ function exportCSV(modifiedLines) {
       
       sourceIPs.forEach(srcIP => {
         destIPs.forEach(dstIP => {
-          csvData.push([
+          const rowData = [
             '', '', '', srcIP.trim(), '', '', dstIP.trim(), rule.protocol,
             rule.service, rule.port, rule.authentication, rule.flowEncryption,
             rule.classification, rule.appCode
-          ]);
+          ];
+          
+          sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
+          rowIndex++;
         });
       });
     });
     
-    console.log("CSV Data exportée (11 premières lignes + lignes modifiées):", 
-                "Nombre total de lignes: " + csvData.length,
-                "Premières lignes: " + JSON.stringify(csvData.slice(0, 5)));
+    console.log("XLSX Data exportée (11 premières lignes + lignes modifiées):", 
+                "Nombre total de lignes: " + rowIndex,
+                "Premières lignes: " + JSON.stringify(headerLinesCache.slice(0, 3)));
     
-    const csvString = csvData.map(row => row.join(',')).join('\r\n');
-    return csvString;
+    // Export XLSX et nettoyage
+    const spreadsheetId = spreadsheet.getId();
+    const blob = DriveApp.getFileById(spreadsheetId).getBlob();
+    DriveApp.getFileById(spreadsheetId).setTrashed(true);
+    
+    return blob;
   } catch (e) {
-    console.error('Erreur exportCSV:', e.toString());
-    throw new Error('Erreur lors de la génération CSV');
+    console.error('Erreur exportXLSX:', e.toString());
+    throw new Error('Erreur lors de la génération XLSX: ' + e.toString());
   }
 }
 
@@ -236,7 +314,6 @@ function deleteForm() {
   try {
     console.log("deleteForm called");
     headerLinesCache = [];
-    rawCSVContent = "";
     userDraft = null;
     
     return {
@@ -252,7 +329,7 @@ function deleteForm() {
   }
 }
 
-// Function to save the Network Equipment Sheet
+// Function to save the Network Equipment Sheet (adapté pour XLSX)
 function saveNES(formData) {
   try {
     console.log("saveNES called with data:", JSON.stringify(formData));
@@ -264,13 +341,41 @@ function saveNES(formData) {
       };
     }
     
-    // Save the NES (in a real app, this would save to a database or file)
-    // For now, we'll just save it as a draft
-    userDraft = formData;
+    // Créer un nouveau Spreadsheet pour la sauvegarde NES
+    const spreadsheet = SpreadsheetApp.create(`NES_${formData.department}_${formData.projectCode}_${new Date().getTime()}`);
+    const sheet = spreadsheet.getActiveSheet();
+    
+    // Ajouter les 11 lignes d'en-tête
+    for (let i = 0; i < headerLinesCache.length; i++) {
+      sheet.getRange(i + 1, 1, 1, headerLinesCache[i].length).setValues([headerLinesCache[i]]);
+    }
+    
+    // Mettre à jour les informations dans les headers
+    if (headerLinesCache.length >= 6) {
+      sheet.getRange(5, 3).setValue(formData.department);  // C5
+      sheet.getRange(5, 10).setValue(formData.projectCode); // J5
+      sheet.getRange(6, 10).setValue(formData.email);       // J6
+    }
+    
+    // Ajouter les règles à partir de la ligne 12
+    let rowIndex = 12;
+    formData.rules.forEach(rule => {
+      const rowData = [
+        '', '', '', rule.sourceIP, '', '', rule.destIP, rule.protocol,
+        rule.service, rule.port, rule.authentication, rule.flowEncryption,
+        rule.classification, rule.appCode
+      ];
+      sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
+      rowIndex++;
+    });
+    
+    const spreadsheetId = spreadsheet.getId();
+    console.log("✅ NES sauvegardé avec succès en XLSX - ID:", spreadsheetId);
     
     return {
       success: true,
-      message: "NES sauvegardé avec succès"
+      spreadsheetId: spreadsheetId,
+      message: "NES sauvegardé avec succès en format XLSX"
     };
   } catch (e) {
     console.error("Erreur saveNES:", e.toString());
