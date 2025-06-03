@@ -369,7 +369,7 @@
       background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%);
       border: 2px solid rgba(255, 255, 255, 0.1);
       border-radius: 6px;
-      color: #fff;
+      color: #ffffff !important;
       font-size: 12px;
       transition: all 0.3s ease;
       margin: 0;
@@ -380,6 +380,39 @@
       outline: none;
       border-color: #3498db;
       background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+
+    /* Correction spécifique pour les éléments select */
+    .rules-table td select {
+      background: #34495E !important;
+      color: #ffffff !important;
+    }
+
+    .rules-table td select option {
+      background: #34495E !important;
+      color: #ffffff !important;
+      padding: 8px;
+    }
+
+    /* Style pour tous les selects de la page */
+    select {
+      background: #34495E !important;
+      color: #ffffff !important;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 6px 10px;
+    }
+
+    select option {
+      background: #34495E !important;
+      color: #ffffff !important;
+      padding: 8px;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #3498db;
       box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
     }
 
