@@ -1,4 +1,3 @@
-
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -341,24 +340,33 @@ function saveNES(formData) {
       };
     }
     
-    // Créer un nouveau Spreadsheet pour la sauvegarde NES (permanent)
+    // Créer d'abord le fichier XLSX temporaire avec les headers originaux
+    const xlsxBlob = exportXLSX([]);  // Export vide pour avoir juste les headers
+    
+    // Créer un nouveau Spreadsheet à partir du XLSX (pour conserver le formatage)
     const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
-    const spreadsheet = SpreadsheetApp.create(`NES_${formData.department}_${formData.projectCode}_${timestamp}`);
+    const convertedFile = Drive.Files.insert({
+      title: `NES_${formData.department}_${formData.projectCode}_${timestamp}`,
+      mimeType: 'application/vnd.google-apps.spreadsheet'
+    }, xlsxBlob);
+    
+    const spreadsheetId = convertedFile.id;
+    const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
     const sheet = spreadsheet.getActiveSheet();
     
-    // Ajouter les 11 lignes d'en-tête
-    for (let i = 0; i < headerLinesCache.length; i++) {
-      sheet.getRange(i + 1, 1, 1, headerLinesCache[i].length).setValues([headerLinesCache[i]]);
+    // Mettre à jour les informations dans les headers (lignes 5 et 6)
+    sheet.getRange(5, 3).setValue(formData.department);  // C5
+    sheet.getRange(5, 10).setValue(formData.projectCode); // J5
+    sheet.getRange(6, 10).setValue(formData.email);       // J6
+    
+    // Effacer tout à partir de la ligne 12
+    const lastRow = sheet.getLastRow();
+    if (lastRow > 11) {
+      const rangeToDelete = sheet.getRange(12, 1, lastRow - 11, sheet.getLastColumn());
+      rangeToDelete.clear();
     }
     
-    // Mettre à jour les informations dans les headers
-    if (headerLinesCache.length >= 6) {
-      sheet.getRange(5, 3).setValue(formData.department);  // C5
-      sheet.getRange(5, 10).setValue(formData.projectCode); // J5
-      sheet.getRange(6, 10).setValue(formData.email);       // J6
-    }
-    
-    // Ajouter les règles à partir de la ligne 12
+    // Ajouter les nouvelles règles à partir de la ligne 12
     let rowIndex = 12;
     formData.rules.forEach(rule => {
       // Handle multiple IPs by splitting and creating separate rows for each combination
@@ -372,13 +380,13 @@ function saveNES(formData) {
             rule.service, rule.port, rule.authentication, rule.flowEncryption,
             rule.classification, rule.appCode
           ];
+          
           sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
           rowIndex++;
         });
       });
     });
     
-    const spreadsheetId = spreadsheet.getId();
     const spreadsheetUrl = spreadsheet.getUrl();
     
     console.log("✅ NES Google Sheets créé avec succès - ID:", spreadsheetId);
