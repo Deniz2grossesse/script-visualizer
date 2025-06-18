@@ -1,4 +1,3 @@
-
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -391,6 +390,31 @@ function saveNES(formData) {
     return {
       success: false,
       message: "Erreur lors de la mise à jour du NES: " + e.toString()
+    };
+  }
+}
+
+// Function to delete form data (missing function)
+function deleteForm() {
+  try {
+    console.log("deleteForm called - clearing all data");
+    
+    // Clear the permanent sheet ID and header lines cache
+    const props = PropertiesService.getUserProperties();
+    props.deleteProperty("permanentSheetId");
+    props.deleteProperty("headerLinesCache");
+    
+    console.log("Form data cleared successfully");
+    
+    return {
+      success: true,
+      message: "Formulaire supprimé avec succès"
+    };
+  } catch (e) {
+    console.error("Error deleting form:", e.toString());
+    return {
+      success: false,
+      message: "Erreur lors de la suppression du formulaire: " + e.toString()
     };
   }
 }

@@ -676,6 +676,42 @@
       stroke: #3498db;
       stroke-width: 2;
     }
+
+    .btn-get-script {
+      background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.3s ease;
+      min-width: 80px;
+      justify-content: center;
+    }
+
+    .btn-get-script:hover {
+      background: linear-gradient(135deg, #d35400 0%, #c0392b 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(230, 126, 34, 0.3);
+    }
+
+    .script-item.highlighted {
+      background: linear-gradient(135deg, #e67e22 0%, #d35400 100%) !important;
+      border: 2px solid #f39c12 !important;
+      box-shadow: 0 0 20px rgba(230, 126, 34, 0.5) !important;
+      animation: highlight-pulse 2s ease-in-out;
+    }
+
+    @keyframes highlight-pulse {
+      0% { box-shadow: 0 0 20px rgba(230, 126, 34, 0.8); }
+      50% { box-shadow: 0 0 30px rgba(230, 126, 34, 0.4); }
+      100% { box-shadow: 0 0 20px rgba(230, 126, 34, 0.8); }
+    }
   </style>
 </head>
 <body>
@@ -1080,6 +1116,7 @@
             destIPs.forEach((dstIP, dstIndex) => {
               const scriptDiv = document.createElement('div');
               scriptDiv.className = 'script-item';
+              scriptDiv.setAttribute('data-rule-index', index);
               
               const script = generateScriptForIPs(srcIP.trim(), dstIP.trim(), rule);
               const scriptIndex = index + '_' + srcIndex + '_' + dstIndex;
@@ -1275,7 +1312,7 @@
                 placeholder="Code" />
             </td>
             <td>
-              <div style="display: flex; gap: 4px; justify-content: flex-end;">
+              <div style="display: flex; gap: 4px; justify-content: flex-end; flex-wrap: wrap;">
                 <button class="icon-btn add-btn" onclick="addNewLine()" title="Add new line">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#2ECC71" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M8 1v14M1 8h14"/>
@@ -1286,6 +1323,15 @@
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                   </svg>
+                </button>
+                <button class="btn-get-script" onclick="scrollToScript(${index})" title="Get script for this rule">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <path d="M14 2v6h6"/>
+                    <path d="M8 16h8"/>
+                    <path d="M8 12h8"/>
+                  </svg>
+                  Get Script
                 </button>
                 <button class="delete-row-btn" onclick="deleteRow(${index})" title="Delete row">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1310,6 +1356,64 @@
         }, 0);
       } else {
         table.style.display = 'none';
+      }
+    }
+    
+    function scrollToScript(ruleIndex) {
+      console.log('scrollToScript called for rule:', ruleIndex);
+      
+      // Remove previous highlights
+      document.querySelectorAll('.script-item').forEach(item => {
+        item.classList.remove('highlighted');
+      });
+      
+      // Find script items related to this rule
+      const scriptItems = document.querySelectorAll('.script-item');
+      let foundScript = false;
+      
+      // Calculate the script index based on rule combinations
+      let scriptIndex = 0;
+      for (let i = 0; i < ruleIndex; i++) {
+        const rule = currentRules[i];
+        const sourceIPs = rule.sourceIP.split('\n').filter(ip => ip.trim());
+        const destIPs = rule.destIP.split('\n').filter(ip => ip.trim());
+        scriptIndex += sourceIPs.length * destIPs.length;
+      }
+      
+      // Highlight scripts for the current rule
+      const currentRule = currentRules[ruleIndex];
+      if (currentRule) {
+        const sourceIPs = currentRule.sourceIP.split('\n').filter(ip => ip.trim());
+        const destIPs = currentRule.destIP.split('\n').filter(ip => ip.trim());
+        const combinationsCount = sourceIPs.length * destIPs.length;
+        
+        for (let i = 0; i < combinationsCount; i++) {
+          const targetScript = scriptItems[scriptIndex + i];
+          if (targetScript) {
+            targetScript.classList.add('highlighted');
+            if (!foundScript) {
+              // Scroll to first script of this rule
+              targetScript.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+              });
+              foundScript = true;
+            }
+          }
+        }
+        
+        if (foundScript) {
+          alert(`Scripts pour la ligne ${ruleIndex + 1} mis en évidence en orange`);
+          
+          // Remove highlight after 5 seconds
+          setTimeout(() => {
+            document.querySelectorAll('.script-item.highlighted').forEach(item => {
+              item.classList.remove('highlighted');
+            });
+          }, 5000);
+        } else {
+          alert('Veuillez d\'abord générer les scripts en cliquant sur "Generate Scripts"');
+        }
       }
     }
     
