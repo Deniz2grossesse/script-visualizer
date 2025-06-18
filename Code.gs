@@ -1,4 +1,3 @@
-
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -7,9 +6,6 @@ function doGet() {
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
-
-// Variable configurable pour l'URL de l'API
-var API_URL = "https://your-api-endpoint.com/api";
 
 // Functions to manage header lines cache with PropertiesService
 function setHeaderLinesCache(headerLines) {
@@ -243,26 +239,16 @@ function importXLSX(base64Data, fileName) {
   }
 }
 
-// Function to generate Python scripts with authentication
-function generatePythonScripts(options) {
+// Function to generate scripts for network rules
+function generateScripts(options) {
   try {
-    console.log("generatePythonScripts called with options:", JSON.stringify(options));
+    console.log("generateScripts called with options:", JSON.stringify(options));
     
     const csvRows = options.csvRows || [];
-    const username = options.username || "";
-    const password = options.password || "";
-    
     if (csvRows.length === 0) {
       return {
         success: false,
         message: "Aucune donnée à traiter"
-      };
-    }
-    
-    if (!username || !password) {
-      return {
-        success: false,
-        message: "Username et password requis"
       };
     }
     
@@ -275,80 +261,21 @@ function generatePythonScripts(options) {
       
       sourceIPs.forEach(srcIP => {
         destIPs.forEach(dstIP => {
-          const servicePort = `${row.protocol.toLowerCase()}:${row.port}`;
-          
-          const pythonScript = `import requests
-import sys
-import xml.etree.ElementTree as ET
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-API_URL = "${API_URL}"
-USERNAME = "${username}"
-PASSWORD = "${password}"
-
-def search_tickets(params):
-    """
-    Envoie une requête à l'API et retourne le contenu de la réponse.
-    """
-    try:
-        response = requests.get(API_URL, params=params, verify=False, auth=(USERNAME, PASSWORD))
-        response.raise_for_status() # Lève une exception pour les codes d'état HTTP d'erreur (4xx ou 5xx)
-        content = response.content
-        return content
-    except requests.exceptions.RequestException as e:
-        print(f"Erreur lors de la requête : {e}")
-        return None
-
-def is_traffic_allowed(xml_content):
-    """
-    Parse le contenu XML et vérifie si le trafic est autorisé.
-    Retourne True si 'traffic_allowed' est 'true', False sinon, ou None en cas d'erreur.
-    """
-    if xml_content is None:
-        # print("Contenu XML vide. Impossible de vérifier le trafic.") # Décommenter si tu veux voir ce message en cas de None
-        return None
-
-    try:
-        root = ET.fromstring(xml_content.decode('utf-8'))
-        traffic_allowed_element = root.find('traffic_allowed')
-
-        if traffic_allowed_element is not None:
-            return traffic_allowed_element.text.lower() == 'true'
-        else:
-            # print("Balise <traffic_allowed> non trouvée dans la réponse XML.") # Décommenter si tu veux voir ce message
-            return False
-    except ET.ParseError as e:
-        print(f"Erreur de parsing XML : {e}")
-        return None
-    except Exception as e:
-        print(f"Une erreur inattendue est survenue lors du parsing : {e}")
-        return None
-
-def main():
-    # Définition des paramètres de la requête
-    src_ip = "${srcIP.trim().split('/')[0]}"
-    dst_ip = "${dstIP.trim()}"
-    service_port = "${servicePort}"
-
-    params = {'dst': dst_ip, 'src': src_ip, 'service': service_port}
-    xml_response_content = search_tickets(params)
-
-    allowed = is_traffic_allowed(xml_response_content)
-
-    print("\\n--- Résultat du Trafic ---")
-    if allowed is True:
-        print(f"Trafic AUTORISÉ de {src_ip} vers {dst_ip} avec le service {service_port}.")
-    elif allowed is False:
-        print(f"Trafic REFUSÉ de {src_ip} vers {dst_ip} avec le service {service_port}.")
-    else:
-        print(f"Impossible de déterminer si le trafic est autorisé pour {src_ip} vers {dst_ip} avec le service {service_port} (erreur ou information manquante).")
-
-if __name__ == "__main__":
-    main()`;
-          
-          scripts.push(pythonScript);
+          scripts.push(`curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
+  -H "Authorization: Bearer <TON_TOKEN>" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "source": {
+      "ip": "${srcIP.trim().split('/')[0]}"
+    },
+    "destination": {
+      "ip": "${dstIP.trim()}"
+    },
+    "service": {
+      "protocol": "${row.protocol.toUpperCase()}",
+      "port": ${row.port}
+    }
+  }'`);
         });
       });
     });
@@ -356,13 +283,13 @@ if __name__ == "__main__":
     return {
       success: true,
       data: scripts,
-      message: scripts.length + " script(s) Python généré(s) avec succès"
+      message: scripts.length + " script(s) généré(s) avec succès"
     };
   } catch (e) {
-    console.error("Erreur generatePythonScripts:", e.toString());
+    console.error("Erreur generateScripts:", e.toString());
     return {
       success: false,
-      message: "Erreur lors de la génération des scripts Python: " + e.toString()
+      message: "Erreur lors de la génération des scripts: " + e.toString()
     };
   }
 }
@@ -490,12 +417,4 @@ function deleteForm() {
       message: "Erreur lors de la suppression du formulaire: " + e.toString()
     };
   }
-}
-
-// Function to show credentials dialog message
-function showCredentialsDialog() {
-  return {
-    success: true,
-    message: "Please enter your credentials TA-I0034"
-  };
 }
