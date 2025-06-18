@@ -196,6 +196,92 @@ function verifyRules() {
     .verifyRules(rules);
 }
 
+// Credentials dialog functions
+function showCredentialsDialog() {
+  document.getElementById('credentialsDialog').style.display = 'flex';
+}
+
+function hideCredentialsDialog() {
+  document.getElementById('credentialsDialog').style.display = 'none';
+  document.getElementById('username').value = '';
+  document.getElementById('password').value = '';
+}
+
+function submitCredentials() {
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  
+  if (!username || !password) {
+    alert('Veuillez saisir votre nom d\'utilisateur et mot de passe');
+    return;
+  }
+  
+  hideCredentialsDialog();
+  
+  // Convertir les règles au format attendu par generatePythonScripts
+  const csvRows = rules.map(rule => ({
+    sourceIP: rule.sourceIP,
+    destIP: rule.destIP,
+    protocol: rule.protocol,
+    service: rule.service,
+    port: rule.port,
+    authentication: rule.authentication,
+    flowEncryption: rule.encryption,
+    classification: rule.classification,
+    appCode: rule.appCode || ''
+  }));
+  
+  // Appeler la fonction serveur pour générer les scripts Python
+  google.script.run
+    .withSuccessHandler(function(response) {
+      if (response.success) {
+        displayGeneratedScripts(response.data);
+        alert(response.message);
+      } else {
+        alert('Erreur lors de la génération des scripts: ' + response.message);
+      }
+    })
+    .withFailureHandler(function(error) {
+      alert('Erreur lors de la génération des scripts: ' + error);
+    })
+    .generatePythonScripts({
+      csvRows: csvRows,
+      username: username,
+      password: password
+    });
+}
+
+function displayGeneratedScripts(scripts) {
+  const output = document.getElementById('output');
+  output.innerHTML = '';
+  output.style.display = 'block';
+
+  scripts.forEach((script, index) => {
+    const scriptBlock = document.createElement('div');
+    scriptBlock.className = 'script-block';
+    scriptBlock.innerHTML = `
+      <div class="script-header">
+        <span>Python Script ${index + 1}</span>
+        <button onclick="copyScript(this)" class="copy-btn">Copy</button>
+      </div>
+      <textarea class="script-output" readonly>${script}</textarea>
+    `;
+    output.appendChild(scriptBlock);
+  });
+}
+
+function copyScript(button) {
+  const textarea = button.parentElement.nextElementSibling;
+  textarea.select();
+  document.execCommand('copy');
+  
+  const originalText = button.textContent;
+  button.textContent = 'Copied!';
+  setTimeout(() => {
+    button.textContent = originalText;
+  }, 2000);
+}
+
 function generateScripts() {
   const department = document.getElementById('department').value;
   const projectCode = document.getElementById('projectCode').value;
@@ -211,35 +297,8 @@ function generateScripts() {
     return;
   }
 
-  const output = document.getElementById('output');
-  output.innerHTML = '';
-  output.style.display = 'block';
-
-  rules.forEach((rule, index) => {
-    const scriptData = { 
-      ...rule,
-      department,
-      projectCode,
-      email
-    };
-
-    google.script.run
-      .withSuccessHandler(function(script) {
-        const scriptBlock = document.createElement('div');
-        scriptBlock.className = 'script-block';
-        scriptBlock.innerHTML = `
-          <div class="script-header">
-            <span>Script ${index + 1}</span>
-          </div>
-          <textarea class="script-output" readonly>${script}</textarea>
-        `;
-        output.appendChild(scriptBlock);
-      })
-      .withFailureHandler(function(error) {
-        alert('Erreur lors de la génération du script: ' + error);
-      })
-      .generateScript(scriptData);
-  });
+  // Afficher le dialogue de credentials
+  showCredentialsDialog();
 }
 
 function saveDraft() {
