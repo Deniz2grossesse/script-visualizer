@@ -371,6 +371,94 @@ if __name__ == "__main__":
   }
 }
 
+// New function to generate NES Test script
+function generateNESTestScript(credentials) {
+  try {
+    console.log("generateNESTestScript called with credentials for user:", credentials.username);
+    
+    if (!credentials.username || !credentials.password) {
+      return {
+        success: false,
+        message: "Identifiants manquants"
+      };
+    }
+    
+    const script = `import requests
+import sys
+import xml.etree.ElementTree as ET
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+API_URL = "${API_URL}"
+USERNAME = "${credentials.username}"
+PASSWORD = "${credentials.password}"
+
+def search_tickets(params):
+    """
+    Envoie une requête à l'API et retourne le contenu de la réponse.
+    """
+    try:
+        response = requests.get(API_URL, params=params, verify=False, auth=(USERNAME, PASSWORD))
+        response.raise_for_status()
+        return response.content
+    except requests.exceptions.RequestException as e:
+        print(f"Erreur lors de la requête : {e}")
+        return None
+
+def is_traffic_allowed(xml_content):
+    """
+    Parse le contenu XML et vérifie si le trafic est autorisé.
+    """
+    if xml_content is None:
+        return None
+    try:
+        root = ET.fromstring(xml_content.decode('utf-8'))
+        el = root.find('traffic_allowed')
+        return el is not None and el.text.lower() == 'true'
+    except Exception as e:
+        print(f"Erreur parsing XML : {e}")
+        return None
+
+def main():
+    test_cases = [
+        {'src': "10.123.203.76", 'dst': "10.125.60.154", 'service': "tcp:8530"},
+        {'src': "10.123.203.76", 'dst': "1.1.1.1", 'service': "tcp:80"},
+        {'src': "10.123.203.76", 'dst': "1.1.1.1", 'service': "tcp:81"},
+        {'src': "10.123.203.76", 'dst': "1.1.1.1", 'service': "tcp:82"},
+        {'src': "192.168.1.10", 'dst': "8.8.8.8", 'service': "udp:53"},
+    ]
+
+    print("--- Début des tests de trafic ---")
+    for i, tc in enumerate(test_cases):
+        print(f"\\n--- Test #{i+1}: {tc['src']} -> {tc['dst']} sur {tc['service']} ---")
+        xml = search_tickets(tc)
+        allowed = is_traffic_allowed(xml)
+        if allowed is True:
+            print(f"Trafic AUTORISÉ de {tc['src']} vers {tc['dst']}")
+        elif allowed is False:
+            print(f"Trafic REFUSÉ de {tc['src']} vers {tc['dst']}")
+        else:
+            print(f"Impossible de déterminer pour {tc['src']} → {tc['dst']}")
+    print("\\n--- Fin des tests de trafic ---")
+
+if __name__ == "__main__":
+    main()`;
+    
+    return {
+      success: true,
+      script: script,
+      message: "Script de test NES généré avec succès"
+    };
+  } catch (e) {
+    console.error("Erreur generateNESTestScript:", e.toString());
+    return {
+      success: false,
+      message: "Erreur lors de la génération du script de test: " + e.toString()
+    };
+  }
+}
+
 // Function to save the Network Equipment Sheet by updating the permanent Google Sheets
 function saveNES(formData) {
   try {
