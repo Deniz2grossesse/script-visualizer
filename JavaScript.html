@@ -1,3 +1,4 @@
+
 <script>
 let rules = [];
 
@@ -210,88 +211,35 @@ function generateScripts() {
     return;
   }
 
-  // Show credentials prompt
-  const credentialsModal = document.createElement('div');
-  credentialsModal.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  `;
-  
-  credentialsModal.innerHTML = `
-    <div style="background: white; padding: 20px; border-radius: 8px; min-width: 300px;">
-      <h3 style="margin-top: 0; color: #333;">Please enter your credentials TA-I0034</h3>
-      <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 5px; color: #333;">Username:</label>
-        <input type="text" id="credUsername" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-      </div>
-      <div style="margin-bottom: 20px;">
-        <label style="display: block; margin-bottom: 5px; color: #333;">Password:</label>
-        <input type="password" id="credPassword" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-      </div>
-      <div style="text-align: right;">
-        <button id="cancelCred" style="margin-right: 10px; padding: 8px 16px; border: 1px solid #ccc; background: #f5f5f5; border-radius: 4px; cursor: pointer;">Annuler</button>
-        <button id="submitCred" style="padding: 8px 16px; border: none; background: #E67E22; color: white; border-radius: 4px; cursor: pointer;">Générer</button>
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(credentialsModal);
-  
-  document.getElementById('cancelCred').onclick = () => {
-    document.body.removeChild(credentialsModal);
-  };
-  
-  document.getElementById('submitCred').onclick = () => {
-    const username = document.getElementById('credUsername').value;
-    const password = document.getElementById('credPassword').value;
-    
-    if (!username || !password) {
-      alert('Veuillez saisir vos identifiants');
-      return;
-    }
-    
-    document.body.removeChild(credentialsModal);
-    
-    // Call the new Python script generation function
+  const output = document.getElementById('output');
+  output.innerHTML = '';
+  output.style.display = 'block';
+
+  rules.forEach((rule, index) => {
+    const scriptData = { 
+      ...rule,
+      department,
+      projectCode,
+      email
+    };
+
     google.script.run
-      .withSuccessHandler(function(response) {
-        if (response.success) {
-          const output = document.getElementById('output');
-          output.innerHTML = '';
-          output.style.display = 'block';
-          
-          const scriptBlock = document.createElement('div');
-          scriptBlock.className = 'script-block';
-          scriptBlock.innerHTML = `
-            <div class="script-header">
-              <span>Script Python généré</span>
-            </div>
-            <textarea class="script-output" readonly>${response.data}</textarea>
-          `;
-          output.appendChild(scriptBlock);
-          
-          alert('Script Python généré avec succès');
-        } else {
-          alert('Erreur lors de la génération du script: ' + response.message);
-        }
+      .withSuccessHandler(function(script) {
+        const scriptBlock = document.createElement('div');
+        scriptBlock.className = 'script-block';
+        scriptBlock.innerHTML = `
+          <div class="script-header">
+            <span>Script ${index + 1}</span>
+          </div>
+          <textarea class="script-output" readonly>${script}</textarea>
+        `;
+        output.appendChild(scriptBlock);
       })
       .withFailureHandler(function(error) {
         alert('Erreur lors de la génération du script: ' + error);
       })
-      .generatePythonScripts({
-        csvRows: rules,
-        username: username,
-        password: password
-      });
-  };
+      .generateScript(scriptData);
+  });
 }
 
 function saveDraft() {
