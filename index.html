@@ -179,20 +179,6 @@
       box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
     }
     
-    .btn-resume {
-      background-color: transparent;
-      color: #fff;
-      border: 2px solid #666;
-      padding: 12px 35px;
-    }
-    
-    .btn-resume:hover {
-      background-color: #666;
-      color: white;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(102, 102, 102, 0.3);
-    }
-    
     .btn-verify {
       background-color: transparent;
       color: #3498db;
@@ -207,9 +193,24 @@
       box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
     }
     
-    .btn-generate {
-      background-color: #F08B32;
+    .btn-save {
+      background-color: transparent;
+      color: #27ae60;
+      border: 2px solid #27ae60;
+      padding: 12px 35px;
+    }
+    
+    .btn-save:hover {
+      background-color: #27ae60;
       color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+    }
+    
+    .btn-generate {
+      background-color: transparent;
+      color: #E67E22;
+      border: 2px solid #E67E22;
       padding: 12px 60px 12px 35px;
       position: relative;
       border-radius: 25px;
@@ -218,8 +219,9 @@
     
     .btn-generate:hover {
       background-color: #E67E22;
+      color: white;
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(240, 139, 50, 0.3);
+      box-shadow: 0 4px 12px rgba(230, 126, 34, 0.3);
     }
     
     .btn-generate::after {
@@ -230,6 +232,20 @@
       font-weight: bold;
     }
     
+    .btn-nes-test {
+      background-color: transparent;
+      color: #9B59B6;
+      border: 2px solid #9B59B6;
+      padding: 12px 35px;
+    }
+    
+    .btn-nes-test:hover {
+      background-color: #9B59B6;
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
+    }
+    
  .rules-table tbody tr td:nth-child(10) > .manage-line-buttons {
   display: grid;
   grid-template-columns: 1fr 1fr; /* 2 colonnes égales */
@@ -238,12 +254,12 @@
   box-sizing: border-box;
 }
 
-/* Tous les boutons à l’intérieur de cette cellule */
+/* Tous les boutons à l'intérieur de cette cellule */
 .rules-table tbody tr td:nth-child(10) > .manage-line-buttons > button {
   width: 100%;       /* remplissent leur case */
   padding: 4px 6px;  /* plus compact */
   font-size: 10px;   /* texte réduit */
-  min-width: 0;      /* pour que width:100% s’applique */
+  min-width: 0;      /* pour que width:100% s'applique */
   border-radius: 4px;
 }
 
@@ -631,31 +647,6 @@
       display: block;
     }
 
-    .btn-save {
-      background: linear-gradient(135deg, #27ae60 0%, #219a52 100%);
-      color: white;
-      border: none;
-      border-radius: 25px;
-      padding: 12px 35px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.3s ease;
-    }
-
-    .btn-save:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
-    }
-
-    .btn-save svg {
-      width: 16px;
-      height: 16px;
-    }
-
     .duplicate-row {
       background: linear-gradient(135deg, rgba(255, 0, 0, 0.15) 0%, rgba(255, 0, 0, 0.1) 100%) !important;
       border: 2px solid #ff4d4d !important;
@@ -967,6 +958,9 @@
           <path d="M8 8h4"/>
         </svg>
         Generate Scripts
+      </button>
+      <button class="btn-nes-test">
+        NES Test
       </button>
     </div>
 
