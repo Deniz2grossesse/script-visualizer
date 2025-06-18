@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Plus, FileCode, AlertTriangle, Check, X, Upload, Trash2, Copy, ExternalLink } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import CredentialsDialog from "@/components/CredentialsDialog";
 
 interface FieldError {
   error: boolean;
@@ -36,6 +37,7 @@ const Index = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [generatedScripts, setGeneratedScripts] = useState<{ id: number; script: string }[]>([]);
   const [csvRows, setCsvRows] = useState<CSVRow[]>([]);
+  const [showCredentialsDialog, setShowCredentialsDialog] = useState(false);
   
   // États pour les métadonnées
   const [department, setDepartment] = useState('');
@@ -278,7 +280,7 @@ const Index = () => {
   };
 
   const handleGenerateScript = () => {
-    console.log('handleGenerateScript called with csvRows:', csvRows);
+    console.log('handleGenerateScript called - showing credentials dialog');
     const validRows = csvRows.filter(row => {
       const validation = validateRow(row);
       return validation.isValid;
@@ -294,9 +296,20 @@ const Index = () => {
       return;
     }
 
+    // Show credentials dialog instead of directly generating scripts
+    setShowCredentialsDialog(true);
+  };
+
+  const handleCredentialsSubmit = (credentials: { username: string; password: string }) => {
+    console.log('handleCredentialsSubmit called with credentials');
+    const validRows = csvRows.filter(row => {
+      const validation = validateRow(row);
+      return validation.isValid;
+    });
+
     google.script.run
       .withSuccessHandler((response) => {
-        console.log('Response from generateScripts:', response);
+        console.log('Response from generatePythonScripts:', response);
         if (response.success) {
           setGeneratedScripts(response.data.map((script, index) => ({
             id: index + 1,
@@ -305,7 +318,7 @@ const Index = () => {
           
           toast({
             title: "Succès",
-            description: `${response.data.length} script(s) généré(s) avec succès`
+            description: `${response.data.length} script(s) Python généré(s) avec succès`
           });
         } else {
           toast({
@@ -316,14 +329,18 @@ const Index = () => {
         }
       })
       .withFailureHandler((error) => {
-        console.error('Error in generateScripts:', error);
+        console.error('Error in generatePythonScripts:', error);
         toast({
           variant: "destructive",
           title: "Erreur",
-          description: "Erreur lors de la génération des scripts"
+          description: "Erreur lors de la génération des scripts Python"
         });
       })
-      .generateScripts({ csvRows: validRows });
+      .generatePythonScripts({ 
+        csvRows: validRows,
+        username: credentials.username,
+        password: credentials.password
+      });
   };
 
   const handleSaveNES = () => {
@@ -760,6 +777,12 @@ const Index = () => {
           </div>
         )}
       </div>
+
+      <CredentialsDialog
+        open={showCredentialsDialog}
+        onOpenChange={setShowCredentialsDialog}
+        onSubmit={handleCredentialsSubmit}
+      />
     </div>
   );
 };
