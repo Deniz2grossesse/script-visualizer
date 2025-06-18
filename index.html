@@ -928,6 +928,43 @@
     .btn-confirm:hover {
       background-color: #2980b9;
     }
+    
+    /* Style pour le script de test NES */
+    .nes-test-script-container {
+      background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      position: relative;
+      border: 2px solid #BF55EC;
+      box-shadow: 0 4px 20px rgba(155, 89, 182, 0.3);
+    }
+    
+    .btn-download {
+      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 100px;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .btn-download:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+    }
+
+    .btn-download svg {
+      width: 16px;
+      height: 16px;
+    }
   </style>
 </head>
 <body>
@@ -1033,7 +1070,7 @@
         </svg>
         Generate Scripts
       </button>
-      <button class="btn-nes-test">
+      <button class="btn-nes-test" onclick="generateNESTest()">
         NES Test
       </button>
     </div>
@@ -1068,7 +1105,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn-cancel" onclick="closeCredentialsModal()">Cancel</button>
-        <button class="btn-confirm" onclick="confirmGenerateScripts()">Generate</button>
+        <button class="btn-confirm" id="modalConfirmBtn" onclick="confirmGenerateScripts()">Generate</button>
       </div>
     </div>
   </div>
@@ -1081,6 +1118,7 @@
       steps: [],
       currentStep: 0
     };
+    let currentModalAction = 'scripts'; // 'scripts' or 'nesTest'
 
     // Progress Bar Functions
     function showProgressBar(title, steps) {
@@ -1488,7 +1526,21 @@
         return;
       }
       
-      // Afficher la modal pour demander les identifiants
+      currentModalAction = 'scripts';
+      document.getElementById('modalConfirmBtn').textContent = 'Generate';
+      document.getElementById('credentialsModal').style.display = 'block';
+    }
+    
+    // Nouvelle fonction pour NES Test
+    function generateNESTest() {
+      console.log('generateNESTest called');
+      if (currentRules.length === 0) {
+        alert('Aucune règle à tester. Veuillez d\'abord ajouter des règles.');
+        return;
+      }
+      
+      currentModalAction = 'nesTest';
+      document.getElementById('modalConfirmBtn').textContent = 'Test NES';
       document.getElementById('credentialsModal').style.display = 'block';
     }
     
@@ -1499,7 +1551,7 @@
       document.getElementById('modalPassword').value = '';
     }
     
-    // Confirmer et générer les scripts avec les identifiants
+    // Fonction modifiée pour gérer les deux actions
     function confirmGenerateScripts() {
       const username = document.getElementById('modalUsername').value;
       const password = document.getElementById('modalPassword').value;
@@ -1509,6 +1561,15 @@
         return;
       }
       
+      if (currentModalAction === 'scripts') {
+        generateScriptsWithCredentials(username, password);
+      } else if (currentModalAction === 'nesTest') {
+        generateNESTestWithCredentials(username, password);
+      }
+    }
+    
+    // Fonction pour générer les scripts individuels
+    function generateScriptsWithCredentials(username, password) {
       const steps = [
         'Validation des identifiants',
         'Préparation des règles',
@@ -1554,6 +1615,141 @@
             password: password
           });
       }, 700);
+    }
+    
+    // Nouvelle fonction pour générer le script de test NES
+    function generateNESTestWithCredentials(username, password) {
+      const steps = [
+        'Validation des identifiants',
+        'Collecte des règles',
+        'Génération du script de test',
+        'Formatage du code',
+        'Finalisation'
+      ];
+      
+      showProgressBar('Génération du script de test NES...', steps);
+      updateProgress(15, 'Validation des identifiants...', 0);
+      
+      setTimeout(() => {
+        updateProgress(30, 'Envoi des données...', 1);
+        
+        google.script.run
+          .withSuccessHandler(function(response) {
+            if (response.success) {
+              updateProgress(60, 'Génération en cours...', 2);
+              
+              setTimeout(() => {
+                updateProgress(80, 'Formatage du script...', 3);
+                closeCredentialsModal();
+                
+                // Effacer tous les scripts précédents
+                document.getElementById('scriptsOutput').innerHTML = '';
+                
+                // Afficher le script de test NES
+                displayNESTestScript(response.script, response.testCasesCount);
+                
+                setTimeout(() => {
+                  completeProgress('Script de test NES généré avec succès !');
+                  alert('✅ A script has been generated to test all the NES file');
+                }, 500);
+              }, 800);
+            } else {
+              errorProgress('❌ ' + response.message, 1);
+              alert('❌ ' + response.message);
+            }
+          })
+          .withFailureHandler(function(error) {
+            console.error('Erreur:', error);
+            errorProgress('❌ Erreur lors de la génération du script de test NES', 2);
+            alert('❌ Erreur lors de la génération du script de test NES');
+          })
+          .generateNESTestScript({
+            csvRows: currentRules,
+            username: username,
+            password: password
+          });
+      }, 700);
+    }
+    
+    // Fonction pour afficher le script de test NES
+    function displayNESTestScript(script, testCasesCount) {
+      const scriptsOutput = document.getElementById('scriptsOutput');
+      scriptsOutput.innerHTML = '';
+      
+      const scriptDiv = document.createElement('div');
+      scriptDiv.className = 'script-item nes-test-script-container';
+      
+      scriptDiv.innerHTML = `
+        <h3 style="color: #fff; margin-top: 0; margin-bottom: 15px;">
+          Script de Test NES Complet (${testCasesCount} cas de test)
+        </h3>
+        <div class="script-content">${escapeHtml(script)}</div>
+        <div class="script-actions">
+          <button class="copy-btn" onclick="copyNESTestScript('${btoa(script)}')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy
+          </button>
+          <button class="btn-download" onclick="downloadNESTestScript('${btoa(script)}')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Download .py
+          </button>
+          <button class="delete-btn" onclick="deleteGeneratedScript(this)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18"></path>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+              <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            Delete
+          </button>
+        </div>
+      `;
+      
+      scriptsOutput.appendChild(scriptDiv);
+      scriptsOutput.style.display = 'block';
+    }
+    
+    // Fonction pour copier le script de test NES
+    function copyNESTestScript(base64Script) {
+      const script = atob(base64Script);
+      navigator.clipboard.writeText(script)
+        .then(() => {
+          alert('Script de test NES copié dans le presse-papier');
+        })
+        .catch(err => {
+          console.error('Erreur lors de la copie:', err);
+          alert('Erreur lors de la copie du script');
+        });
+    }
+    
+    // Fonction pour télécharger le script de test NES
+    function downloadNESTestScript(base64Script) {
+      const script = atob(base64Script);
+      const blob = new Blob([script], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'nes_test_script.py';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }
+    
+    // Fonction pour échapper le HTML
+    function escapeHtml(unsafe) {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
     
     // Afficher les scripts Python générés
