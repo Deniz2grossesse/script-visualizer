@@ -642,50 +642,123 @@
       text-align: center;
       border: 2px solid #3498db;
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      width: 400px;
+      max-width: 90vw;
     }
 
     .loading-message.visible {
       display: block;
     }
 
-    .duplicate-row {
-      background: linear-gradient(135deg, rgba(255, 0, 0, 0.15) 0%, rgba(255, 0, 0, 0.1) 100%) !important;
-      border: 2px solid #ff4d4d !important;
-      animation: pulse-error 2s infinite;
+    /* Progress Bar Styles */
+    .progress-container {
+      margin: 20px 0;
+      width: 100%;
     }
 
-    @keyframes pulse-error {
-      0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4); }
-      70% { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 10px 0;
     }
 
-    .icon-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 8px;
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3498db, #2ecc71);
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.3s ease;
+      position: relative;
+    }
+
+    .progress-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 30px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-30px); }
+      100% { transform: translateX(400px); }
+    }
+
+    .progress-percentage {
+      font-size: 18px;
+      font-weight: bold;
+      color: #3498db;
+      margin: 10px 0;
+    }
+
+    .progress-status {
+      font-size: 14px;
+      color: #bdc3c7;
+      margin: 5px 0;
+      min-height: 20px;
+    }
+
+    .progress-steps {
+      text-align: left;
+      margin: 15px 0;
+      font-size: 12px;
+    }
+
+    .progress-step {
+      padding: 3px 0;
+      color: #7f8c8d;
       display: flex;
       align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      border-radius: 6px;
-      transition: all 0.3s ease;
+      gap: 8px;
     }
 
-    .add-btn:hover {
-      background-color: rgba(46, 204, 113, 0.2);
+    .progress-step.completed {
+      color: #2ecc71;
     }
 
-    .add-btn svg {
-      stroke: #2ECC71;
-      stroke-width: 2.5;
+    .progress-step.current {
+      color: #3498db;
+      font-weight: bold;
     }
 
-    .duplicate-btn svg {
-      stroke: #3498db;
-      stroke-width: 2;
+    .progress-step.error {
+      color: #e74c3c;
+    }
+
+    .step-icon {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .step-icon.pending {
+      background-color: #7f8c8d;
+    }
+
+    .step-icon.completed {
+      background-color: #2ecc71;
+    }
+
+    .step-icon.current {
+      background-color: #3498db;
+      animation: pulse 1s infinite;
+    }
+
+    .step-icon.error {
+      background-color: #e74c3c;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
     }
 
     .btn-get-script {
@@ -966,7 +1039,14 @@
     </div>
 
     <div id="loadingMessage" class="loading-message">
-      Fichier XLSX en cours de traitement...
+      <div class="progress-container">
+        <div class="progress-percentage" id="progressPercentage">0%</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressBarFill"></div>
+        </div>
+        <div class="progress-status" id="progressStatus">Initialisation...</div>
+        <div class="progress-steps" id="progressSteps"></div>
+      </div>
     </div>
   </div>
 
@@ -995,6 +1075,111 @@
 
   <script>
     let currentRules = [];
+    let progressData = {
+      percentage: 0,
+      status: '',
+      steps: [],
+      currentStep: 0
+    };
+
+    // Progress Bar Functions
+    function showProgressBar(title, steps) {
+      const loadingDiv = document.getElementById('loadingMessage');
+      const progressSteps = document.getElementById('progressSteps');
+      
+      progressData = {
+        percentage: 0,
+        status: title,
+        steps: steps,
+        currentStep: 0
+      };
+      
+      // Create step elements
+      progressSteps.innerHTML = '';
+      steps.forEach((step, index) => {
+        const stepDiv = document.createElement('div');
+        stepDiv.className = 'progress-step';
+        stepDiv.innerHTML = `
+          <span class="step-icon pending" id="step-icon-${index}"></span>
+          <span>${step}</span>
+        `;
+        progressSteps.appendChild(stepDiv);
+      });
+      
+      updateProgress(0, title);
+      loadingDiv.classList.add('visible');
+    }
+
+    function updateProgress(percentage, status, stepIndex = null) {
+      progressData.percentage = percentage;
+      progressData.status = status;
+      
+      document.getElementById('progressPercentage').textContent = `${Math.round(percentage)}%`;
+      document.getElementById('progressBarFill').style.width = `${percentage}%`;
+      document.getElementById('progressStatus').textContent = status;
+      
+      // Update steps
+      if (stepIndex !== null) {
+        // Mark previous steps as completed
+        for (let i = 0; i < stepIndex; i++) {
+          const icon = document.getElementById(`step-icon-${i}`);
+          const step = icon.closest('.progress-step');
+          if (icon && step) {
+            icon.className = 'step-icon completed';
+            step.className = 'progress-step completed';
+          }
+        }
+        
+        // Mark current step
+        const currentIcon = document.getElementById(`step-icon-${stepIndex}`);
+        const currentStep = currentIcon?.closest('.progress-step');
+        if (currentIcon && currentStep) {
+          currentIcon.className = 'step-icon current';
+          currentStep.className = 'progress-step current';
+        }
+        
+        progressData.currentStep = stepIndex;
+      }
+    }
+
+    function completeProgress(message = 'Terminé !') {
+      updateProgress(100, message);
+      
+      // Mark all steps as completed
+      progressData.steps.forEach((_, index) => {
+        const icon = document.getElementById(`step-icon-${index}`);
+        const step = icon?.closest('.progress-step');
+        if (icon && step) {
+          icon.className = 'step-icon completed';
+          step.className = 'progress-step completed';
+        }
+      });
+      
+      setTimeout(() => {
+        hideProgressBar();
+      }, 1500);
+    }
+
+    function errorProgress(message, stepIndex = null) {
+      document.getElementById('progressStatus').textContent = message;
+      
+      if (stepIndex !== null) {
+        const icon = document.getElementById(`step-icon-${stepIndex}`);
+        const step = icon?.closest('.progress-step');
+        if (icon && step) {
+          icon.className = 'step-icon error';
+          step.className = 'progress-step error';
+        }
+      }
+      
+      setTimeout(() => {
+        hideProgressBar();
+      }, 3000);
+    }
+
+    function hideProgressBar() {
+      document.getElementById('loadingMessage').classList.remove('visible');
+    }
 
     function autoResize(textarea) {
       textarea.style.height = 'auto';
@@ -1003,11 +1188,11 @@
     }
 
     function showLoading() {
-      document.getElementById('loadingMessage').classList.add('visible');
+      showProgressBar('Chargement...', ['Initialisation']);
     }
 
     function hideLoading() {
-      document.getElementById('loadingMessage').classList.remove('visible');
+      hideProgressBar();
     }
 
     function importXLSX() {
@@ -1027,41 +1212,66 @@
           return;
         }
         
-        showLoading();
+        const steps = [
+          'Validation du fichier',
+          'Lecture du contenu',
+          'Analyse des données',
+          'Validation des règles',
+          'Création du Google Sheets',
+          'Finalisation'
+        ];
+        
+        showProgressBar('Import du fichier XLSX...', steps);
+        
         const reader = new FileReader();
         
         reader.onload = function(e) {
+          updateProgress(20, 'Lecture du fichier en cours...', 1);
+          
           const base64Data = e.target.result;
           
-          google.script.run
-            .withSuccessHandler(function(response) {
-              hideLoading();
-              if (response.success) {
-                currentRules = response.data;
-                displayRules(currentRules);
-                document.getElementById('department').value = response.department || '';
-                document.getElementById('projectCode').value = response.projectCode || '';
-                document.getElementById('email').value = response.requesterEmail || '';
-                alert('✅ ' + response.message);
-              } else {
-                alert('❌ ' + (response.message || "Erreur lors de l'import XLSX"));
-              }
-            })
-            .withFailureHandler(function(error) {
-              hideLoading();
-              console.error("Erreur:", error);
-              alert("❌ Erreur lors de l'import du fichier XLSX");
-            })
-            .handleXLSXFileSelect(base64Data, file.name);
+          setTimeout(() => {
+            updateProgress(40, 'Envoi vers Google Apps Script...', 2);
+            
+            google.script.run
+              .withSuccessHandler(function(response) {
+                if (response.success) {
+                  updateProgress(70, 'Traitement des données...', 3);
+                  
+                  setTimeout(() => {
+                    updateProgress(85, 'Validation des règles...', 4);
+                    currentRules = response.data;
+                    displayRules(currentRules);
+                    document.getElementById('department').value = response.department || '';
+                    document.getElementById('projectCode').value = response.projectCode || '';
+                    document.getElementById('email').value = response.requesterEmail || '';
+                    
+                    setTimeout(() => {
+                      completeProgress('Import réussi ! ' + response.message);
+                      alert('✅ ' + response.message);
+                    }, 500);
+                  }, 800);
+                } else {
+                  errorProgress('❌ ' + (response.message || "Erreur lors de l'import XLSX"), 2);
+                  alert('❌ ' + (response.message || "Erreur lors de l'import XLSX"));
+                }
+              })
+              .withFailureHandler(function(error) {
+                console.error("Erreur:", error);
+                errorProgress("❌ Erreur lors de l'import du fichier XLSX", 2);
+                alert("❌ Erreur lors de l'import du fichier XLSX");
+              })
+              .handleXLSXFileSelect(base64Data, file.name);
+          }, 500);
         };
         
         reader.onerror = function(e) {
-          hideLoading();
           console.error("Erreur lors de la lecture du fichier:", e);
+          errorProgress("❌ Erreur lors de la lecture du fichier XLSX", 1);
           alert("❌ Erreur lors de la lecture du fichier XLSX");
         };
 
-        // Change to readAsDataURL to get Base64 data instead of ArrayBuffer
+        updateProgress(10, 'Démarrage de la lecture...', 0);
         reader.readAsDataURL(file);
       }
     }
@@ -1299,30 +1509,51 @@
         return;
       }
       
-      showLoading();
+      const steps = [
+        'Validation des identifiants',
+        'Préparation des règles',
+        'Génération des scripts Python',
+        'Formatage du code',
+        'Finalisation'
+      ];
       
-      google.script.run
-        .withSuccessHandler(function(response) {
-          hideLoading();
-          closeCredentialsModal();
-          
-          if (response.success) {
-            displayPythonScripts(response.data);
-            alert('✅ ' + response.message);
-          } else {
-            alert('❌ ' + response.message);
-          }
-        })
-        .withFailureHandler(function(error) {
-          hideLoading();
-          console.error('Erreur:', error);
-          alert('❌ Erreur lors de la génération des scripts');
-        })
-        .generatePythonScripts({
-          csvRows: currentRules,
-          username: username,
-          password: password
-        });
+      showProgressBar('Génération des scripts...', steps);
+      updateProgress(15, 'Validation des identifiants...', 0);
+      
+      setTimeout(() => {
+        updateProgress(30, 'Envoi des données...', 1);
+        
+        google.script.run
+          .withSuccessHandler(function(response) {
+            if (response.success) {
+              updateProgress(60, 'Génération en cours...', 2);
+              
+              setTimeout(() => {
+                updateProgress(80, 'Formatage des scripts...', 3);
+                closeCredentialsModal();
+                displayPythonScripts(response.data);
+                
+                setTimeout(() => {
+                  completeProgress('Scripts générés avec succès !');
+                  alert('✅ ' + response.message);
+                }, 500);
+              }, 800);
+            } else {
+              errorProgress('❌ ' + response.message, 1);
+              alert('❌ ' + response.message);
+            }
+          })
+          .withFailureHandler(function(error) {
+            console.error('Erreur:', error);
+            errorProgress('❌ Erreur lors de la génération des scripts', 2);
+            alert('❌ Erreur lors de la génération des scripts');
+          })
+          .generatePythonScripts({
+            csvRows: currentRules,
+            username: username,
+            password: password
+          });
+      }, 700);
     }
     
     // Afficher les scripts Python générés
@@ -1633,30 +1864,52 @@
         return;
       }
       
-      showLoading();
+      const steps = [
+        'Validation des données',
+        'Préparation du document',
+        'Création du Google Sheets',
+        'Formatage des données',
+        'Finalisation'
+      ];
       
-      google.script.run
-        .withSuccessHandler((response) => {
-          hideLoading();
-          if (response && response.success) {
-            // Ouvrir le Google Sheets dans une nouvelle fenêtre
-            window.open(response.url, '_blank');
-            alert('✅ ' + response.message + '\n\nLe Google Sheets s\'ouvre dans une nouvelle fenêtre.');
-          } else {
-            alert('❌ ' + (response.message || 'Erreur lors de la création du Google Sheets'));
-          }
-        })
-        .withFailureHandler((error) => {
-          hideLoading();
-          console.error('Erreur lors de la sauvegarde NES:', error);
-          alert('❌ Erreur lors de la création du Google Sheets');
-        })
-        .saveNES({
-          department,
-          projectCode,
-          email,
-          rules: currentRules
-        });
+      showProgressBar('Sauvegarde NES...', steps);
+      updateProgress(15, 'Validation des données...', 0);
+      
+      setTimeout(() => {
+        updateProgress(30, 'Préparation du document...', 1);
+        
+        setTimeout(() => {
+          updateProgress(50, 'Envoi vers Google Sheets...', 2);
+          
+          google.script.run
+            .withSuccessHandler((response) => {
+              if (response && response.success) {
+                updateProgress(80, 'Formatage final...', 3);
+                
+                setTimeout(() => {
+                  completeProgress('NES sauvegardé avec succès !');
+                  // Ouvrir le Google Sheets dans une nouvelle fenêtre
+                  window.open(response.url, '_blank');
+                  alert('✅ ' + response.message + '\n\nLe Google Sheets s\'ouvre dans une nouvelle fenêtre.');
+                }, 500);
+              } else {
+                errorProgress('❌ ' + (response.message || 'Erreur lors de la création du Google Sheets'), 2);
+                alert('❌ ' + (response.message || 'Erreur lors de la création du Google Sheets'));
+              }
+            })
+            .withFailureHandler((error) => {
+              console.error('Erreur lors de la sauvegarde NES:', error);
+              errorProgress('❌ Erreur lors de la création du Google Sheets', 2);
+              alert('❌ Erreur lors de la création du Google Sheets');
+            })
+            .saveNES({
+              department,
+              projectCode,
+              email,
+              rules: currentRules
+            });
+        }, 600);
+      }, 500);
     }
     
     function handleError(error) {
