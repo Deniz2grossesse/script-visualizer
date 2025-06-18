@@ -135,6 +135,54 @@ const Index = () => {
     return { isValid: errors.length === 0, errors };
   };
 
+  const handleDeleteForm = () => {
+    console.log('handleDeleteForm called - confirming deletion');
+    
+    if (!confirm('Êtes-vous sûr de vouloir supprimer toutes les données du formulaire ? Cette action est irréversible.')) {
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        console.log('Response from deleteForm:', response);
+        if (response.success) {
+          // Réinitialiser tous les états
+          setCsvRows([]);
+          setGeneratedScripts([]);
+          setDepartment('');
+          setProjectCode('');
+          setEmail('');
+          setDataHasBeenImported(false);
+          setPermanentSheetUrl('');
+          setErrors({
+            email: { error: false, message: '' },
+            department: { error: false, message: '' },
+            projectCode: { error: false, message: '' },
+          });
+          
+          toast({
+            title: "Formulaire supprimé",
+            description: response.message || "Toutes les données ont été supprimées avec succès."
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: response.message || "Erreur lors de la suppression du formulaire"
+          });
+        }
+      })
+      .withFailureHandler((error) => {
+        console.error('Error in deleteForm:', error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Erreur lors de la suppression du formulaire"
+        });
+      })
+      .deleteForm();
+  };
+
   const handleFileUploadClick = () => {
     console.log('handleFileUploadClick called - user initiated action');
     fileInputRef.current?.click();
@@ -683,7 +731,7 @@ const Index = () => {
 
         <div className="flex flex-wrap justify-end gap-3">
           <Button 
-            onClick={handleDeleteAll}
+            onClick={handleDeleteForm}
             variant="outline" 
             className="text-[#E74C3C] hover:bg-[#E74C3C]/20 border-[#E74C3C] transition-colors"
           >
