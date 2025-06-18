@@ -1171,74 +1171,67 @@
     }
     
     function generateScripts() {
-      console.log('generateScripts called with csvRows:', currentRules);
-      const scriptsOutput = document.getElementById('scriptsOutput');
-      scriptsOutput.innerHTML = '';
+      console.log('generateScripts called with currentRules:', currentRules);
       
-      if (currentRules.length > 0) {
-        currentRules.forEach((rule, index) => {
-          // Gérer les IPs multiples pour la génération de scripts
-          const sourceIPs = rule.sourceIP.split('\n').filter(ip => ip.trim());
-          const destIPs = rule.destIP.split('\n').filter(ip => ip.trim());
-          
-          sourceIPs.forEach((srcIP, srcIndex) => {
-            destIPs.forEach((dstIP, dstIndex) => {
-              const scriptDiv = document.createElement('div');
-              scriptDiv.className = 'script-item';
-              scriptDiv.setAttribute('data-rule-index', index);
-              
-              const script = generateScriptForIPs(srcIP.trim(), dstIP.trim(), rule);
-              const scriptIndex = index + '_' + srcIndex + '_' + dstIndex;
-              
-              scriptDiv.innerHTML = `
-                <div class="script-content">${script}</div>
+      if (currentRules.length === 0) {
+        alert('Veuillez ajouter au moins une règle avant de générer le script');
+        return;
+      }
+      
+      // Show credentials prompt
+      alert('Please enter your credentials TA-I0034');
+      
+      const username = prompt('Username:');
+      if (!username) {
+        alert('Username requis');
+        return;
+      }
+      
+      const password = prompt('Password:');
+      if (!password) {
+        alert('Password requis');
+        return;
+      }
+      
+      showLoading();
+      
+      google.script.run
+        .withSuccessHandler(function(response) {
+          hideLoading();
+          if (response.success) {
+            const scriptsOutput = document.getElementById('scriptsOutput');
+            scriptsOutput.innerHTML = `
+              <div class="script-item">
+                <div class="script-content">${response.data}</div>
                 <div class="script-actions">
-                  <button class="copy-btn" onclick="copyScript('${scriptIndex}', \`${script}\`)">
+                  <button class="copy-btn" onclick="copyPythonScript()">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                     </svg>
                     Copy
                   </button>
-                  <button class="delete-btn" onclick="deleteGeneratedScript(this)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M3 6h18"></path>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
-                      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                    Delete
-                  </button>
                 </div>
-              `;
-              
-              scriptsOutput.appendChild(scriptDiv);
-            });
-          });
-        });
-        
-        scriptsOutput.style.display = 'block';
-      } else {
-        scriptsOutput.style.display = 'none';
-      }
+              </div>
+            `;
+            scriptsOutput.style.display = 'block';
+          } else {
+            alert('❌ ' + (response.message || "Erreur lors de la génération du script"));
+          }
+        })
+        .withFailureHandler(function(error) {
+          hideLoading();
+          console.error("Erreur:", error);
+          alert("❌ Erreur lors de la génération du script Python");
+        })
+        .generatePythonScripts(currentRules, username, password);
     }
 
-    function generateScriptForIPs(sourceIP, destIP, rule) {
-      return `curl -k -X POST "https://api/query" \\
--H "Content-Type: application/json" \\
--H "Authorization: Bearer " \\
--d '{
-  "source": "${sourceIP}",
-  "destination": "${destIP}",
-  "protocol": "${rule.protocol}",
-  "port": "${rule.port}",
-  "service": "${rule.service}"
-}'`;
-    }
-
-    function copyScript(scriptIndex, script) {
-      navigator.clipboard.writeText(script)
+    function copyPythonScript() {
+      const scriptContent = document.querySelector('.script-content').textContent;
+      navigator.clipboard.writeText(scriptContent)
         .then(() => {
-          alert('Script copié dans le presse-papier');
+          alert('Script Python copié dans le presse-papier');
         })
         .catch(err => {
           console.error('Erreur lors de la copie:', err);
@@ -1246,191 +1239,6 @@
         });
     }
 
-    function deleteGeneratedScript(button) {
-      const scriptItem = button.closest('.script-item');
-      if (scriptItem) {
-        scriptItem.remove();
-        if (document.querySelectorAll('.script-item').length === 0) {
-          document.getElementById('scriptsOutput').style.display = 'none';
-        }
-      }
-    }
-    
-    function validateRow(rule) {
-      console.log('validateRow called with:', rule);
-      const errors = [];
-      
-      if (!validateIPs(rule.sourceIP)) {
-        errors.push("Invalid source IP");
-      }
-      if (!validateIPs(rule.destIP)) {
-        errors.push("Invalid destination IP");
-      }
-      if (!validatePort(rule.port)) {
-        errors.push("Invalid port");
-      }
-      
-      return { isValid: errors.length === 0, errors };
-    }
-    
-    function validateIPs(ipString) {
-      if (!ipString) return false;
-      
-      const ips = ipString.split(/[\n,]/).map(i => i.trim()).filter(i => i);
-      if (ips.length === 0) return false;
-      
-      return ips.every(singleIp => {
-        const ipRegex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(\/\d{1,2})?$/;
-        const match = singleIp.match(ipRegex);
-        
-        if (!match) return false;
-        
-        for (let i = 1; i <= 4; i++) {
-          const octet = parseInt(match[i]);
-          if (octet < 0 || octet > 255) return false;
-        }
-        
-        if (match[5]) {
-          const cidr = parseInt(match[5].substring(1));
-          if (cidr < 0 || cidr > 32) return false;
-        }
-        
-        return true;
-      });
-    }
-    
-    function validatePort(port) {
-      if (!port) return false;
-      
-      const portNum = parseInt(port);
-      return !isNaN(portNum) && portNum >= 1 && portNum <= 65535;
-    }
-    
-    function displayRules(rules) {
-      console.log('displayRules called with:', rules);
-      const table = document.getElementById('rulesTable');
-      const tbody = table.querySelector('tbody');
-      tbody.innerHTML = '';
-      
-      if (rules.length > 0) {
-        rules.forEach((rule, index) => {
-          const row = document.createElement('tr');
-          row.className = rule.isDuplicate ? 'duplicate-row' : '';
-          
-          const sourceIPRows = calculateRowsForIPs(rule.sourceIP);
-          const destIPRows = calculateRowsForIPs(rule.destIP);
-          
-          row.innerHTML = `
-            <td>
-              <textarea 
-                rows="${sourceIPRows}"
-                oninput="autoResize(this); updateRule(${index}, 'sourceIP', this.value)" 
-                placeholder="192.168.1.0/24"
-                class="ip-field"
-                title="Enter IP addresses, one per line"
-              >${formatIPsForDisplay(rule.sourceIP || '')}</textarea>
-            </td>
-            <td>
-              <textarea 
-                rows="${destIPRows}"
-                oninput="autoResize(this); updateRule(${index}, 'destIP', this.value)" 
-                placeholder="10.0.0.1"
-                class="ip-field"
-                title="Enter IP addresses, one per line"
-              >${formatIPsForDisplay(rule.destIP || '')}</textarea>
-            </td>
-            <td>
-              <select onchange="updateRule(${index}, 'protocol', this.value)">
-                <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
-                <option value="UDP" ${rule.protocol === 'UDP' ? 'selected' : ''}>UDP</option>
-                <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
-              </select>
-            </td>
-            <td>
-              <input type="text" value="${rule.service || ''}" 
-                onchange="updateRule(${index}, 'service', this.value)" 
-                placeholder="Service" />
-            </td>
-            <td>
-              <input type="text" value="${rule.port || ''}" 
-                onchange="updateRule(${index}, 'port', this.value)" 
-                placeholder="443" />
-            </td>
-            <td>
-              <select onchange="updateRule(${index}, 'authentication', this.value)">
-                <option value="No" ${rule.authentication === 'No' ? 'selected' : ''}>No</option>
-                <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
-              </select>
-            </td>
-            <td>
-              <select onchange="updateRule(${index}, 'flowEncryption', this.value)">
-                <option value="No" ${rule.flowEncryption === 'No' ? 'selected' : ''}>No</option>
-                <option value="Yes" ${rule.flowEncryption === 'Yes' ? 'selected' : ''}>Yes</option>
-              </select>
-            </td>
-            <td>
-              <select onchange="updateRule(${index}, 'classification', this.value)">
-                <option value="Yellow" ${rule.classification === 'Yellow' ? 'selected' : ''}>Yellow</option>
-                <option value="Amber" ${rule.classification === 'Amber' ? 'selected' : ''}>Amber</option>
-                <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
-              </select>
-            </td>
-            <td>
-              <input type="text" value="${rule.appCode || ''}" 
-                onchange="updateRule(${index}, 'appCode', this.value)" 
-                placeholder="Code" />
-            </td>
-            <td>
-              <div style="display: flex; gap: 4px; justify-content: flex-end; flex-wrap: wrap;">
-                <button class="btn-add-line" onclick="addNewLine()" title="Add new line">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M8 1v14M1 8h14"/>
-                  </svg>
-                  Add
-                </button>
-                <button class="btn-duplicate-line" onclick="duplicateRow(${index})" title="Duplicate row">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                  </svg>
-                  Duplicate
-                </button>
-                <button class="btn-get-script" onclick="scrollToScript(${index})" title="Get script for this rule">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <path d="M14 2v6h6"/>
-                    <path d="M8 16h8"/>
-                    <path d="M8 12h8"/>
-                  </svg>
-                  Get Script
-                </button>
-                <button class="btn-delete-line" onclick="deleteRow(${index})" title="Delete row">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 6h18"/>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                  </svg>
-                  Delete
-                </button>
-              </div>
-            </td>
-          `;
-          
-          tbody.appendChild(row);
-        });
-        
-        table.style.display = 'table';
-        
-        setTimeout(() => {
-          document.querySelectorAll('.ip-field').forEach(textarea => {
-            autoResize(textarea);
-          });
-        }, 0);
-      } else {
-        table.style.display = 'none';
-      }
-    }
-    
     function scrollToScript(ruleIndex) {
       console.log('scrollToScript called for rule:', ruleIndex);
       
