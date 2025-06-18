@@ -230,6 +230,23 @@
       font-weight: bold;
     }
     
+ .rules-table tbody tr td:nth-child(10) > .manage-line-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 colonnes égales */
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Tous les boutons à l’intérieur de cette cellule */
+.rules-table tbody tr td:nth-child(10) > .manage-line-buttons > button {
+  width: 100%;       /* remplissent leur case */
+  padding: 4px 6px;  /* plus compact */
+  font-size: 10px;   /* texte réduit */
+  min-width: 0;      /* pour que width:100% s’applique */
+  border-radius: 4px;
+}
+
     .action-buttons {
       display: flex;
       gap: 15px;
@@ -1498,7 +1515,7 @@
                 placeholder="Code" />
             </td>
             <td>
-              <div style="display: flex; gap: 4px; justify-content: flex-end; flex-wrap: wrap;">
+              <div class="manage-line-buttons">
                 <button class="btn-add-line" onclick="addNewLine()" title="Add new line">
                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M8 1v14M1 8h14"/>
