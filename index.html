@@ -1070,7 +1070,7 @@
         </svg>
         Generate Scripts
       </button>
-      <button class="btn-nes-test" onclick="generateNESTest()">
+      <button class="btn-nes-test" onclick="testNESButton()">
         NES Test
       </button>
     </div>
@@ -1531,17 +1531,44 @@
       document.getElementById('credentialsModal').style.display = 'block';
     }
     
+    // Fonction de test pour le bouton NES
+    function testNESButton() {
+      console.log('testNESButton called');
+      try {
+        generateNESTest();
+      } catch (error) {
+        console.error('Error calling generateNESTest:', error);
+        alert('Erreur lors du clic sur NES Test: ' + error.message);
+      }
+    }
+    
     // Nouvelle fonction pour NES Test
     function generateNESTest() {
       console.log('generateNESTest called');
-      if (currentRules.length === 0) {
-        alert('Aucune règle à tester. Veuillez d\'abord ajouter des règles.');
-        return;
-      }
+      console.log('currentRules:', currentRules);
       
-      currentModalAction = 'nesTest';
-      document.getElementById('modalConfirmBtn').textContent = 'Test NES';
-      document.getElementById('credentialsModal').style.display = 'block';
+      try {
+        if (!currentRules || currentRules.length === 0) {
+          alert('Aucune règle à tester. Veuillez d\'abord ajouter des règles.');
+          return;
+        }
+        
+        currentModalAction = 'nesTest';
+        const modalBtn = document.getElementById('modalConfirmBtn');
+        if (modalBtn) {
+          modalBtn.textContent = 'Test NES';
+        }
+        
+        const modal = document.getElementById('credentialsModal');
+        if (modal) {
+          modal.style.display = 'block';
+        } else {
+          console.error('Modal not found');
+        }
+      } catch (error) {
+        console.error('Error in generateNESTest:', error);
+        alert('Erreur: ' + error.message);
+      }
     }
     
     // Fermer la modal
@@ -2116,6 +2143,19 @@
     window.addEventListener('load', () => {
       if (currentRules.length === 0) {
         addNewLine();
+      }
+      
+      // Test du bouton NES Test
+      const nesTestBtn = document.querySelector('.btn-nes-test');
+      if (nesTestBtn) {
+        console.log('NES Test button found');
+        // Ajouter un écouteur d'événement de secours
+        nesTestBtn.addEventListener('click', function() {
+          console.log('NES Test button clicked (event listener)');
+          generateNESTest();
+        });
+      } else {
+        console.error('NES Test button not found');
       }
     });
     
