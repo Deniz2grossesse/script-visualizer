@@ -677,6 +677,29 @@
       stroke-width: 2;
     }
 
+    .btn-get-script {
+      background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.3s ease;
+      min-width: 80px;
+      justify-content: center;
+    }
+
+    .btn-get-script:hover {
+      background: linear-gradient(135deg, #d35400 0%, #c0392b 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(230, 126, 34, 0.3);
+    }
+
     .script-item.highlighted {
       background: linear-gradient(135deg, #e67e22 0%, #d35400 100%) !important;
       border: 2px solid #f39c12 !important;
@@ -690,173 +713,73 @@
       100% { box-shadow: 0 0 20px rgba(230, 126, 34, 0.8); }
     }
 
-    /* Nouveau système de boutons en grille 2x2 */
-    .action-grid-container {
-      background: linear-gradient(135deg, rgba(52, 73, 94, 0.3) 0%, rgba(44, 62, 80, 0.2) 100%);
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-    }
-
-    .action-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      width: 100%;
-    }
-
-    /* Responsive: 1 colonne sur mobile */
-    @media (max-width: 768px) {
-      .action-grid {
-        grid-template-columns: 1fr;
-        gap: 8px;
-      }
-    }
-
-    /* Boutons primaires (ligne du haut) */
-    .action-btn-primary {
-      background: linear-gradient(135deg, var(--btn-primary-from) 0%, var(--btn-primary-to) 100%);
+    .btn-add-line {
+      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
       color: white;
       border: none;
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-size: 12px;
-      font-weight: 600;
+      border-radius: 6px;
+      padding: 6px 12px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      min-height: 44px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    /* Boutons secondaires (ligne du bas) */
-    .action-btn-secondary {
-      background: linear-gradient(135deg, var(--btn-secondary-from) 0%, var(--btn-secondary-to) 100%);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 14px;
       font-size: 11px;
       font-weight: 500;
-      cursor: pointer;
       display: flex;
       align-items: center;
+      gap: 4px;
+      transition: all 0.3s ease;
+      min-width: 80px;
       justify-content: center;
-      gap: 5px;
-      min-height: 38px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-
-    /* Hover effects */
-    .action-btn-primary:hover,
-    .action-btn-secondary:hover {
-      transform: translateY(-2px) scale(1.02);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-    }
-
-    /* Focus states pour l'accessibilité */
-    .action-btn-primary:focus,
-    .action-btn-secondary:focus {
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.4);
-    }
-
-    /* Couleurs spécifiques pour chaque bouton */
-    .btn-get-script {
-      --btn-primary-from: #e67e22;
-      --btn-primary-to: #d35400;
-    }
-
-    .btn-get-script:hover {
-      box-shadow: 0 8px 24px rgba(230, 126, 34, 0.4);
-    }
-
-    .btn-add-line {
-      --btn-primary-from: #2ecc71;
-      --btn-primary-to: #27ae60;
     }
 
     .btn-add-line:hover {
-      box-shadow: 0 8px 24px rgba(46, 204, 113, 0.4);
+      background: linear-gradient(135deg, #27ae60 0%, #219a52 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
     }
 
     .btn-duplicate-line {
-      --btn-secondary-from: #3498db;
-      --btn-secondary-to: #2980b9;
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.3s ease;
+      min-width: 80px;
+      justify-content: center;
     }
 
     .btn-duplicate-line:hover {
-      box-shadow: 0 8px 24px rgba(52, 152, 219, 0.4);
+      background: linear-gradient(135deg, #2980b9 0%, #1f5582 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
     }
 
     .btn-delete-line {
-      --btn-secondary-from: #e74c3c;
-      --btn-secondary-to: #c0392b;
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.3s ease;
+      min-width: 80px;
+      justify-content: center;
     }
 
     .btn-delete-line:hover {
-      box-shadow: 0 8px 24px rgba(231, 76, 60, 0.4);
-    }
-
-    /* Icônes */
-    .action-btn-primary svg,
-    .action-btn-secondary svg {
-      width: 14px;
-      height: 14px;
-      stroke-width: 2.5;
-    }
-
-    .action-btn-secondary svg {
-      width: 12px;
-      height: 12px;
-    }
-
-    /* Animation d'apparition staggered */
-    .action-btn-primary:nth-child(1) { animation: slideInUp 0.4s ease-out 0.1s both; }
-    .action-btn-primary:nth-child(2) { animation: slideInUp 0.4s ease-out 0.2s both; }
-    .action-btn-secondary:nth-child(3) { animation: slideInUp 0.4s ease-out 0.3s both; }
-    .action-btn-secondary:nth-child(4) { animation: slideInUp 0.4s ease-out 0.4s both; }
-
-    @keyframes slideInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* États de chargement */
-    .action-btn-loading {
-      pointer-events: none;
-      opacity: 0.7;
-    }
-
-    .action-btn-loading::after {
-      content: '';
-      position: absolute;
-      width: 14px;
-      height: 14px;
-      border: 2px solid transparent;
-      border-top: 2px solid currentColor;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+      background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
     }
   </style>
 </head>
@@ -1458,39 +1381,37 @@
                 placeholder="Code" />
             </td>
             <td>
-              <div class="action-grid-container">
-                <div class="action-grid">
-                  <button class="action-btn-primary btn-get-script" onclick="scrollToScript(${index})" title="Get script for this rule">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                      <path d="M14 2v6h6"/>
-                      <path d="M8 16h8"/>
-                      <path d="M8 12h8"/>
-                    </svg>
-                    Get Script
-                  </button>
-                  <button class="action-btn-primary btn-add-line" onclick="addNewLine()" title="Add new line">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M8 1v14M1 8h14"/>
-                    </svg>
-                    Add Line
-                  </button>
-                  <button class="action-btn-secondary btn-duplicate-line" onclick="duplicateRow(${index})" title="Duplicate this row">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                    Duplicate
-                  </button>
-                  <button class="action-btn-secondary btn-delete-line" onclick="deleteRow(${index})" title="Delete this row">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M3 6h18"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-                      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    </svg>
-                    Delete
-                  </button>
-                </div>
+              <div style="display: flex; gap: 4px; justify-content: flex-end; flex-wrap: wrap;">
+                <button class="btn-add-line" onclick="addNewLine()" title="Add new line">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 1v14M1 8h14"/>
+                  </svg>
+                  Add
+                </button>
+                <button class="btn-duplicate-line" onclick="duplicateRow(${index})" title="Duplicate row">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  Duplicate
+                </button>
+                <button class="btn-get-script" onclick="scrollToScript(${index})" title="Get script for this rule">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <path d="M14 2v6h6"/>
+                    <path d="M8 16h8"/>
+                    <path d="M8 12h8"/>
+                  </svg>
+                  Get Script
+                </button>
+                <button class="btn-delete-line" onclick="deleteRow(${index})" title="Delete row">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                  Delete
+                </button>
               </div>
             </td>
           `;
