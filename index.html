@@ -1,273 +1,1669 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base target="_top">
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>One Click Onboarding</title>
+  <base target="_top">
+  <title>Network Rules Generator - XLSX Only</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
+      font-family: 'Roboto', Arial, sans-serif;
       margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-    .container {
-      background-color: #fff;
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      width: 80%;
-      max-width: 800px;
+      background: #212121;
+      color: #fff;
+      min-width: 1400px;
     }
+    
+    .container {
+      width: 1400px;
+      margin: 0 auto;
+      padding: 30px;
+      background: #1A1F2C;
+      border-radius: 8px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+    
     h1 {
       text-align: center;
-      color: #333;
+      color: #ffffff;
+      margin-bottom: 30px;
+      font-size: 32px;
+      font-weight: 500;
     }
+    
+    .alert {
+      background-color: #2B3E50;
+      padding: 16px;
+      border-radius: 6px;
+      margin-bottom: 40px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .alert-icon {
+      color: #f39c12;
+    }
+    
+    .form-group {
+      margin-bottom: 30px;
+      width: 300px;
+    }
+    
     label {
       display: block;
-      margin-top: 10px;
-      color: #555;
+      margin-bottom: 8px;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
     }
+    
+    .required {
+      color: #f39c12;
+      margin-left: 4px;
+    }
+    
     input[type="text"],
     input[type="email"],
-    select {
+    input[type="password"] {
       width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      margin-bottom: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      padding: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      background-color: #2B3E50;
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 14px;
       box-sizing: border-box;
+      transition: all 0.3s ease;
     }
+    
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus {
+      outline: none;
+      border-color: #3498db;
+      background-color: #34495E;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+    
+    ::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 30px;
+    }
+    
+    .top-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+    
     button {
-      background-color: #4CAF50;
-      color: white;
-      padding: 10px 15px;
+      padding: 10px 20px;
       border: none;
-      border-radius: 4px;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 500;
       cursor: pointer;
+      text-align: center;
+      min-width: 40px;
+      transition: all 0.3s ease;
     }
-    button:hover {
-      background-color: #367c39;
+    
+    .btn-add {
+      background-color: #2ECC71;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      min-width: 40px;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
+    
+    .btn-add span {
+      font-size: 20px;
+      line-height: 1;
+      margin-top: -2px;
     }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
+    
+    .btn-add:hover {
+      background-color: #27AE60;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
     }
-    th {
-      background-color: #f2f2f2;
+    
+    .btn-import {
+      background-color: #E67E22;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      min-width: 40px;
     }
+    
+    .btn-import span {
+      font-size: 18px;
+      line-height: 1;
+    }
+    
+    .btn-import:hover {
+      background-color: #D35400;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(230, 126, 34, 0.3);
+    }
+    
+    .btn-delete {
+      background-color: transparent;
+      color: #ff4757;
+      border: 2px solid #ff4757;
+      padding: 12px 35px;
+    }
+    
+    .btn-delete:hover {
+      background-color: #ff4757;
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+    }
+    
+    .btn-resume {
+      background-color: transparent;
+      color: #fff;
+      border: 2px solid #666;
+      padding: 12px 35px;
+    }
+    
+    .btn-resume:hover {
+      background-color: #666;
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 102, 102, 0.3);
+    }
+    
+    .btn-verify {
+      background-color: transparent;
+      color: #3498db;
+      border: 2px solid #3498db;
+      padding: 12px 35px;
+    }
+    
+    .btn-verify:hover {
+      background-color: #3498db;
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+    
+    .btn-generate {
+      background-color: #F08B32;
+      color: white;
+      padding: 12px 60px 12px 35px;
+      position: relative;
+      border-radius: 25px;
+      min-width: 40px;
+    }
+    
+    .btn-generate:hover {
+      background-color: #E67E22;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(240, 139, 50, 0.3);
+    }
+    
+    .btn-generate::after {
+      content: "→";
+      position: absolute;
+      right: 25px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    
     .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 40px;
+    }
+    
+    #actionBar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #1A1F2C;
+      padding: 15px 30px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    body {
+      padding-bottom: 90px;
+    }
+
+    .rules-table {
+      width: 100%;
       margin-top: 20px;
+      border-collapse: separate;
+      border-spacing: 6px;
+      table-layout: fixed;
+      border: 2px solid #34495E;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      background: #34495E;
+    }
+
+    .rules-table th,
+    .rules-table td {
+      padding: 8px 12px;
+      text-align: left;
+      border: none;
+      vertical-align: top;
+      background: #1A1F2C;
+      border-radius: 6px;
+    }
+
+    .rules-table th {
+      background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+      color: #fff;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: none;
+    }
+
+    .rules-table th:nth-child(1),
+    .rules-table td:nth-child(1) { 
+      width: 140px;
       text-align: center;
     }
-    .action-buttons button {
-      margin: 0 10px;
+    
+    .rules-table th:nth-child(2),
+    .rules-table td:nth-child(2) { 
+      width: 140px;
+      text-align: center;
     }
-    .btn-test {
-      background-color: #9b59b6;
-      color: white;
-      padding: 12px 35px;
-      border-radius: 25px;
-      cursor: pointer;
+    
+    .rules-table th:nth-child(3),
+    .rules-table td:nth-child(3) { width: 90px; }
+    
+    .rules-table th:nth-child(4),
+    .rules-table td:nth-child(4) { width: 100px; }
+    
+    .rules-table th:nth-child(5),
+    .rules-table td:nth-child(5) { width: 70px; }
+    
+    .rules-table th:nth-child(6),
+    .rules-table td:nth-child(6) { width: 110px; }
+    
+    .rules-table th:nth-child(7),
+    .rules-table td:nth-child(7) { width: 110px; }
+    
+    .rules-table th:nth-child(8),
+    .rules-table td:nth-child(8) { width: 100px; }
+    
+    .rules-table th:nth-child(9),
+    .rules-table td:nth-child(9) { width: 80px; }
+    
+    .rules-table th:nth-child(10),
+    .rules-table td:nth-child(10) { width: 120px; }
+
+    .ip-field {
+      width: 120px;
+      background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%);
+      border: 2px solid rgba(52, 152, 219, 0.2);
+      border-radius: 6px;
+      color: #fff;
+      padding: 8px 10px;
+      resize: none;
+      overflow-y: auto;
+      line-height: 1.6;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      min-height: 40px;
       transition: all 0.3s ease;
-      border: none;
-      font-size: 16px;
-      margin: 5px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin: 0 auto;
+      display: block;
     }
-    .btn-test:hover {
-      background-color: #8e44ad;
+
+    .ip-field:focus {
+      outline: none;
+      border-color: #3498db;
+      background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .ip-field::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+      font-style: italic;
+    }
+    
+    .rules-table tbody tr {
+      background-color: transparent;
+      transition: all 0.3s ease;
+    }
+
+    .rules-table tbody tr:hover td {
+      background: linear-gradient(135deg, #2C3E50 0%, #1A1F2C 100%);
+      box-shadow: 0 2px 8px rgba(52, 152, 219, 0.15);
+    }
+
+    .rules-table td input,
+    .rules-table td select {
+      width: 100%;
+      padding: 6px 10px;
+      background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #ffffff !important;
+      font-size: 12px;
+      transition: all 0.3s ease;
+      margin: 0;
+    }
+
+    .rules-table td input:focus,
+    .rules-table td select:focus {
+      outline: none;
+      border-color: #3498db;
+      background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+
+    /* Correction spécifique pour les éléments select */
+    .rules-table td select {
+      background: #34495E !important;
+      color: #ffffff !important;
+    }
+
+    .rules-table td select option {
+      background: #34495E !important;
+      color: #ffffff !important;
+      padding: 8px;
+    }
+
+    /* Style pour tous les selects de la page */
+    select {
+      background: #34495E !important;
+      color: #ffffff !important;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 6px 10px;
+    }
+
+    select option {
+      background: #34495E !important;
+      color: #ffffff !important;
+      padding: 8px;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+
+    .scripts-container {
+      margin-top: 20px;
+      background: linear-gradient(135deg, #2B3E50 0%, #34495E 100%);
+      padding: 20px;
+      border-radius: 8px;
+      display: none;
+      border: 2px solid #3498db;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .script-item {
+      background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%);
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      position: relative;
+      border: 1px solid rgba(52, 152, 219, 0.3);
+    }
+
+    .script-content {
+      white-space: pre;
+      font-family: 'Courier New', monospace;
+      color: #fff;
+      background: linear-gradient(135deg, #1A1F2C 0%, #2C3E50 100%);
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      overflow-x: auto;
+      border: 1px solid rgba(52, 152, 219, 0.2);
+    }
+
+    .script-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .copy-btn {
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 80px;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .copy-btn:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    .copy-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .delete-btn {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 80px;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .delete-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+    }
+
+    .delete-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .delete-row-btn {
+      background: none;
+      border: none;
+      color: #e74c3c;
+      cursor: pointer;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .delete-row-btn:hover {
+      background-color: rgba(231, 76, 60, 0.2);
+    }
+
+    .delete-row-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: #e74c3c;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      display: block;
+    }
+
+    .duplicate-btn {
+      background: none;
+      border: none;
+      border-radius: 6px;
+      padding: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      transition: all 0.3s ease;
+    }
+
+    .duplicate-btn:hover {
+      background-color: rgba(52, 152, 219, 0.2);
+    }
+
+    .duplicate-btn svg {
+      stroke: #3498db;
+    }
+
+    .trash-icon {
+      color: #e74c3c;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+    }
+
+    .trash-icon svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: #e74c3c;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      display: block;
+    }
+
+    .error-message {
+      color: #e74c3c;
+      margin-top: 5px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .success-message {
+      color: #2ecc71;
+      margin-top: 5px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .loading-message {
+      display: none;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 30px;
+      border-radius: 8px;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      text-align: center;
+      border: 2px solid #3498db;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .loading-message.visible {
+      display: block;
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, #27ae60 0%, #219a52 100%);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      padding: 12px 35px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-save:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+    }
+
+    .btn-save svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .duplicate-row {
+      background: linear-gradient(135deg, rgba(255, 0, 0, 0.15) 0%, rgba(255, 0, 0, 0.1) 100%) !important;
+      border: 2px solid #ff4d4d !important;
+      animation: pulse-error 2s infinite;
+    }
+
+    @keyframes pulse-error {
+      0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .add-btn:hover {
+      background-color: rgba(46, 204, 113, 0.2);
+    }
+
+    .add-btn svg {
+      stroke: #2ECC71;
+      stroke-width: 2.5;
+    }
+
+    .duplicate-btn svg {
+      stroke: #3498db;
+      stroke-width: 2;
+    }
+
+    .btn-get-script {
+      background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.3s ease;
+      min-width: 80px;
+      justify-content: center;
+    }
+
+    .btn-get-script:hover {
+      background: linear-gradient(135deg, #d35400 0%, #c0392b 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(230, 126, 34, 0.3);
+    }
+
+    .script-item.highlighted {
+      background: linear-gradient(135deg, #e67e22 0%, #d35400 100%) !important;
+      border: 2px solid #f39c12 !important;
+      box-shadow: 0 0 20px rgba(230, 126, 34, 0.5) !important;
+      animation: highlight-pulse 2s ease-in-out;
+    }
+
+    @keyframes highlight-pulse {
+      0% { box-shadow: 0 0 20px rgba(230, 126, 34, 0.8); }
+      50% { box-shadow: 0 0 30px rgba(230, 126, 34, 0.4); }
+      100% { box-shadow: 0 0 20px rgba(230, 126, 34, 0.8); }
+    }
+
+    .btn-add-line {
+      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.3s ease;
+      min-width: 80px;
+      justify-content: center;
+    }
+
+    .btn-add-line:hover {
+      background: linear-gradient(135deg, #27ae60 0%, #219a52 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+    }
+
+    .btn-duplicate-line {
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.3s ease;
+      min-width: 80px;
+      justify-content: center;
+    }
+
+    .btn-duplicate-line:hover {
+      background: linear-gradient(135deg, #2980b9 0%, #1f5582 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-delete-line {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.3s ease;
+      min-width: 80px;
+      justify-content: center;
+    }
+
+    .btn-delete-line:hover {
+      background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    .modal-content {
+      background-color: #1A1F2C;
+      margin: 15% auto;
+      padding: 30px;
+      border: 2px solid #3498db;
+      width: 400px;
+      border-radius: 8px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-header {
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    .modal-body {
+      margin-bottom: 20px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn-cancel {
+      background-color: transparent;
+      color: #666;
+      border: 2px solid #666;
+      padding: 10px 20px;
+      border-radius: 25px;
+    }
+
+    .btn-cancel:hover {
+      background-color: #666;
+      color: white;
+    }
+
+    .btn-confirm {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+    }
+
+    .btn-confirm:hover {
+      background-color: #2980b9;
     }
   </style>
 </head>
 <body>
-  <script>
-    // Récupère l'API_URL depuis le serveur
-    const API_URL = "<?= getApiUrl() ?>";
-  </script>
-
   <div class="container">
-    <h1>One Click Onboarding</h1>
-    
-    <label for="department">Department:</label>
-    <input type="text" id="department" name="department" placeholder="Enter department">
+    <h1>One Click Onboarding - XLSX Exclusif</h1>
 
-    <label for="projectCode">Project Code:</label>
-    <input type="text" id="projectCode" name="projectCode" placeholder="Enter project code">
+    <div class="top-buttons">
+      <button class="btn-add" onclick="addNewLine()">
+        <span>+</span>
+        Add a Line
+      </button>
+      <button class="btn-import" onclick="importXLSX()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        Import XLSX
+      </button>
+    </div>
 
-    <label for="email">Email:</label>
-    <input type="email" id="email" name="email" placeholder="Enter email">
+    <div class="alert">
+      <span class="alert-icon">⚠️</span>
+      <span>Important: Seuls les fichiers XLSX sont acceptés. Le système traite toutes les lignes et ignore uniquement celles où les colonnes A-L sont entièrement vides.</span>
+    </div>
 
-    <label for="sourceIP">Source IP:</label>
-    <input type="text" id="sourceIP" name="sourceIP" placeholder="Enter source IP">
+    <div class="form-group">
+      <label>Department <span class="required">*</span></label>
+      <input 
+        type="text" 
+        id="department" 
+        maxlength="4" 
+        placeholder="Department (1-4 chars)"
+      >
+    </div>
 
-    <label for="destIP">Destination IP:</label>
-    <input type="text" id="destIP" name="destIP" placeholder="Enter destination IP">
+    <div class="form-group">
+      <label>Project/Application Code <span class="required">*</span></label>
+      <input 
+        type="text" 
+        id="projectCode" 
+        maxlength="4" 
+        placeholder="Project code (1-4 chars)"
+      >
+    </div>
 
-    <label for="protocol">Protocol:</label>
-    <select id="protocol" name="protocol">
-      <option value="tcp">TCP</option>
-      <option value="udp">UDP</option>
-      <option value="icmp">ICMP</option>
-    </select>
+    <div class="form-group">
+      <label>Requester's Email <span class="required">*</span></label>
+      <input 
+        type="email" 
+        id="email" 
+        placeholder="Email address"
+      >
+    </div>
 
-    <label for="service">Service:</label>
-    <input type="text" id="service" name="service" placeholder="Enter service">
-
-    <label for="port">Port:</label>
-    <input type="text" id="port" name="port" placeholder="Enter port">
-
-    <label for="authentication">Authentication:</label>
-    <select id="authentication" name="authentication">
-      <option value="yes">Yes</option>
-      <option value="no">No</option>
-    </select>
-
-    <label for="flowEncryption">Flow Encryption:</label>
-    <select id="flowEncryption" name="flowEncryption">
-      <option value="yes">Yes</option>
-      <option value="no">No</option>
-    </select>
-
-    <label for="classification">Classification:</label>
-    <select id="classification" name="classification">
-      <option value="yellow">Yellow</option>
-      <option value="amber">Amber</option>
-      <option value="red">Red</option>
-    </select>
-
-    <label for="appCode">App Code:</label>
-    <input type="text" id="appCode" name="appCode" placeholder="Enter app code">
-
-    <table>
+    <table id="rulesTable" class="rules-table" style="display: none;">
       <thead>
         <tr>
           <th>Source IP</th>
-          <th>Destination IP</th>
+          <th>IP Destination</th>
           <th>Protocol</th>
           <th>Service</th>
           <th>Port</th>
           <th>Authentication</th>
           <th>Flow Encryption</th>
           <th>Classification</th>
-          <th>App Code</th>
+          <th>APP Code</th>
+          <th style="text-align: right;">Manage ligne</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>Value</td>
-          <td>Value</td>
-          <td>Value</td>
-          <td>Value</td>
-          <td>Value</td>
-          <td>Value</td>
-          <td>Value</td>
-          <td>Value</td>
-          <td>Value</td>
-        </tr>
       </tbody>
     </table>
-    
-    <!-- Action buttons section -->
-    <div class="action-buttons">
-      <button onclick="handleDeleteForm()">Delete Form</button>
-      <button onclick="handleSaveNES()">Save NES</button>
-      <button class="btn-test" onclick="generateNESTest()">
-        NES Test
+
+    <div id="scriptsOutput" class="scripts-container"></div>
+
+    <div id="actionBar" class="action-buttons">
+      <button class="btn-delete" onclick="deleteForm()">Delete</button>
+      <button class="btn-verify" onclick="verifyAndMergeRules()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Verify & Merge
+      </button>
+      <button class="btn-save" onclick="saveNES()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Save NES
+      </button>
+      <button class="btn-generate" onclick="generateScripts()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <path d="M14 2v6h6"/>
+          <path d="M8 16h8"/>
+          <path d="M8 12h8"/>
+          <path d="M8 8h4"/>
+        </svg>
+        Generate Scripts
       </button>
     </div>
 
-    <!-- Scripts output section -->
-    <div id="scriptsOutput" style="display: none;">
-      <h3>Generated Scripts</h3>
-      <!-- Scripts will be displayed here -->
+    <div id="loadingMessage" class="loading-message">
+      Fichier XLSX en cours de traitement...
+    </div>
+  </div>
+
+  <!-- Modal pour demander les identifiants -->
+  <div id="credentialsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        Please enter your credentials TA-I0034
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Username <span class="required">*</span></label>
+          <input type="text" id="modalUsername" placeholder="Enter your username">
+        </div>
+        <div class="form-group">
+          <label>Password <span class="required">*</span></label>
+          <input type="password" id="modalPassword" placeholder="Enter your password">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeCredentialsModal()">Cancel</button>
+        <button class="btn-confirm" onclick="confirmGenerateScripts()">Generate</button>
+      </div>
     </div>
   </div>
 
   <script>
-    function handleDeleteForm() {
-      // Implement delete form functionality here
-      alert('Delete form clicked');
+    let currentRules = [];
+
+    function autoResize(textarea) {
+      textarea.style.height = 'auto';
+      const newHeight = Math.min(Math.max(textarea.scrollHeight, 42), 150);
+      textarea.style.height = newHeight + 'px';
     }
 
-    function handleSaveNES() {
-      // Implement save NES functionality here
-      alert('Save NES clicked');
+    function showLoading() {
+      document.getElementById('loadingMessage').classList.add('visible');
     }
 
-    function generateNESTest() {
-      console.log('generateNESTest called - requesting credentials');
+    function hideLoading() {
+      document.getElementById('loadingMessage').classList.remove('visible');
+    }
+
+    function importXLSX() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.xlsx'; // Changement: accepte uniquement XLSX
+      input.addEventListener('change', handleXLSXFileSelect);
+      input.click();
+    }
+
+    function handleXLSXFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        // Validation stricte du format XLSX
+        if (!file.name.toLowerCase().endsWith('.xlsx')) {
+          alert('❌ ERREUR: Seuls les fichiers .xlsx sont acceptés.');
+          return;
+        }
+        
+        showLoading();
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          const base64Data = e.target.result;
+          
+          google.script.run
+            .withSuccessHandler(function(response) {
+              hideLoading();
+              if (response.success) {
+                currentRules = response.data;
+                displayRules(currentRules);
+                document.getElementById('department').value = response.department || '';
+                document.getElementById('projectCode').value = response.projectCode || '';
+                document.getElementById('email').value = response.requesterEmail || '';
+                alert('✅ ' + response.message);
+              } else {
+                alert('❌ ' + (response.message || "Erreur lors de l'import XLSX"));
+              }
+            })
+            .withFailureHandler(function(error) {
+              hideLoading();
+              console.error("Erreur:", error);
+              alert("❌ Erreur lors de l'import du fichier XLSX");
+            })
+            .handleXLSXFileSelect(base64Data, file.name);
+        };
+        
+        reader.onerror = function(e) {
+          hideLoading();
+          console.error("Erreur lors de la lecture du fichier:", e);
+          alert("❌ Erreur lors de la lecture du fichier XLSX");
+        };
+
+        // Change to readAsDataURL to get Base64 data instead of ArrayBuffer
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function formatIPsForDisplay(ipString) {
+      if (!ipString) return '';
+      return ipString.split(',').map(ip => ip.trim()).filter(ip => ip).join('\n');
+    }
+
+    function formatIPsForStorage(ipString) {
+      if (!ipString) return '';
+      return ipString.split('\n').map(ip => ip.trim()).filter(ip => ip).join(',');
+    }
+
+    function calculateRowsForIPs(ipString) {
+      if (!ipString) return 1;
+      const ips = ipString.split(/[\n,]/).filter(ip => ip.trim());
+      return Math.max(1, Math.min(ips.length, 6));
+    }
+
+    function updateRule(index, field, value) {
+      console.log('updateRule called', { index, field, value });
       
-      // Efface les scripts précédents
-      const scriptsOutput = document.getElementById('scriptsOutput');
-      scriptsOutput.innerHTML = '';
-      scriptsOutput.style.display = 'block';
+      if (field === 'sourceIP' || field === 'destIP') {
+        value = formatIPsForStorage(value);
+      }
+      
+      const newRules = [...currentRules];
+      newRules[index] = {
+        ...newRules[index],
+        [field]: value
+      };
+      
+      const validation = validateRow(newRules[index]);
+      newRules[index].isValid = validation.isValid;
+      newRules[index].errors = validation.errors;
+      
+      currentRules = newRules;
+    }
 
-      // Demande les identifiants via prompts
-      const username = prompt("Please enter your credentials TA-I0034 (login):");
-      if (!username) {
-        alert("Login requis");
+    function addNewLine() {
+      console.log('Adding new line to currentRules');
+      currentRules.push({
+        sourceIP: '',
+        destIP: '',
+        protocol: 'TCP',
+        service: '',
+        port: '',
+        authentication: 'No',
+        flowEncryption: 'No',
+        classification: 'Yellow',
+        appCode: '',
+        isValid: false,
+        errors: []
+      });
+      displayRules(currentRules);
+    }
+
+    function duplicateRow(index) {
+      console.log('Duplicating row at index:', index);
+      if (index >= 0 && index < currentRules.length) {
+        const duplicatedRow = {...currentRules[index]};
+        currentRules.splice(index + 1, 0, duplicatedRow);
+        displayRules(currentRules);
+        toast("Row duplicated successfully");
+      }
+    }
+
+    function deleteRow(index) {
+      console.log('Deleting row at index:', index);
+      if (index >= 0 && index < currentRules.length) {
+        currentRules.splice(index, 1);
+        displayRules(currentRules);
+        toast("Row deleted successfully");
+      }
+    }
+
+    function toast(message) {
+      alert(message);
+    }
+
+    function deleteForm() {
+      if (confirm('Voulez-vous vraiment supprimer le formulaire ?')) {
+        google.script.run
+          .withSuccessHandler(() => {
+            document.getElementById('department').value = '';
+            document.getElementById('projectCode').value = '';
+            document.getElementById('email').value = '';
+            currentRules = [];
+            document.getElementById('rulesTable').style.display = 'none';
+            document.getElementById('scriptsOutput').style.display = 'none';
+            alert('✅ Formulaire supprimé avec succès');
+          })
+          .withFailureHandler(handleError)
+          .deleteForm();
+      }
+    }
+
+    function verifyAndMergeRules() {
+      const department = document.getElementById('department').value;
+      const projectCode = document.getElementById('projectCode').value;
+      const email = document.getElementById('email').value;
+
+      let isValid = true;
+      let errors = [];
+
+      if (!department || department.length > 4) {
+        errors.push('Department must be between 1 and 4 characters');
+        isValid = false;
+      }
+
+      if (!projectCode || projectCode.length > 4) {
+        errors.push('Project code must be between 1 and 4 characters');
+        isValid = false;
+      }
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errors.push('Invalid email');
+        isValid = false;
+      }
+
+      if (!isValid) {
+        alert('Errors:\n' + errors.join('\n'));
+        return;
+      }
+
+      // Fonction de fusion intelligente des IPs
+      const grouped = [];
+
+      currentRules.forEach(rule => {
+        const srcIPs = rule.sourceIP.split(/[\n,]/).map(ip => ip.trim()).filter(Boolean);
+        const dstIPs = rule.destIP.split(/[\n,]/).map(ip => ip.trim()).filter(Boolean);
+
+        let foundGroup = false;
+
+        for (let group of grouped) {
+          if (
+            group.protocol === rule.protocol &&
+            group.service === rule.service &&
+            group.port === rule.port &&
+            group.authentication === rule.authentication &&
+            group.flowEncryption === rule.flowEncryption &&
+            group.classification === rule.classification &&
+            group.appCode === rule.appCode
+          ) {
+            // Fusionner IPs sources si destination identique
+            if (arraysEqual(group.destIPs, dstIPs)) {
+              group.sourceIPs = Array.from(new Set([...group.sourceIPs, ...srcIPs]));
+              foundGroup = true;
+              break;
+            }
+            // Fusionner IPs destinations si source identique
+            else if (arraysEqual(group.sourceIPs, srcIPs)) {
+              group.destIPs = Array.from(new Set([...group.destIPs, ...dstIPs]));
+              foundGroup = true;
+              break;
+            }
+          }
+        }
+
+        if (!foundGroup) {
+          grouped.push({
+            protocol: rule.protocol,
+            service: rule.service,
+            port: rule.port,
+            authentication: rule.authentication,
+            flowEncryption: rule.flowEncryption,
+            classification: rule.classification,
+            appCode: rule.appCode,
+            sourceIPs: srcIPs,
+            destIPs: dstIPs
+          });
+        }
+      });
+
+      // Créer les règles fusionnées
+      currentRules = grouped.map(group => ({
+        sourceIP: group.sourceIPs.join('\n'),
+        destIP: group.destIPs.join('\n'),
+        protocol: group.protocol,
+        service: group.service,
+        port: group.port,
+        authentication: group.authentication,
+        flowEncryption: group.flowEncryption,
+        classification: group.classification,
+        appCode: group.appCode,
+        isValid: true,
+        errors: []
+      }));
+
+      // Valider les règles fusionnées
+      currentRules.forEach(rule => {
+        const validation = validateRow(rule);
+        rule.isValid = validation.isValid;
+        rule.errors = validation.errors;
+      });
+
+      displayRules(currentRules);
+      alert('Fusion terminée ! Les IPs ont été regroupées de manière intelligente.\nNombre de règles après fusion: ' + currentRules.length);
+    }
+
+    function arraysEqual(a, b) {
+      if (a.length !== b.length) return false;
+      const sortedA = [...a].sort();
+      const sortedB = [...b].sort();
+      return sortedA.every((val, index) => val === sortedB[index]);
+    }
+    
+    // Fonction modifiée pour afficher la modal
+    function generateScripts() {
+      console.log('generateScripts called');
+      if (currentRules.length === 0) {
+        alert('Aucune règle à générer. Veuillez d\'abord ajouter des règles.');
         return;
       }
       
-      const password = prompt("Please enter your credentials TA-I0034 (password):");
-      if (!password) {
-        alert("Mot de passe requis");
+      // Afficher la modal pour demander les identifiants
+      document.getElementById('credentialsModal').style.display = 'block';
+    }
+    
+    // Fermer la modal
+    function closeCredentialsModal() {
+      document.getElementById('credentialsModal').style.display = 'none';
+      document.getElementById('modalUsername').value = '';
+      document.getElementById('modalPassword').value = '';
+    }
+    
+    // Confirmer et générer les scripts avec les identifiants
+    function confirmGenerateScripts() {
+      const username = document.getElementById('modalUsername').value;
+      const password = document.getElementById('modalPassword').value;
+      
+      if (!username || !password) {
+        alert('Veuillez entrer votre nom d\'utilisateur et mot de passe');
         return;
       }
-
-      // Appel vers Code.gs
+      
+      showLoading();
+      
       google.script.run
         .withSuccessHandler(function(response) {
-          console.log('Response from generateNESTestScript:', response);
+          hideLoading();
+          closeCredentialsModal();
+          
           if (response.success) {
-            // Créer l'élément pour afficher le script
-            const scriptContainer = document.createElement('div');
-            scriptContainer.innerHTML = `
-              <h4>NES Test Script</h4>
-              <pre style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; white-space: pre-wrap;">${response.script}</pre>
-              <button onclick="copyScript(this)" style="margin-top: 10px; padding: 8px 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">Copy Script</button>
-            `;
-            
-            scriptsOutput.appendChild(scriptContainer);
-            
-            // Afficher le message de confirmation
-            alert("A script has been generated to test all the NES file");
+            displayPythonScripts(response.data);
+            alert('✅ ' + response.message);
           } else {
-            alert("Erreur: " + response.message);
+            alert('❌ ' + response.message);
           }
         })
         .withFailureHandler(function(error) {
-          console.error('Error in generateNESTestScript:', error);
-          alert("Erreur lors de la génération du script de test");
+          hideLoading();
+          console.error('Erreur:', error);
+          alert('❌ Erreur lors de la génération des scripts');
         })
-        .generateNESTestScript({
+        .generatePythonScripts({
+          csvRows: currentRules,
           username: username,
           password: password
         });
     }
-
-    function copyScript(button) {
-      const scriptText = button.previousElementSibling.textContent;
-      navigator.clipboard.writeText(scriptText).then(function() {
-        button.textContent = 'Copied!';
-        setTimeout(function() {
-          button.textContent = 'Copy Script';
-        }, 2000);
+    
+    // Afficher les scripts Python générés
+    function displayPythonScripts(scripts) {
+      const scriptsOutput = document.getElementById('scriptsOutput');
+      scriptsOutput.innerHTML = '';
+      
+      scripts.forEach((scriptData, index) => {
+        const scriptDiv = document.createElement('div');
+        scriptDiv.className = 'script-item';
+        
+        // Échapper les backticks dans le script
+        const escapedScript = scriptData.script.replace(/`/g, '\\`');
+        
+        scriptDiv.innerHTML = `
+          <div class="script-content">${scriptData.script}</div>
+          <div class="script-actions">
+            <button class="copy-btn" onclick="copyScript('${index}', \`${escapedScript}\`)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              Copy
+            </button>
+            <button class="delete-btn" onclick="deleteGeneratedScript(this)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              Delete
+            </button>
+          </div>
+        `;
+        
+        scriptsOutput.appendChild(scriptDiv);
       });
+      
+      scriptsOutput.style.display = 'block';
+    }
+
+    function copyScript(scriptIndex, script) {
+      navigator.clipboard.writeText(script)
+        .then(() => {
+          alert('Script copié dans le presse-papier');
+        })
+        .catch(err => {
+          console.error('Erreur lors de la copie:', err);
+          alert('Erreur lors de la copie du script');
+        });
+    }
+
+    function deleteGeneratedScript(button) {
+      const scriptItem = button.closest('.script-item');
+      if (scriptItem) {
+        scriptItem.remove();
+        if (document.querySelectorAll('.script-item').length === 0) {
+          document.getElementById('scriptsOutput').style.display = 'none';
+        }
+      }
+    }
+    
+    function validateRow(rule) {
+      console.log('validateRow called with:', rule);
+      const errors = [];
+      
+      if (!validateIPs(rule.sourceIP)) {
+        errors.push("Invalid source IP");
+      }
+      if (!validateIPs(rule.destIP)) {
+        errors.push("Invalid destination IP");
+      }
+      if (!validatePort(rule.port)) {
+        errors.push("Invalid port");
+      }
+      
+      return { isValid: errors.length === 0, errors };
+    }
+    
+    function validateIPs(ipString) {
+      if (!ipString) return false;
+      
+      const ips = ipString.split(/[\n,]/).map(i => i.trim()).filter(i => i);
+      if (ips.length === 0) return false;
+      
+      return ips.every(singleIp => {
+        const ipRegex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(\/\d{1,2})?$/;
+        const match = singleIp.match(ipRegex);
+        
+        if (!match) return false;
+        
+        for (let i = 1; i <= 4; i++) {
+          const octet = parseInt(match[i]);
+          if (octet < 0 || octet > 255) return false;
+        }
+        
+        if (match[5]) {
+          const cidr = parseInt(match[5].substring(1));
+          if (cidr < 0 || cidr > 32) return false;
+        }
+        
+        return true;
+      });
+    }
+    
+    function validatePort(port) {
+      if (!port) return false;
+      
+      const portNum = parseInt(port);
+      return !isNaN(portNum) && portNum >= 1 && portNum <= 65535;
+    }
+    
+    function displayRules(rules) {
+      console.log('displayRules called with:', rules);
+      const table = document.getElementById('rulesTable');
+      const tbody = table.querySelector('tbody');
+      tbody.innerHTML = '';
+      
+      if (rules.length > 0) {
+        rules.forEach((rule, index) => {
+          const row = document.createElement('tr');
+          row.className = rule.isDuplicate ? 'duplicate-row' : '';
+          
+          const sourceIPRows = calculateRowsForIPs(rule.sourceIP);
+          const destIPRows = calculateRowsForIPs(rule.destIP);
+          
+          row.innerHTML = `
+            <td>
+              <textarea 
+                rows="${sourceIPRows}"
+                oninput="autoResize(this); updateRule(${index}, 'sourceIP', this.value)" 
+                placeholder="192.168.1.0/24"
+                class="ip-field"
+                title="Enter IP addresses, one per line"
+              >${formatIPsForDisplay(rule.sourceIP || '')}</textarea>
+            </td>
+            <td>
+              <textarea 
+                rows="${destIPRows}"
+                oninput="autoResize(this); updateRule(${index}, 'destIP', this.value)" 
+                placeholder="10.0.0.1"
+                class="ip-field"
+                title="Enter IP addresses, one per line"
+              >${formatIPsForDisplay(rule.destIP || '')}</textarea>
+            </td>
+            <td>
+              <select onchange="updateRule(${index}, 'protocol', this.value)">
+                <option value="TCP" ${rule.protocol === 'TCP' ? 'selected' : ''}>TCP</option>
+                <option value="UDP" ${rule.protocol === 'UDP' ? 'selected' : ''}>UDP</option>
+                <option value="ICMP" ${rule.protocol === 'ICMP' ? 'selected' : ''}>ICMP</option>
+              </select>
+            </td>
+            <td>
+              <input type="text" value="${rule.service || ''}" 
+                onchange="updateRule(${index}, 'service', this.value)" 
+                placeholder="Service" />
+            </td>
+            <td>
+              <input type="text" value="${rule.port || ''}" 
+                onchange="updateRule(${index}, 'port', this.value)" 
+                placeholder="443" />
+            </td>
+            <td>
+              <select onchange="updateRule(${index}, 'authentication', this.value)">
+                <option value="No" ${rule.authentication === 'No' ? 'selected' : ''}>No</option>
+                <option value="Yes" ${rule.authentication === 'Yes' ? 'selected' : ''}>Yes</option>
+              </select>
+            </td>
+            <td>
+              <select onchange="updateRule(${index}, 'flowEncryption', this.value)">
+                <option value="No" ${rule.flowEncryption === 'No' ? 'selected' : ''}>No</option>
+                <option value="Yes" ${rule.flowEncryption === 'Yes' ? 'selected' : ''}>Yes</option>
+              </select>
+            </td>
+            <td>
+              <select onchange="updateRule(${index}, 'classification', this.value)">
+                <option value="Yellow" ${rule.classification === 'Yellow' ? 'selected' : ''}>Yellow</option>
+                <option value="Amber" ${rule.classification === 'Amber' ? 'selected' : ''}>Amber</option>
+                <option value="Red" ${rule.classification === 'Red' ? 'selected' : ''}>Red</option>
+              </select>
+            </td>
+            <td>
+              <input type="text" value="${rule.appCode || ''}" 
+                onchange="updateRule(${index}, 'appCode', this.value)" 
+                placeholder="Code" />
+            </td>
+            <td>
+              <div style="display: flex; gap: 4px; justify-content: flex-end; flex-wrap: wrap;">
+                <button class="btn-add-line" onclick="addNewLine()" title="Add new line">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 1v14M1 8h14"/>
+                  </svg>
+                  Add
+                </button>
+                <button class="btn-duplicate-line" onclick="duplicateRow(${index})" title="Duplicate row">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  Duplicate
+                </button>
+                <button class="btn-get-script" onclick="scrollToScript(${index})" title="Get script for this rule">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <path d="M14 2v6h6"/>
+                    <path d="M8 16h8"/>
+                    <path d="M8 12h8"/>
+                  </svg>
+                  Get Script
+                </button>
+                <button class="btn-delete-line" onclick="deleteRow(${index})" title="Delete row">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                  Delete
+                </button>
+              </div>
+            </td>
+          `;
+          
+          tbody.appendChild(row);
+        });
+        
+        table.style.display = 'table';
+        
+        setTimeout(() => {
+          document.querySelectorAll('.ip-field').forEach(textarea => {
+            autoResize(textarea);
+          });
+        }, 0);
+      } else {
+        table.style.display = 'none';
+      }
+    }
+    
+    function scrollToScript(ruleIndex) {
+      console.log('scrollToScript called for rule:', ruleIndex);
+      
+      // Remove previous highlights
+      document.querySelectorAll('.script-item').forEach(item => {
+        item.classList.remove('highlighted');
+      });
+      
+      // Find script items related to this rule
+      const scriptItems = document.querySelectorAll('.script-item');
+      let foundScript = false;
+      
+      // Calculate the script index based on rule combinations
+      let scriptIndex = 0;
+      for (let i = 0; i < ruleIndex; i++) {
+        const rule = currentRules[i];
+        const sourceIPs = rule.sourceIP.split('\n').filter(ip => ip.trim());
+        const destIPs = rule.destIP.split('\n').filter(ip => ip.trim());
+        scriptIndex += sourceIPs.length * destIPs.length;
+      }
+      
+      // Highlight scripts for the current rule
+      const currentRule = currentRules[ruleIndex];
+      if (currentRule) {
+        const sourceIPs = currentRule.sourceIP.split('\n').filter(ip => ip.trim());
+        const destIPs = currentRule.destIP.split('\n').filter(ip => ip.trim());
+        const combinationsCount = sourceIPs.length * destIPs.length;
+        
+        for (let i = 0; i < combinationsCount; i++) {
+          const targetScript = scriptItems[scriptIndex + i];
+          if (targetScript) {
+            targetScript.classList.add('highlighted');
+            if (!foundScript) {
+              // Scroll to first script of this rule
+              targetScript.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+              });
+              foundScript = true;
+            }
+          }
+        }
+        
+        if (foundScript) {
+          alert(`Scripts pour la ligne ${ruleIndex + 1} mis en évidence en orange`);
+          
+          // Remove highlight after 5 seconds
+          setTimeout(() => {
+            document.querySelectorAll('.script-item.highlighted').forEach(item => {
+              item.classList.remove('highlighted');
+            });
+          }, 5000);
+        } else {
+          alert('Veuillez d\'abord générer les scripts en cliquant sur "Generate Scripts"');
+        }
+      }
+    }
+    
+    function saveNES() {
+      const department = document.getElementById('department').value;
+      const projectCode = document.getElementById('projectCode').value;
+      const email = document.getElementById('email').value;
+      
+      if (!department || !projectCode || !email) {
+        alert('Veuillez remplir tous les champs obligatoires (Department, Project Code, et Email)');
+        return;
+      }
+      
+      if (currentRules.length === 0) {
+        alert('Aucune règle à sauvegarder. Veuillez ajouter au moins une règle.');
+        return;
+      }
+      
+      showLoading();
+      
+      google.script.run
+        .withSuccessHandler((response) => {
+          hideLoading();
+          if (response && response.success) {
+            // Ouvrir le Google Sheets dans une nouvelle fenêtre
+            window.open(response.url, '_blank');
+            alert('✅ ' + response.message + '\n\nLe Google Sheets s\'ouvre dans une nouvelle fenêtre.');
+          } else {
+            alert('❌ ' + (response.message || 'Erreur lors de la création du Google Sheets'));
+          }
+        })
+        .withFailureHandler((error) => {
+          hideLoading();
+          console.error('Erreur lors de la sauvegarde NES:', error);
+          alert('❌ Erreur lors de la création du Google Sheets');
+        })
+        .saveNES({
+          department,
+          projectCode,
+          email,
+          rules: currentRules
+        });
+    }
+    
+    function handleError(error) {
+      console.error('Error:', error);
+      alert('Une erreur est survenue: ' + error);
+    }
+
+    window.addEventListener('load', () => {
+      if (currentRules.length === 0) {
+        addNewLine();
+      }
+    });
+    
+    // Fermer la modal si on clique en dehors
+    window.onclick = function(event) {
+      const modal = document.getElementById('credentialsModal');
+      if (event.target == modal) {
+        closeCredentialsModal();
+      }
     }
   </script>
 </body>

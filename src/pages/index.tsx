@@ -325,69 +325,6 @@ const Index = () => {
     });
   };
 
-  const handleNESTest = () => {
-    console.log('handleNESTest called - requesting credentials');
-    
-    // Demander les identifiants via prompts
-    const username = prompt("Please enter your credentials TA-I0034 (login):");
-    if (!username) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Login requis"
-      });
-      return;
-    }
-    
-    const password = prompt("Please enter your credentials TA-I0034 (password):");
-    if (!password) {
-      toast({
-        variant: "destructive",
-        title: "Erreur", 
-        description: "Mot de passe requis"
-      });
-      return;
-    }
-
-    // Effacer les scripts précédents
-    setGeneratedScripts([]);
-
-    google.script.run
-      .withSuccessHandler((response) => {
-        console.log('Response from generateNESTestScript:', response);
-        if (response.success) {
-          // Ajouter le script de test à la liste des scripts générés
-          setGeneratedScripts([{
-            id: 1,
-            script: response.script
-          }]);
-          
-          toast({
-            title: "Script de test généré",
-            description: "A script has been generated to test all the NES file"
-          });
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: response.message || "Erreur lors de la génération du script de test"
-          });
-        }
-      })
-      .withFailureHandler((error) => {
-        console.error('Error in generateNESTestScript:', error);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Erreur lors de la génération du script de test"
-        });
-      })
-      .generateNESTestScript({
-        username: username,
-        password: password
-      });
-  };
-
   const handleGenerateScript = () => {
     console.log('handleGenerateScript called with csvRows:', csvRows);
     const validRows = csvRows.filter(row => {
@@ -811,13 +748,6 @@ const Index = () => {
             className="text-[#E67E22] hover:bg-[#E67E22]/20 border-[#E67E22] transition-colors"
           >
             Verify
-          </Button>
-          <Button 
-            onClick={handleNESTest}
-            className="bg-[#9b59b6] hover:bg-[#8e44ad] text-white border-none transition-colors flex items-center gap-2"
-          >
-            <FileCode className="w-4 h-4" />
-            NES Test
           </Button>
           <Button 
             onClick={handleGenerateScript}
