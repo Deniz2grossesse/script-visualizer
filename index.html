@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Network Rules Generator - XLSX Only</title>
   <style>
     body {
@@ -246,22 +247,22 @@
       box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
     }
     
- .rules-table tbody tr td:nth-child(10) > .manage-line-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* 2 colonnes égales */
-  gap: 4px;
-  width: 100%;
-  box-sizing: border-box;
-}
+    .rules-table tbody tr td:nth-child(10) > .manage-line-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr; /* 2 colonnes égales */
+      gap: 4px;
+      width: 100%;
+      box-sizing: border-box;
+    }
 
-/* Tous les boutons à l'intérieur de cette cellule */
-.rules-table tbody tr td:nth-child(10) > .manage-line-buttons > button {
-  width: 100%;       /* remplissent leur case */
-  padding: 4px 6px;  /* plus compact */
-  font-size: 10px;   /* texte réduit */
-  min-width: 0;      /* pour que width:100% s'applique */
-  border-radius: 4px;
-}
+    /* Tous les boutons à l'intérieur de cette cellule */
+    .rules-table tbody tr td:nth-child(10) > .manage-line-buttons > button {
+      width: 100%;       /* remplissent leur case */
+      padding: 4px 6px;  /* plus compact */
+      font-size: 10px;   /* texte réduit */
+      min-width: 0;      /* pour que width:100% s'applique */
+      border-radius: 4px;
+    }
 
     .action-buttons {
       display: flex;
@@ -1067,7 +1068,7 @@
 
     function formatIPsForDisplay(ipString) {
       if (!ipString) return '';
-      return ipString.split(',').map(ip => ip.trim()).filter(ip => ip).join('\n');
+      return ipString.split(',').map(ip => ip.trim()).join('\n');
     }
 
     function formatIPsForStorage(ipString) {
