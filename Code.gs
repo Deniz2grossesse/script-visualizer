@@ -1,3 +1,4 @@
+
 function doGet() {
   console.log("doGet called");
   return HtmlService.createTemplateFromFile('index')
@@ -238,61 +239,6 @@ function importXLSX(base64Data, fileName) {
     return { 
       success: false, 
       message: "Erreur lors de l'import XLSX: " + e.toString() 
-    };
-  }
-}
-
-// Function to generate scripts for network rules
-function generateScripts(options) {
-  try {
-    console.log("generateScripts called with options:", JSON.stringify(options));
-    
-    const csvRows = options.csvRows || [];
-    if (csvRows.length === 0) {
-      return {
-        success: false,
-        message: "Aucune donnée à traiter"
-      };
-    }
-    
-    const scripts = [];
-    
-    csvRows.forEach((row, index) => {
-      // Handle multiple IPs in source and destination
-      const sourceIPs = row.sourceIP.split('\n').filter(ip => ip.trim());
-      const destIPs = row.destIP.split('\n').filter(ip => ip.trim());
-      
-      sourceIPs.forEach(srcIP => {
-        destIPs.forEach(dstIP => {
-          scripts.push(`curl -k -X POST "https://<TUFIN_SERVER>/securetrack/api/path-analysis" \\
-  -H "Authorization: Bearer <TON_TOKEN>" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "source": {
-      "ip": "${srcIP.trim().split('/')[0]}"
-    },
-    "destination": {
-      "ip": "${dstIP.trim()}"
-    },
-    "service": {
-      "protocol": "${row.protocol.toUpperCase()}",
-      "port": ${row.port}
-    }
-  }'`);
-        });
-      });
-    });
-    
-    return {
-      success: true,
-      data: scripts,
-      message: scripts.length + " script(s) généré(s) avec succès"
-    };
-  } catch (e) {
-    console.error("Erreur generateScripts:", e.toString());
-    return {
-      success: false,
-      message: "Erreur lors de la génération des scripts: " + e.toString()
     };
   }
 }
