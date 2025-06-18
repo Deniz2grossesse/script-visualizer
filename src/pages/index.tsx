@@ -490,13 +490,6 @@ const Index = () => {
             <Upload className="w-4 h-4" />
             Importer XLSX
           </Button>
-          <Button
-            onClick={handleSaveNES}
-            className="flex items-center gap-2 bg-[#27ae60] hover:bg-[#219a52] text-white"
-          >
-            <FileCode className="w-4 h-4" />
-            Save NES
-          </Button>
           <input
             ref={fileInputRef}
             type="file"
@@ -739,22 +732,31 @@ const Index = () => {
           </Button>
           <Button 
             variant="outline"
-            className="text-[#BDC3C7] hover:bg-white/20 border-[#BDC3C7]/30 transition-colors"
-          >
-            Resume Draft
-          </Button>
-          <Button 
-            variant="outline"
             className="text-[#E67E22] hover:bg-[#E67E22]/20 border-[#E67E22] transition-colors"
           >
             Verify
           </Button>
           <Button 
+            onClick={handleSaveNES}
+            variant="outline"
+            className="text-[#27ae60] hover:bg-[#27ae60]/20 border-[#27ae60] transition-colors"
+          >
+            <FileCode className="w-4 h-4 mr-2" />
+            Save NES
+          </Button>
+          <Button 
             onClick={handleGenerateScript}
-            className="bg-[#E67E22] hover:bg-[#D35400] text-white border-none transition-colors flex items-center gap-2"
+            variant="outline"
+            className="text-[#E67E22] hover:bg-[#E67E22]/20 border-[#E67E22] transition-colors flex items-center gap-2"
           >
             Generate Scripts
             <ArrowRight className="w-4 h-4" />
+          </Button>
+          <Button 
+            variant="outline"
+            className="text-[#9B59B6] hover:bg-[#9B59B6]/20 border-[#9B59B6] transition-colors"
+          >
+            NES Test
           </Button>
         </div>
 
