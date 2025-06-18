@@ -68,7 +68,8 @@
     }
     
     input[type="text"],
-    input[type="email"] {
+    input[type="email"],
+    input[type="password"] {
       width: 100%;
       padding: 12px;
       border: 2px solid rgba(255, 255, 255, 0.15);
@@ -81,7 +82,8 @@
     }
     
     input[type="text"]:focus,
-    input[type="email"]:focus {
+    input[type="email"]:focus,
+    input[type="password"]:focus {
       outline: none;
       border-color: #3498db;
       background-color: #34495E;
@@ -781,6 +783,69 @@
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
     }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    .modal-content {
+      background-color: #1A1F2C;
+      margin: 15% auto;
+      padding: 30px;
+      border: 2px solid #3498db;
+      width: 400px;
+      border-radius: 8px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-header {
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    .modal-body {
+      margin-bottom: 20px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn-cancel {
+      background-color: transparent;
+      color: #666;
+      border: 2px solid #666;
+      padding: 10px 20px;
+      border-radius: 25px;
+    }
+
+    .btn-cancel:hover {
+      background-color: #666;
+      color: white;
+    }
+
+    .btn-confirm {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+    }
+
+    .btn-confirm:hover {
+      background-color: #2980b9;
+    }
   </style>
 </head>
 <body>
@@ -890,6 +955,29 @@
 
     <div id="loadingMessage" class="loading-message">
       Fichier XLSX en cours de traitement...
+    </div>
+  </div>
+
+  <!-- Modal pour demander les identifiants -->
+  <div id="credentialsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        Please enter your credentials TA-I0034
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Username <span class="required">*</span></label>
+          <input type="text" id="modalUsername" placeholder="Enter your username">
+        </div>
+        <div class="form-group">
+          <label>Password <span class="required">*</span></label>
+          <input type="password" id="modalPassword" placeholder="Enter your password">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeCredentialsModal()">Cancel</button>
+        <button class="btn-confirm" onclick="confirmGenerateScripts()">Generate</button>
+      </div>
     </div>
   </div>
 
@@ -1170,69 +1258,98 @@
       return sortedA.every((val, index) => val === sortedB[index]);
     }
     
+    // Fonction modifiée pour afficher la modal
     function generateScripts() {
-      console.log('generateScripts called with csvRows:', currentRules);
+      console.log('generateScripts called');
+      if (currentRules.length === 0) {
+        alert('Aucune règle à générer. Veuillez d\'abord ajouter des règles.');
+        return;
+      }
+      
+      // Afficher la modal pour demander les identifiants
+      document.getElementById('credentialsModal').style.display = 'block';
+    }
+    
+    // Fermer la modal
+    function closeCredentialsModal() {
+      document.getElementById('credentialsModal').style.display = 'none';
+      document.getElementById('modalUsername').value = '';
+      document.getElementById('modalPassword').value = '';
+    }
+    
+    // Confirmer et générer les scripts avec les identifiants
+    function confirmGenerateScripts() {
+      const username = document.getElementById('modalUsername').value;
+      const password = document.getElementById('modalPassword').value;
+      
+      if (!username || !password) {
+        alert('Veuillez entrer votre nom d\'utilisateur et mot de passe');
+        return;
+      }
+      
+      showLoading();
+      
+      google.script.run
+        .withSuccessHandler(function(response) {
+          hideLoading();
+          closeCredentialsModal();
+          
+          if (response.success) {
+            displayPythonScripts(response.data);
+            alert('✅ ' + response.message);
+          } else {
+            alert('❌ ' + response.message);
+          }
+        })
+        .withFailureHandler(function(error) {
+          hideLoading();
+          console.error('Erreur:', error);
+          alert('❌ Erreur lors de la génération des scripts');
+        })
+        .generatePythonScripts({
+          csvRows: currentRules,
+          username: username,
+          password: password
+        });
+    }
+    
+    // Afficher les scripts Python générés
+    function displayPythonScripts(scripts) {
       const scriptsOutput = document.getElementById('scriptsOutput');
       scriptsOutput.innerHTML = '';
       
-      if (currentRules.length > 0) {
-        currentRules.forEach((rule, index) => {
-          // Gérer les IPs multiples pour la génération de scripts
-          const sourceIPs = rule.sourceIP.split('\n').filter(ip => ip.trim());
-          const destIPs = rule.destIP.split('\n').filter(ip => ip.trim());
-          
-          sourceIPs.forEach((srcIP, srcIndex) => {
-            destIPs.forEach((dstIP, dstIndex) => {
-              const scriptDiv = document.createElement('div');
-              scriptDiv.className = 'script-item';
-              scriptDiv.setAttribute('data-rule-index', index);
-              
-              const script = generateScriptForIPs(srcIP.trim(), dstIP.trim(), rule);
-              const scriptIndex = index + '_' + srcIndex + '_' + dstIndex;
-              
-              scriptDiv.innerHTML = `
-                <div class="script-content">${script}</div>
-                <div class="script-actions">
-                  <button class="copy-btn" onclick="copyScript('${scriptIndex}', \`${script}\`)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                    Copy
-                  </button>
-                  <button class="delete-btn" onclick="deleteGeneratedScript(this)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M3 6h18"></path>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
-                      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                    Delete
-                  </button>
-                </div>
-              `;
-              
-              scriptsOutput.appendChild(scriptDiv);
-            });
-          });
-        });
+      scripts.forEach((scriptData, index) => {
+        const scriptDiv = document.createElement('div');
+        scriptDiv.className = 'script-item';
         
-        scriptsOutput.style.display = 'block';
-      } else {
-        scriptsOutput.style.display = 'none';
-      }
-    }
-
-    function generateScriptForIPs(sourceIP, destIP, rule) {
-      return `curl -k -X POST "https://api/query" \\
--H "Content-Type: application/json" \\
--H "Authorization: Bearer " \\
--d '{
-  "source": "${sourceIP}",
-  "destination": "${destIP}",
-  "protocol": "${rule.protocol}",
-  "port": "${rule.port}",
-  "service": "${rule.service}"
-}'`;
+        // Échapper les backticks dans le script
+        const escapedScript = scriptData.script.replace(/`/g, '\\`');
+        
+        scriptDiv.innerHTML = `
+          <div class="script-content">${scriptData.script}</div>
+          <div class="script-actions">
+            <button class="copy-btn" onclick="copyScript('${index}', \`${escapedScript}\`)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              Copy
+            </button>
+            <button class="delete-btn" onclick="deleteGeneratedScript(this)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              Delete
+            </button>
+          </div>
+        `;
+        
+        scriptsOutput.appendChild(scriptDiv);
+      });
+      
+      scriptsOutput.style.display = 'block';
     }
 
     function copyScript(scriptIndex, script) {
@@ -1540,6 +1657,14 @@
         addNewLine();
       }
     });
+    
+    // Fermer la modal si on clique en dehors
+    window.onclick = function(event) {
+      const modal = document.getElementById('credentialsModal');
+      if (event.target == modal) {
+        closeCredentialsModal();
+      }
+    }
   </script>
 </body>
 </html>
