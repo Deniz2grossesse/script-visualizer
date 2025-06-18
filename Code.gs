@@ -294,6 +294,139 @@ function generateScripts(options) {
   }
 }
 
+// Function to generate Python scripts
+function generatePythonScripts(data) {
+  try {
+    console.log("generatePythonScripts called with data:", JSON.stringify(data));
+    
+    const { csvRows, username, password } = data;
+    
+    if (!csvRows || csvRows.length === 0) {
+      return {
+        success: false,
+        message: "Aucune donnée à traiter"
+      };
+    }
+    
+    if (!username || !password) {
+      return {
+        success: false,
+        message: "Identifiants requis"
+      };
+    }
+    
+    // Generate test_cases from csvRows
+    let testCases = [];
+    csvRows.forEach(row => {
+      const sourceIPs = row.sourceIP.split('\n').filter(ip => ip.trim());
+      const destIPs = row.destIP.split('\n').filter(ip => ip.trim());
+      
+      sourceIPs.forEach(srcIP => {
+        destIPs.forEach(dstIP => {
+          testCases.push(`        {'src': "${srcIP.trim()}", 'dst': "${dstIP.trim()}", 'service': "${row.protocol.toLowerCase()}:${row.port}"},`);
+        });
+      });
+    });
+    
+    // Generate the complete Python script
+    const pythonScript = `import requests
+import sys
+import xml.etree.ElementTree as ET
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+
+API_URL = "${API_URL}"
+USERNAME = "${username}"
+PASSWORD = "${password}" 
+
+def search_tickets(params):
+    """
+    Envoie une requête à l'API et retourne le contenu de la réponse.
+    """
+    try:
+        response = requests.get(API_URL, params=params, verify=False, auth=(USERNAME, PASSWORD))
+        response.raise_for_status() # Lève une exception pour les codes d'état HTTP d'erreur (4xx ou 5xx)
+        content = response.content
+        return content
+    except requests.exceptions.RequestException as e:
+        print(f"Erreur lors de la requête pour {params.get('src')} -> {params.get('dst')} sur {params.get('service')} : {e}")
+        return None
+
+def is_traffic_allowed(xml_content):
+    """
+    Parse le contenu XML et vérifie si le trafic est autorisé.
+    Retourne True si 'traffic_allowed' est 'true', False sinon, ou None en cas d'erreur.
+    """
+    if xml_content is None:
+        return None
+
+    try:
+        root = ET.fromstring(xml_content.decode('utf-8'))
+        traffic_allowed_element = root.find('traffic_allowed')
+
+        if traffic_allowed_element is not None:
+            return traffic_allowed_element.text.lower() == 'true'
+        else:
+            return False
+    except ET.ParseError as e:
+        print(f"Erreur de parsing XML : {e}")
+        return None
+    except Exception as e:
+        print(f"Une erreur inattendue est survenue lors du parsing : {e}")
+        return None
+
+def main():
+    # Définition des différentes combinaisons de trafic à tester
+    # Chaque dictionnaire représente un jeu de paramètres pour une requête
+    test_cases = [
+${testCases.join('\n')}
+    ]
+
+    print("--- Début des tests de trafic ---")
+
+    # Boucle sur chaque cas de test défini
+    for i, test_case in enumerate(test_cases):
+        src_ip = test_case['src']
+        dst_ip = test_case['dst']
+        service_port = test_case['service']
+
+        print(f"\\n--- Test #{i+1}: {src_ip} -> {dst_ip} sur {service_port} ---")
+
+        # Exécute la requête pour le cas de test actuel
+        xml_response_content = search_tickets(test_case)
+
+        # Vérifie si le trafic est autorisé
+        allowed = is_traffic_allowed(xml_response_content)
+
+        # Affiche le résultat
+        if allowed is True:
+            print(f"Trafic AUTORISÉ de {src_ip} vers {dst_ip} avec le service {service_port}.")
+        elif allowed is False:
+            print(f"Trafic REFUSÉ de {src_ip} vers {dst_ip} avec le service {service_port}.")
+        else:
+            print(f"Impossible de déterminer si le trafic est autorisé pour {src_ip} vers {dst_ip} avec le service {service_port} (erreur ou information manquante).")
+
+    print("\\n--- Fin des tests de trafic ---")
+
+if __name__ == "__main__":
+    main()`;
+    
+    return {
+      success: true,
+      data: pythonScript,
+      message: "Script Python généré avec succès"
+    };
+  } catch (e) {
+    console.error("Erreur generatePythonScripts:", e.toString());
+    return {
+      success: false,
+      message: "Erreur lors de la génération du script Python: " + e.toString()
+    };
+  }
+}
+
 // Function to save the Network Equipment Sheet by updating the permanent Google Sheets
 function saveNES(formData) {
   try {
