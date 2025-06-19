@@ -249,18 +249,17 @@
     
     .rules-table tbody tr td:nth-child(10) > .manage-line-buttons {
       display: grid;
-      grid-template-columns: 1fr 1fr; /* 2 colonnes égales */
+      grid-template-columns: 1fr 1fr;
       gap: 4px;
       width: 100%;
       box-sizing: border-box;
     }
 
-    /* Tous les boutons à l'intérieur de cette cellule */
     .rules-table tbody tr td:nth-child(10) > .manage-line-buttons > button {
-      width: 100%;       /* remplissent leur case */
-      padding: 4px 6px;  /* plus compact */
-      font-size: 10px;   /* texte réduit */
-      min-width: 0;      /* pour que width:100% s'applique */
+      width: 100%;
+      padding: 4px 6px;
+      font-size: 10px;
+      min-width: 0;
       border-radius: 4px;
     }
 
@@ -418,7 +417,6 @@
       box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
     }
 
-    /* Correction spécifique pour les éléments select */
     .rules-table td select {
       background: #34495E !important;
       color: #ffffff !important;
@@ -430,7 +428,6 @@
       padding: 8px;
     }
 
-    /* Style pour tous les selects de la page */
     select {
       background: #34495E !important;
       color: #ffffff !important;
@@ -929,7 +926,7 @@
       background-color: #2980b9;
     }
     
-    /* Style pour le script de test NES */
+    /* Style for NES test script */
     .nes-test-script-container {
       background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
       padding: 20px;
@@ -969,7 +966,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>One Click Onboarding - XLSX Exclusif</h1>
+    <h1>One Click Onboarding - XLSX Exclusive</h1>
 
     <div class="top-buttons">
       <button class="btn-add" onclick="addNewLine()">
@@ -989,7 +986,7 @@
 
     <div class="alert">
       <span class="alert-icon">⚠️</span>
-      <span>Important: Seuls les fichiers XLSX sont acceptés. Le système traite toutes les lignes et ignore uniquement celles où les colonnes A-L sont entièrement vides.</span>
+      <span>Important: Only XLSX files are accepted. The system processes all rows and only ignores those where columns A-L are completely empty.</span>
     </div>
 
     <div class="form-group">
@@ -1033,7 +1030,7 @@
           <th>Flow Encryption</th>
           <th>Classification</th>
           <th>APP Code</th>
-          <th style="text-align: right;">Manage ligne</th>
+          <th style="text-align: right;">Manage line</th>
         </tr>
       </thead>
       <tbody>
@@ -1081,13 +1078,13 @@
         <div class="progress-bar-bg">
           <div class="progress-bar-fill" id="progressBarFill"></div>
         </div>
-        <div class="progress-status" id="progressStatus">Initialisation...</div>
+        <div class="progress-status" id="progressStatus">Initialization...</div>
         <div class="progress-steps" id="progressSteps"></div>
       </div>
     </div>
   </div>
 
-  <!-- Modal pour demander les identifiants -->
+  <!-- Modal for credentials -->
   <div id="credentialsModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -1119,6 +1116,7 @@
       currentStep: 0
     };
     let currentModalAction = 'scripts'; // 'scripts' or 'nesTest'
+    let generatedScripts = []; // Store generated scripts for individual downloads
 
     // Progress Bar Functions
     function showProgressBar(title, steps) {
@@ -1180,7 +1178,7 @@
       }
     }
 
-    function completeProgress(message = 'Terminé !') {
+    function completeProgress(message = 'Completed!') {
       updateProgress(100, message);
       
       // Mark all steps as completed
@@ -1226,7 +1224,7 @@
     }
 
     function showLoading() {
-      showProgressBar('Chargement...', ['Initialisation']);
+      showProgressBar('Loading...', ['Initialization']);
     }
 
     function hideLoading() {
@@ -1236,7 +1234,7 @@
     function importXLSX() {
       const input = document.createElement('input');
       input.type = 'file';
-      input.accept = '.xlsx'; // Changement: accepte uniquement XLSX
+      input.accept = '.xlsx';
       input.addEventListener('change', handleXLSXFileSelect);
       input.click();
     }
@@ -1244,40 +1242,40 @@
     function handleXLSXFileSelect(event) {
       const file = event.target.files[0];
       if (file) {
-        // Validation stricte du format XLSX
+        // Strict XLSX format validation
         if (!file.name.toLowerCase().endsWith('.xlsx')) {
-          alert('❌ ERREUR: Seuls les fichiers .xlsx sont acceptés.');
+          alert('❌ ERROR: Only .xlsx files are accepted.');
           return;
         }
         
         const steps = [
-          'Validation du fichier',
-          'Lecture du contenu',
-          'Analyse des données',
-          'Validation des règles',
-          'Création du Google Sheets',
-          'Finalisation'
+          'File validation',
+          'Reading content',
+          'Data analysis',
+          'Rules validation',
+          'Creating Google Sheets',
+          'Finalization'
         ];
         
-        showProgressBar('Import du fichier XLSX...', steps);
+        showProgressBar('Importing XLSX file...', steps);
         
         const reader = new FileReader();
         
         reader.onload = function(e) {
-          updateProgress(20, 'Lecture du fichier en cours...', 1);
+          updateProgress(20, 'Reading file...', 1);
           
           const base64Data = e.target.result;
           
           setTimeout(() => {
-            updateProgress(40, 'Envoi vers Google Apps Script...', 2);
+            updateProgress(40, 'Sending to Google Apps Script...', 2);
             
             google.script.run
               .withSuccessHandler(function(response) {
                 if (response.success) {
-                  updateProgress(70, 'Traitement des données...', 3);
+                  updateProgress(70, 'Processing data...', 3);
                   
                   setTimeout(() => {
-                    updateProgress(85, 'Validation des règles...', 4);
+                    updateProgress(85, 'Validating rules...', 4);
                     currentRules = response.data;
                     displayRules(currentRules);
                     document.getElementById('department').value = response.department || '';
@@ -1285,31 +1283,31 @@
                     document.getElementById('email').value = response.requesterEmail || '';
                     
                     setTimeout(() => {
-                      completeProgress('Import réussi ! ' + response.message);
+                      completeProgress('Import successful! ' + response.message);
                       alert('✅ ' + response.message);
                     }, 500);
                   }, 800);
                 } else {
-                  errorProgress('❌ ' + (response.message || "Erreur lors de l'import XLSX"), 2);
-                  alert('❌ ' + (response.message || "Erreur lors de l'import XLSX"));
+                  errorProgress('❌ ' + (response.message || "Error importing XLSX"), 2);
+                  alert('❌ ' + (response.message || "Error importing XLSX"));
                 }
               })
               .withFailureHandler(function(error) {
-                console.error("Erreur:", error);
-                errorProgress("❌ Erreur lors de l'import du fichier XLSX", 2);
-                alert("❌ Erreur lors de l'import du fichier XLSX");
+                console.error("Error:", error);
+                errorProgress("❌ Error importing XLSX file", 2);
+                alert("❌ Error importing XLSX file");
               })
               .handleXLSXFileSelect(base64Data, file.name);
           }, 500);
         };
         
         reader.onerror = function(e) {
-          console.error("Erreur lors de la lecture du fichier:", e);
-          errorProgress("❌ Erreur lors de la lecture du fichier XLSX", 1);
-          alert("❌ Erreur lors de la lecture du fichier XLSX");
+          console.error("Error reading file:", e);
+          errorProgress("❌ Error reading XLSX file", 1);
+          alert("❌ Error reading XLSX file");
         };
 
-        updateProgress(10, 'Démarrage de la lecture...', 0);
+        updateProgress(10, 'Starting read...', 0);
         reader.readAsDataURL(file);
       }
     }
@@ -1392,7 +1390,7 @@
     }
 
     function deleteForm() {
-      if (confirm('Voulez-vous vraiment supprimer le formulaire ?')) {
+      if (confirm('Do you really want to delete the form?')) {
         google.script.run
           .withSuccessHandler(() => {
             document.getElementById('department').value = '';
@@ -1401,7 +1399,7 @@
             currentRules = [];
             document.getElementById('rulesTable').style.display = 'none';
             document.getElementById('scriptsOutput').style.display = 'none';
-            alert('✅ Formulaire supprimé avec succès');
+            alert('✅ Form deleted successfully');
           })
           .withFailureHandler(handleError)
           .deleteForm();
@@ -1436,7 +1434,7 @@
         return;
       }
 
-      // Fonction de fusion intelligente des IPs
+      // Smart IP merging function
       const grouped = [];
 
       currentRules.forEach(rule => {
@@ -1455,13 +1453,13 @@
             group.classification === rule.classification &&
             group.appCode === rule.appCode
           ) {
-            // Fusionner IPs sources si destination identique
+            // Merge source IPs if destination is identical
             if (arraysEqual(group.destIPs, dstIPs)) {
               group.sourceIPs = Array.from(new Set([...group.sourceIPs, ...srcIPs]));
               foundGroup = true;
               break;
             }
-            // Fusionner IPs destinations si source identique
+            // Merge destination IPs if source is identical
             else if (arraysEqual(group.sourceIPs, srcIPs)) {
               group.destIPs = Array.from(new Set([...group.destIPs, ...dstIPs]));
               foundGroup = true;
@@ -1485,7 +1483,7 @@
         }
       });
 
-      // Créer les règles fusionnées
+      // Create merged rules
       currentRules = grouped.map(group => ({
         sourceIP: group.sourceIPs.join('\n'),
         destIP: group.destIPs.join('\n'),
@@ -1500,7 +1498,7 @@
         errors: []
       }));
 
-      // Valider les règles fusionnées
+      // Validate merged rules
       currentRules.forEach(rule => {
         const validation = validateRow(rule);
         rule.isValid = validation.isValid;
@@ -1508,7 +1506,7 @@
       });
 
       displayRules(currentRules);
-      alert('Fusion terminée ! Les IPs ont été regroupées de manière intelligente.\nNombre de règles après fusion: ' + currentRules.length);
+      alert('Merge completed! IPs have been intelligently grouped.\nNumber of rules after merge: ' + currentRules.length);
     }
 
     function arraysEqual(a, b) {
@@ -1518,11 +1516,11 @@
       return sortedA.every((val, index) => val === sortedB[index]);
     }
     
-    // Fonction modifiée pour afficher la modal
+    // Modified function to show modal
     function generateScripts() {
       console.log('generateScripts called');
       if (currentRules.length === 0) {
-        alert('Aucune règle à générer. Veuillez d\'abord ajouter des règles.');
+        alert('No rules to generate. Please add rules first.');
         return;
       }
       
@@ -1531,14 +1529,14 @@
       document.getElementById('credentialsModal').style.display = 'block';
     }
     
-    // Nouvelle fonction pour NES Test
+    // New function for NES Test
     function generateNESTest() {
       console.log('generateNESTest called');
       console.log('currentRules:', currentRules);
       
       try {
         if (!currentRules || currentRules.length === 0) {
-          alert('Aucune règle à tester. Veuillez d\'abord ajouter des règles.');
+          alert('No rules to test. Please add rules first.');
           return;
         }
         
@@ -1559,24 +1557,24 @@
         }
       } catch (error) {
         console.error('Error in generateNESTest:', error);
-        alert('Erreur: ' + error.message);
+        alert('Error: ' + error.message);
       }
     }
     
-    // Fermer la modal
+    // Close modal
     function closeCredentialsModal() {
       document.getElementById('credentialsModal').style.display = 'none';
       document.getElementById('modalUsername').value = '';
       document.getElementById('modalPassword').value = '';
     }
     
-    // Fonction modifiée pour gérer les deux actions
+    // Modified function to handle both actions
     function confirmGenerateScripts() {
       const username = document.getElementById('modalUsername').value;
       const password = document.getElementById('modalPassword').value;
       
       if (!username || !password) {
-        alert('Veuillez entrer votre nom d\'utilisateur et mot de passe');
+        alert('Please enter your username and password');
         return;
       }
       
@@ -1587,34 +1585,35 @@
       }
     }
     
-    // Fonction pour générer les scripts individuels
+    // Function to generate individual scripts
     function generateScriptsWithCredentials(username, password) {
       const steps = [
-        'Validation des identifiants',
-        'Préparation des règles',
-        'Génération des scripts Python',
-        'Formatage du code',
-        'Finalisation'
+        'Validating credentials',
+        'Preparing rules',
+        'Generating Python scripts',
+        'Formatting code',
+        'Finalization'
       ];
       
-      showProgressBar('Génération des scripts...', steps);
-      updateProgress(15, 'Validation des identifiants...', 0);
+      showProgressBar('Generating scripts...', steps);
+      updateProgress(15, 'Validating credentials...', 0);
       
       setTimeout(() => {
-        updateProgress(30, 'Envoi des données...', 1);
+        updateProgress(30, 'Sending data...', 1);
         
         google.script.run
           .withSuccessHandler(function(response) {
             if (response.success) {
-              updateProgress(60, 'Génération en cours...', 2);
+              updateProgress(60, 'Generating...', 2);
               
               setTimeout(() => {
-                updateProgress(80, 'Formatage des scripts...', 3);
+                updateProgress(80, 'Formatting scripts...', 3);
                 closeCredentialsModal();
+                generatedScripts = response.data; // Store scripts
                 displayPythonScripts(response.data);
                 
                 setTimeout(() => {
-                  completeProgress('Scripts générés avec succès !');
+                  completeProgress('Scripts generated successfully!');
                   alert('✅ ' + response.message);
                 }, 500);
               }, 800);
@@ -1624,9 +1623,9 @@
             }
           })
           .withFailureHandler(function(error) {
-            console.error('Erreur:', error);
-            errorProgress('❌ Erreur lors de la génération des scripts', 2);
-            alert('❌ Erreur lors de la génération des scripts');
+            console.error('Error:', error);
+            errorProgress('❌ Error generating scripts', 2);
+            alert('❌ Error generating scripts');
           })
           .generatePythonScripts({
             csvRows: currentRules,
@@ -1636,39 +1635,39 @@
       }, 700);
     }
     
-    // Nouvelle fonction pour générer le script de test NES
+    // New function to generate NES test script
     function generateNESTestWithCredentials(username, password) {
       const steps = [
-        'Validation des identifiants',
-        'Collecte des règles',
-        'Génération du script de test',
-        'Formatage du code',
-        'Finalisation'
+        'Validating credentials',
+        'Collecting rules',
+        'Generating test script',
+        'Formatting code',
+        'Finalization'
       ];
       
-      showProgressBar('Génération du script de test NES...', steps);
-      updateProgress(15, 'Validation des identifiants...', 0);
+      showProgressBar('Generating NES test script...', steps);
+      updateProgress(15, 'Validating credentials...', 0);
       
       setTimeout(() => {
-        updateProgress(30, 'Envoi des données...', 1);
+        updateProgress(30, 'Sending data...', 1);
         
         google.script.run
           .withSuccessHandler(function(response) {
             if (response.success) {
-              updateProgress(60, 'Génération en cours...', 2);
+              updateProgress(60, 'Generating...', 2);
               
               setTimeout(() => {
-                updateProgress(80, 'Formatage du script...', 3);
+                updateProgress(80, 'Formatting script...', 3);
                 closeCredentialsModal();
                 
-                // Effacer tous les scripts précédents
+                // Clear all previous scripts
                 document.getElementById('scriptsOutput').innerHTML = '';
                 
-                // Afficher le script de test NES
+                // Display NES test script
                 displayNESTestScript(response.script, response.testCasesCount);
                 
                 setTimeout(() => {
-                  completeProgress('Script de test NES généré avec succès !');
+                  completeProgress('NES test script generated successfully!');
                   alert('✅ A script has been generated to test all the NES file');
                 }, 500);
               }, 800);
@@ -1678,9 +1677,9 @@
             }
           })
           .withFailureHandler(function(error) {
-            console.error('Erreur:', error);
-            errorProgress('❌ Erreur lors de la génération du script de test NES', 2);
-            alert('❌ Erreur lors de la génération du script de test NES');
+            console.error('Error:', error);
+            errorProgress('❌ Error generating NES test script', 2);
+            alert('❌ Error generating NES test script');
           })
           .generateNESTestScript({
             csvRows: currentRules,
@@ -1690,7 +1689,7 @@
       }, 700);
     }
     
-    // Fonction pour afficher le script de test NES
+    // Function to display NES test script
     function displayNESTestScript(script, testCasesCount) {
       const scriptsOutput = document.getElementById('scriptsOutput');
       scriptsOutput.innerHTML = '';
@@ -1698,20 +1697,23 @@
       const scriptDiv = document.createElement('div');
       scriptDiv.className = 'script-item nes-test-script-container';
       
+      // Encode script for UTF-8 support
+      const encodedScript = btoa(unescape(encodeURIComponent(script)));
+      
       scriptDiv.innerHTML = `
         <h3 style="color: #fff; margin-top: 0; margin-bottom: 15px;">
-          Script de Test NES Complet (${testCasesCount} cas de test)
+          Complete NES Test Script (${testCasesCount} test cases)
         </h3>
         <div class="script-content">${escapeHtml(script)}</div>
         <div class="script-actions">
-          <button class="copy-btn" onclick="copyNESTestScript('${btoa(unescape(encodeURIComponent(script)))}')">
+          <button class="copy-btn" onclick="copyNESTestScript('${encodedScript}')">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
             </svg>
             Copy
           </button>
-          <button class="btn-download" onclick="downloadNESTestScript('${btoa(unescape(encodeURIComponent(script)))}')">
+          <button class="btn-download" onclick="downloadNESTestScript('${encodedScript}')">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="7 10 12 15 17 10"></polyline>
@@ -1734,20 +1736,20 @@
       scriptsOutput.style.display = 'block';
     }
     
-    // Fonction pour copier le script de test NES
+    // Function to copy NES test script
     function copyNESTestScript(base64Script) {
       const script = decodeURIComponent(escape(atob(base64Script)));
       navigator.clipboard.writeText(script)
         .then(() => {
-          alert('Script de test NES copié dans le presse-papier');
+          alert('NES test script copied to clipboard');
         })
         .catch(err => {
-          console.error('Erreur lors de la copie:', err);
-          alert('Erreur lors de la copie du script');
+          console.error('Error copying:', err);
+          alert('Error copying script');
         });
     }
     
-    // Fonction pour télécharger le script de test NES
+    // Function to download NES test script
     function downloadNESTestScript(base64Script) {
       const script = decodeURIComponent(escape(atob(base64Script)));
       const blob = new Blob([script], { type: 'text/plain' });
@@ -1761,7 +1763,7 @@
       document.body.removeChild(a);
     }
     
-    // Fonction pour échapper le HTML
+    // Function to escape HTML
     function escapeHtml(unsafe) {
       return unsafe
         .replace(/&/g, "&amp;")
@@ -1771,7 +1773,7 @@
         .replace(/'/g, "&#039;");
     }
     
-    // Afficher les scripts Python générés
+    // Display generated Python scripts
     function displayPythonScripts(scripts) {
       const scriptsOutput = document.getElementById('scriptsOutput');
       scriptsOutput.innerHTML = '';
@@ -1780,18 +1782,26 @@
         const scriptDiv = document.createElement('div');
         scriptDiv.className = 'script-item';
         
-        // Échapper les backticks dans le script
-        const escapedScript = scriptData.script.replace(/`/g, '\\`');
+        // Encode script for UTF-8 support
+        const encodedScript = btoa(unescape(encodeURIComponent(scriptData.script)));
         
         scriptDiv.innerHTML = `
-          <div class="script-content">${scriptData.script}</div>
+          <div class="script-content">${escapeHtml(scriptData.script)}</div>
           <div class="script-actions">
-            <button class="copy-btn" onclick="copyScript('${index}', \`${escapedScript}\`)">
+            <button class="copy-btn" onclick="copyScript(${index})">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
               </svg>
               Copy
+            </button>
+            <button class="btn-download" onclick="downloadScript(${index})">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Download
             </button>
             <button class="delete-btn" onclick="deleteGeneratedScript(this)">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1810,15 +1820,33 @@
       scriptsOutput.style.display = 'block';
     }
 
-    function copyScript(scriptIndex, script) {
-      navigator.clipboard.writeText(script)
-        .then(() => {
-          alert('Script copié dans le presse-papier');
-        })
-        .catch(err => {
-          console.error('Erreur lors de la copie:', err);
-          alert('Erreur lors de la copie du script');
-        });
+    function copyScript(scriptIndex) {
+      if (generatedScripts[scriptIndex]) {
+        navigator.clipboard.writeText(generatedScripts[scriptIndex].script)
+          .then(() => {
+            alert('Script copied to clipboard');
+          })
+          .catch(err => {
+            console.error('Error copying:', err);
+            alert('Error copying script');
+          });
+      }
+    }
+    
+    function downloadScript(scriptIndex) {
+      if (generatedScripts[scriptIndex]) {
+        const scriptData = generatedScripts[scriptIndex];
+        const filename = `script_${scriptData.sourceIP.replace(/\./g, '_')}_to_${scriptData.destIP.replace(/\./g, '_')}.py`;
+        const blob = new Blob([scriptData.script], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
     }
 
     function deleteGeneratedScript(button) {
@@ -2050,7 +2078,7 @@
         }
         
         if (foundScript) {
-          alert(`Scripts pour la ligne ${ruleIndex + 1} mis en évidence en orange`);
+          alert(`Scripts for line ${ruleIndex + 1} highlighted in orange`);
           
           // Remove highlight after 5 seconds
           setTimeout(() => {
@@ -2059,7 +2087,7 @@
             });
           }, 5000);
         } else {
-          alert('Veuillez d\'abord générer les scripts en cliquant sur "Generate Scripts"');
+          alert('Please generate scripts first by clicking "Generate Scripts"');
         }
       }
     }
@@ -2070,52 +2098,52 @@
       const email = document.getElementById('email').value;
       
       if (!department || !projectCode || !email) {
-        alert('Veuillez remplir tous les champs obligatoires (Department, Project Code, et Email)');
+        alert('Please fill all required fields (Department, Project Code, and Email)');
         return;
       }
       
       if (currentRules.length === 0) {
-        alert('Aucune règle à sauvegarder. Veuillez ajouter au moins une règle.');
+        alert('No rules to save. Please add at least one rule.');
         return;
       }
       
       const steps = [
-        'Validation des données',
-        'Préparation du document',
-        'Création du Google Sheets',
-        'Formatage des données',
-        'Finalisation'
+        'Validating data',
+        'Preparing document',
+        'Creating Google Sheets',
+        'Formatting data',
+        'Finalization'
       ];
       
-      showProgressBar('Sauvegarde NES...', steps);
-      updateProgress(15, 'Validation des données...', 0);
+      showProgressBar('Saving NES...', steps);
+      updateProgress(15, 'Validating data...', 0);
       
       setTimeout(() => {
-        updateProgress(30, 'Préparation du document...', 1);
+        updateProgress(30, 'Preparing document...', 1);
         
         setTimeout(() => {
-          updateProgress(50, 'Envoi vers Google Sheets...', 2);
+          updateProgress(50, 'Sending to Google Sheets...', 2);
           
           google.script.run
             .withSuccessHandler((response) => {
               if (response && response.success) {
-                updateProgress(80, 'Formatage final...', 3);
+                updateProgress(80, 'Final formatting...', 3);
                 
                 setTimeout(() => {
-                  completeProgress('NES sauvegardé avec succès !');
-                  // Ouvrir le Google Sheets dans une nouvelle fenêtre
+                  completeProgress('NES saved successfully!');
+                  // Open Google Sheets in new window
                   window.open(response.url, '_blank');
-                  alert('✅ ' + response.message + '\n\nLe Google Sheets s\'ouvre dans une nouvelle fenêtre.');
+                  alert('✅ ' + response.message + '\n\nGoogle Sheets opens in a new window.');
                 }, 500);
               } else {
-                errorProgress('❌ ' + (response.message || 'Erreur lors de la création du Google Sheets'), 2);
-                alert('❌ ' + (response.message || 'Erreur lors de la création du Google Sheets'));
+                errorProgress('❌ ' + (response.message || 'Error creating Google Sheets'), 2);
+                alert('❌ ' + (response.message || 'Error creating Google Sheets'));
               }
             })
             .withFailureHandler((error) => {
-              console.error('Erreur lors de la sauvegarde NES:', error);
-              errorProgress('❌ Erreur lors de la création du Google Sheets', 2);
-              alert('❌ Erreur lors de la création du Google Sheets');
+              console.error('Error saving NES:', error);
+              errorProgress('❌ Error creating Google Sheets', 2);
+              alert('❌ Error creating Google Sheets');
             })
             .saveNES({
               department,
@@ -2129,23 +2157,23 @@
     
     function handleError(error) {
       console.error('Error:', error);
-      alert('Une erreur est survenue: ' + error);
+      alert('An error occurred: ' + error);
     }
 
     window.addEventListener('load', () => {
       console.log('Page loaded');
       
-      // Initialiser la première ligne si nécessaire
+      // Initialize first line if necessary
       if (currentRules.length === 0) {
         addNewLine();
       }
       
-      // Vérifier que toutes les fonctions existent
+      // Check that all functions exist
       console.log('generateNESTest exists:', typeof generateNESTest);
       console.log('currentRules:', currentRules);
       console.log('currentModalAction:', currentModalAction);
       
-      // Test du bouton NES Test
+      // Test NES Test button
       const nesTestBtn = document.querySelector('.btn-nes-test');
       if (nesTestBtn) {
         console.log('NES Test button found:', nesTestBtn);
@@ -2153,7 +2181,7 @@
         console.error('NES Test button not found');
       }
       
-      // Vérifier que la modal existe
+      // Check modal exists
       const modal = document.getElementById('credentialsModal');
       if (modal) {
         console.log('Modal found');
@@ -2162,7 +2190,7 @@
       }
     });
     
-    // Fermer la modal si on clique en dehors
+    // Close modal when clicking outside
     window.onclick = function(event) {
       const modal = document.getElementById('credentialsModal');
       if (event.target == modal) {
