@@ -312,4 +312,130 @@ function deleteRules() {
 
 // Ajouter une première règle au chargement
 window.onload = addRule;
+
+// Fonctions pour NES Test
+function generateNESTest() {
+  console.log('generateNESTest called');
+  console.log('currentRules:', rules);
+  
+  const department = document.getElementById('department').value;
+  const projectCode = document.getElementById('projectCode').value;
+  const email = document.getElementById('email').value;
+
+  if (!department || !projectCode || !email) {
+    alert('Veuillez remplir tous les champs obligatoires');
+    return;
+  }
+
+  if (rules.length === 0) {
+    alert('Veuillez ajouter au moins une règle');
+    return;
+  }
+
+  // Afficher le modal pour les credentials
+  const modal = document.getElementById('nesTestModal');
+  modal.style.display = 'block';
+  console.log('Modal displayed');
+}
+
+function closeNESTestModal() {
+  const modal = document.getElementById('nesTestModal');
+  modal.style.display = 'none';
+  document.getElementById('nesUsername').value = '';
+  document.getElementById('nesPassword').value = '';
+}
+
+function confirmNESTest() {
+  const username = document.getElementById('nesUsername').value;
+  const password = document.getElementById('nesPassword').value;
+  
+  if (!username || !password) {
+    alert('Veuillez remplir le nom d\'utilisateur et le mot de passe');
+    return;
+  }
+
+  const department = document.getElementById('department').value;
+  const projectCode = document.getElementById('projectCode').value;
+  const email = document.getElementById('email').value;
+
+  closeNESTestModal();
+
+  const testData = {
+    department: department,
+    projectCode: projectCode,
+    email: email,
+    username: username,
+    password: password,
+    rules: rules
+  };
+
+  google.script.run
+    .withSuccessHandler(function(script) {
+      displayNESTestScript(script);
+    })
+    .withFailureHandler(function(error) {
+      alert('Erreur lors de la génération du script de test: ' + error);
+    })
+    .generateNESTestScript(testData);
+}
+
+function displayNESTestScript(script) {
+  const output = document.getElementById('nesTestOutput');
+  const scriptContainer = document.getElementById('nesTestScriptContainer');
+  
+  // Encoder correctement le script avec support UTF-8
+  const encodedScript = btoa(unescape(encodeURIComponent(script)));
+  
+  output.style.display = 'block';
+  scriptContainer.innerHTML = `
+    <div class="script-block">
+      <div class="script-header">
+        <span>NES Test Script Python</span>
+        <div class="script-actions">
+          <button onclick="copyNESTestScript('${encodedScript}')" class="action-btn copy-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copier
+          </button>
+          <button onclick="downloadNESTestScript('${encodedScript}')" class="action-btn download-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7,10 12,15 17,10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Télécharger
+          </button>
+        </div>
+      </div>
+      <textarea class="script-output" readonly>${script}</textarea>
+    </div>
+  `;
+}
+
+function copyNESTestScript(encodedScript) {
+  // Décoder correctement le script avec support UTF-8
+  const script = decodeURIComponent(escape(atob(encodedScript)));
+  navigator.clipboard.writeText(script).then(function() {
+    alert('Script copié dans le presse-papiers');
+  }).catch(function(error) {
+    console.error('Erreur lors de la copie:', error);
+    alert('Erreur lors de la copie du script');
+  });
+}
+
+function downloadNESTestScript(encodedScript) {
+  // Décoder correctement le script avec support UTF-8
+  const script = decodeURIComponent(escape(atob(encodedScript)));
+  const blob = new Blob([script], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'nes_test_script.py';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 </script>
