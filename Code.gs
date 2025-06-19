@@ -80,7 +80,7 @@ function handleXLSXFileSelect(base64Data, fileName) {
   if (!base64Data) {
     return { 
       success: false, 
-      message: "Aucun fichier selectionne" 
+      message: "No file selected" 
     };
   }
   
@@ -90,13 +90,13 @@ function handleXLSXFileSelect(base64Data, fileName) {
 function importXLSX(base64Data, fileName) {
   console.log("importXLSX called with file:", fileName);
   try {
-    console.log("Debut de l'import XLSX");
+    console.log("Starting XLSX import");
     
-    // Validation format .xlsx uniquement
+    // Validation format .xlsx only
     if (!fileName.toLowerCase().endsWith('.xlsx')) {
       return { 
         success: false, 
-        message: "❌ ERREUR: Seuls les fichiers .xlsx sont acceptes." 
+        message: "❌ ERROR: Only .xlsx files are accepted." 
       };
     }
 
@@ -105,7 +105,7 @@ function importXLSX(base64Data, fileName) {
     const binaryData = Utilities.base64Decode(base64Content);
     const fileBlob = Utilities.newBlob(binaryData, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', fileName);
     
-    // Creer le Google Sheets PERMANENT (pas temporaire)
+    // Create PERMANENT Google Sheets (not temporary)
     const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
     const convertedFile = Drive.Files.insert({
       title: `XLSX_Import_${timestamp}`,
@@ -113,72 +113,72 @@ function importXLSX(base64Data, fileName) {
     }, fileBlob);
     
     const permanentSheetId = convertedFile.id;
-    console.log("✅ Google Sheets PERMANENT cree - ID:", permanentSheetId);
+    console.log("✅ PERMANENT Google Sheets created - ID:", permanentSheetId);
     
-    // Stocker l'ID du Google Sheets permanent
+    // Store permanent Google Sheets ID
     setPermanentSheetId(permanentSheetId);
     
-    // Ouvrir et lire les donnees
+    // Open and read data
     const spreadsheet = SpreadsheetApp.openById(permanentSheetId);
     const sheet = spreadsheet.getSheets()[0];
     
     if (!sheet) {
-      throw new Error("Aucune feuille trouvee dans le fichier XLSX");
+      throw new Error("No sheet found in XLSX file");
     }
     
     const data = sheet.getDataRange().getValues();
-    console.log("Nombre total de lignes extraites:", data.length);
+    console.log("Total rows extracted:", data.length);
 
     if (data.length < 12) {
-      throw new Error("Le fichier XLSX doit contenir au moins 12 lignes");
+      throw new Error("XLSX file must contain at least 12 rows");
     }
 
     // Sanitize data before processing
     const sanitizedData = sanitizeData(data);
 
     // Extract department (C5), projectCode (J5), and requesterEmail (J6)
-    var department = sanitizedData[4]?.[2] || "";      // Ligne 5, colonne 3 → C5
-    var projectCode = sanitizedData[4]?.[9] || "";     // Ligne 5, colonne 10 → J5
-    var requesterEmail = sanitizedData[5]?.[9] || "";  // Ligne 6, colonne 10 → J6
+    var department = sanitizedData[4]?.[2] || "";      // Row 5, column 3 → C5
+    var projectCode = sanitizedData[4]?.[9] || "";     // Row 5, column 10 → J5
+    var requesterEmail = sanitizedData[5]?.[9] || "";  // Row 6, column 10 → J6
     
     console.log("Extracted department:", department);
     console.log("Extracted projectCode:", projectCode);
     console.log("Extracted requesterEmail:", requesterEmail);
 
-    // Sauvegarder les 11 premieres lignes avec PropertiesService
+    // Save first 11 rows with PropertiesService
     const headerLines = sanitizedData.slice(0, 11);
     setHeaderLinesCache(headerLines);
     
-    // Compteurs pour les lignes valides et ignorees
+    // Counters for valid and skipped rows
     var validRows = 0;
     var skippedRows = 0;
     
-    // Traitement TOUTES les lignes apres la ligne 11 (pas d'arret)
+    // Process ALL rows after row 11 (no stopping)
     var processedData = [];
     
     for (let i = 11; i < sanitizedData.length; i++) {
       const row = sanitizedData[i];
-      console.log("Traitement ligne", i + 1, ":", row);
+      console.log("Processing row", i + 1, ":", row);
       
-      // Verifie si A à L sont vides ou espaces
+      // Check if A to L are empty or spaces
       const isEmpty = row.slice(0, 12).every(cell => !cell || cell.toString().trim() === '');
       
       if (isEmpty) {
-        console.log("Ligne ignoree (colonnes A-L vides) :", row);
+        console.log("Row ignored (columns A-L empty):", row);
         skippedRows++;
-        // Continue à traiter les lignes suivantes (pas de break)
+        // Continue processing next rows (no break)
         continue;
       }
       
       if (row.length >= 14) {
-        // Champs requis dans une ligne
+        // Required fields in a row
         if (!row[3] || !row[6] || !row[7] || !row[8] || !row[9] || !row[10] || !row[11] || !row[12] || !row[13]) {
-          console.log("Ligne ignoree car un champ est vide :", row);
+          console.log("Row ignored because a field is empty:", row);
           skippedRows++;
-          continue; // Continue au lieu de return null
+          continue; // Continue instead of return null
         }
         
-        // Amelioration du parsing des IPs pour gerer virgules ET retours à la ligne
+        // Improved IP parsing to handle commas AND line breaks
         var sourceIPs = (row[3] || '')
           .split(/[\n,]+/)
           .map(ip => ip.trim())
@@ -212,26 +212,26 @@ function importXLSX(base64Data, fileName) {
           });
         });
 
-        console.log("Nombre de combinaisons generees:", combinations.length);
+        console.log("Number of combinations generated:", combinations.length);
         validRows += combinations.length;
         processedData.push(...combinations);
       } else {
-        console.log("Ligne ignoree - pas assez de colonnes");
+        console.log("Row ignored - not enough columns");
         skippedRows++;
       }
     }
 
-    console.log("Nombre total de lignes apres traitement:", processedData.length);
+    console.log("Total rows after processing:", processedData.length);
     
     if (processedData.length === 0) {
-      throw new Error("Aucune donnee valide trouvee dans le XLSX");
+      throw new Error("No valid data found in XLSX");
     }
 
     return { 
       success: true, 
       data: processedData,
       headerLines: headerLines,
-      message: validRows + " lignes valides importees, " + skippedRows + " lignes ignorees (champs manquants ou colonnes A-L vides)",
+      message: validRows + " valid rows imported, " + skippedRows + " rows ignored (missing fields or columns A-L empty)",
       department: department,
       projectCode: projectCode,
       requesterEmail: requesterEmail,
@@ -239,10 +239,10 @@ function importXLSX(base64Data, fileName) {
       permanentSheetUrl: spreadsheet.getUrl()
     };
   } catch(e) {
-    console.error("Erreur lors de l'import XLSX:", e.toString());
+    console.error("Error during XLSX import:", e.toString());
     return { 
       success: false, 
-      message: "Erreur lors de l'import XLSX: " + e.toString() 
+      message: "Error during XLSX import: " + e.toString() 
     };
   }
 }
@@ -259,14 +259,14 @@ function generatePythonScripts(data) {
     if (csvRows.length === 0) {
       return {
         success: false,
-        message: "Aucune donnee à traiter"
+        message: "No data to process"
       };
     }
     
     if (!username || !password) {
       return {
         success: false,
-        message: "Identifiants manquants"
+        message: "Missing credentials"
       };
     }
     
@@ -294,7 +294,7 @@ PASSWORD = "${password}"
 
 def search_tickets(params):
     """
-    Envoie une requete à l'API et retourne le contenu de la reponse.
+    Sends a request to the API and returns the response content.
     """
     try:
         response = requests.get(API_URL, params=params, verify=False, auth=(USERNAME, PASSWORD))
@@ -302,13 +302,13 @@ def search_tickets(params):
         content = response.content
         return content
     except requests.exceptions.RequestException as e:
-        print(f"Erreur lors de la requete : {e}")
+        print(f"Error during request: {e}")
         return None
 
 def is_traffic_allowed(xml_content):
     """
-    Parse le contenu XML et verifie si le trafic est autorise.
-    Retourne True si 'traffic_allowed' est 'true', False sinon, ou None en cas d'erreur.
+    Parses XML content and checks if traffic is allowed.
+    Returns True if 'traffic_allowed' is 'true', False otherwise, or None on error.
     """
     if xml_content is None:
         return None
@@ -320,14 +320,14 @@ def is_traffic_allowed(xml_content):
         else:
             return False
     except ET.ParseError as e:
-        print(f"Erreur de parsing XML : {e}")
+        print(f"XML parsing error: {e}")
         return None
     except Exception as e:
-        print(f"Une erreur inattendue est survenue lors du parsing : {e}")
+        print(f"Unexpected error during parsing: {e}")
         return None
 
 def main():
-    # Definition des parametres de la requete
+    # Define request parameters
     src_ip = "${srcIP.trim()}"
     dst_ip = "${dstIP.trim()}"
     service_port = "${servicePort}"
@@ -336,13 +336,13 @@ def main():
     xml_response_content = search_tickets(params)
     allowed = is_traffic_allowed(xml_response_content)
     
-    print("\\n--- Resultat du Trafic ---")
+    print("\\n--- Traffic Result ---")
     if allowed is True:
-        print(f"Trafic AUTORISe de {src_ip} vers {dst_ip} avec le service {service_port}.")
+        print(f"Traffic ALLOWED from {src_ip} to {dst_ip} with service {service_port}.")
     elif allowed is False:
-        print(f"Trafic REFUSe de {src_ip} vers {dst_ip} avec le service {service_port}.")
+        print(f"Traffic DENIED from {src_ip} to {dst_ip} with service {service_port}.")
     else:
-        print(f"Impossible de determiner si le trafic est autorise pour {src_ip} vers {dst_ip} avec le service {service_port} (erreur ou information manquante).")
+        print(f"Unable to determine if traffic is allowed from {src_ip} to {dst_ip} with service {service_port} (error or missing information).")
 
 if __name__ == "__main__":
     main()`;
@@ -360,13 +360,13 @@ if __name__ == "__main__":
     return {
       success: true,
       data: scripts,
-      message: scripts.length + " script(s) Python genere(s) avec succes"
+      message: scripts.length + " Python script(s) generated successfully"
     };
   } catch (e) {
-    console.error("Erreur generatePythonScripts:", e.toString());
+    console.error("Error generatePythonScripts:", e.toString());
     return {
       success: false,
-      message: "Erreur lors de la generation des scripts: " + e.toString()
+      message: "Error generating scripts: " + e.toString()
     };
   }
 }
@@ -383,14 +383,14 @@ function generateNESTestScript(data) {
     if (csvRows.length === 0) {
       return {
         success: false,
-        message: "Aucune donnee à traiter"
+        message: "No data to process"
       };
     }
     
     if (!username || !password) {
       return {
         success: false,
-        message: "Identifiants manquants"
+        message: "Missing credentials"
       };
     }
     
@@ -433,21 +433,21 @@ PASSWORD = "${password}"
 
 def search_tickets(params):
     """
-    Envoie une requete à l'API et retourne le contenu de la reponse.
+    Sends a request to the API and returns the response content.
     """
     try:
         response = requests.get(API_URL, params=params, verify=False, auth=(USERNAME, PASSWORD))
-        response.raise_for_status()  # Leve une exception pour les codes d'etat HTTP d'erreur (4xx ou 5xx)
+        response.raise_for_status()  # Raises exception for HTTP error status codes (4xx or 5xx)
         content = response.content
         return content
     except requests.exceptions.RequestException as e:
-        print(f"Erreur lors de la requete pour {params.get('src')} -> {params.get('dst')} sur {params.get('service')} : {e}")
+        print(f"Error during request for {params.get('src')} -> {params.get('dst')} on {params.get('service')}: {e}")
         return None
 
 def is_traffic_allowed(xml_content):
     """
-    Parse le contenu XML et verifie si le trafic est autorise.
-    Retourne True si 'traffic_allowed' est 'true', False sinon, ou None en cas d'erreur.
+    Parses XML content and checks if traffic is allowed.
+    Returns True if 'traffic_allowed' is 'true', False otherwise, or None on error.
     """
     if xml_content is None:
         return None
@@ -459,60 +459,60 @@ def is_traffic_allowed(xml_content):
         else:
             return False
     except ET.ParseError as e:
-        print(f"Erreur de parsing XML : {e}")
+        print(f"XML parsing error: {e}")
         return None
     except Exception as e:
-        print(f"Une erreur inattendue est survenue lors du parsing : {e}")
+        print(f"Unexpected error during parsing: {e}")
         return None
 
 def main():
-    # Definition des differentes combinaisons de trafic à tester
-    # Chaque dictionnaire represente un jeu de parametres pour une requete
+    # Define different traffic combinations to test
+    # Each dictionary represents a set of parameters for a request
     test_cases = [
 ${testCasesString}
     ]
     
-    print("--- Debut des tests de trafic NES ---")
-    print(f"Nombre total de tests à effectuer: {len(test_cases)}")
+    print("--- Starting NES traffic tests ---")
+    print(f"Total tests to perform: {len(test_cases)}")
     
-    # Compteurs pour les statistiques
+    # Counters for statistics
     allowed_count = 0
     refused_count = 0
     error_count = 0
     
-    # Boucle sur chaque cas de test defini
+    # Loop through each defined test case
     for i, test_case in enumerate(test_cases):
         src_ip = test_case['src']
         dst_ip = test_case['dst']
         service_port = test_case['service']
         
-        print(f"\\n--- Test #{i+1}/{len(test_cases)}: {src_ip} -> {dst_ip} sur {service_port} ---")
+        print(f"\\n--- Test #{i+1}/{len(test_cases)}: {src_ip} -> {dst_ip} on {service_port} ---")
         
-        # Execute la requete pour le cas de test actuel
+        # Execute request for current test case
         xml_response_content = search_tickets(test_case)
         
-        # Verifie si le trafic est autorise
+        # Check if traffic is allowed
         allowed = is_traffic_allowed(xml_response_content)
         
-        # Affiche le resultat et met à jour les compteurs
+        # Display result and update counters
         if allowed is True:
-            print(f"✅ Trafic AUTORISe de {src_ip} vers {dst_ip} avec le service {service_port}.")
+            print(f"✅ Traffic ALLOWED from {src_ip} to {dst_ip} with service {service_port}.")
             allowed_count += 1
         elif allowed is False:
-            print(f"❌ Trafic REFUSe de {src_ip} vers {dst_ip} avec le service {service_port}.")
+            print(f"❌ Traffic DENIED from {src_ip} to {dst_ip} with service {service_port}.")
             refused_count += 1
         else:
-            print(f"⚠️  Impossible de determiner si le trafic est autorise pour {src_ip} vers {dst_ip} avec le service {service_port} (erreur ou information manquante).")
+            print(f"⚠️  Unable to determine if traffic is allowed from {src_ip} to {dst_ip} with service {service_port} (error or missing information).")
             error_count += 1
     
-    # Affiche le resume des tests
+    # Display test summary
     print("\\n" + "="*60)
-    print("=== ReSUMe DES TESTS NES ===")
+    print("=== NES TEST SUMMARY ===")
     print("="*60)
-    print(f"Total des tests effectues : {len(test_cases)}")
-    print(f"✅ Trafics autorises      : {allowed_count}")
-    print(f"❌ Trafics refuses        : {refused_count}")
-    print(f"⚠️  Erreurs/Indetermines  : {error_count}")
+    print(f"Total tests performed : {len(test_cases)}")
+    print(f"✅ Traffic allowed    : {allowed_count}")
+    print(f"❌ Traffic denied     : {refused_count}")
+    print(f"⚠️  Errors/Unknown    : {error_count}")
     print("="*60)
 
 if __name__ == "__main__":
@@ -522,13 +522,13 @@ if __name__ == "__main__":
       success: true,
       script: testScript,
       testCasesCount: testCases.length,
-      message: `Script de test NES genere avec succes (${testCases.length} cas de test)`
+      message: `NES test script generated successfully (${testCases.length} test cases)`
     };
   } catch (e) {
-    console.error("Erreur generateNESTestScript:", e.toString());
+    console.error("Error generateNESTestScript:", e.toString());
     return {
       success: false,
-      message: "Erreur lors de la generation du script de test NES: " + e.toString()
+      message: "Error generating NES test script: " + e.toString()
     };
   }
 }
@@ -541,56 +541,56 @@ function saveNES(formData) {
     if (!formData.department || !formData.projectCode || !formData.email || !formData.rules || formData.rules.length === 0) {
       return {
         success: false,
-        message: "Donnees incompletes"
+        message: "Incomplete data"
       };
     }
     
-    // Recuperer l'ID du Google Sheets permanent
+    // Get permanent Google Sheets ID
     const permanentSheetId = getPermanentSheetId();
     
     if (!permanentSheetId) {
       return {
         success: false,
-        message: "Aucun Google Sheets permanent trouve. Veuillez d'abord importer un fichier XLSX."
+        message: "No permanent Google Sheets found. Please import an XLSX file first."
       };
     }
     
-    console.log("✅ Utilisation du Google Sheets permanent - ID:", permanentSheetId);
+    console.log("✅ Using permanent Google Sheets - ID:", permanentSheetId);
     
-    // Ouvrir le Google Sheets permanent existant
+    // Open existing permanent Google Sheets
     let spreadsheet;
     try {
       spreadsheet = SpreadsheetApp.openById(permanentSheetId);
     } catch (e) {
-      console.error("Erreur lors de l'ouverture du Google Sheets permanent:", e.toString());
+      console.error("Error opening permanent Google Sheets:", e.toString());
       return {
         success: false,
-        message: "Impossible d'ouvrir le Google Sheets permanent. Il a peut-etre ete supprime."
+        message: "Unable to open permanent Google Sheets. It may have been deleted."
       };
     }
     
     const sheet = spreadsheet.getActiveSheet();
     
-    // Mettre à jour les metadonnees dans les en-tetes (C5, J5, J6)
+    // Update metadata in headers (C5, J5, J6)
     sheet.getRange(5, 3).setValue(formData.department);  // C5
     sheet.getRange(5, 10).setValue(formData.projectCode); // J5
     sheet.getRange(6, 10).setValue(formData.email);       // J6
     
-    console.log("✅ Metadonnees mises à jour:", {
+    console.log("✅ Metadata updated:", {
       department: formData.department,
       projectCode: formData.projectCode,
       email: formData.email
     });
     
-    // Effacer toutes les lignes apres la ligne 11
+    // Clear all rows after row 11
     const lastRow = sheet.getLastRow();
     if (lastRow > 11) {
       const rangeToDelete = sheet.getRange(12, 1, lastRow - 11, sheet.getLastColumn());
       rangeToDelete.clear();
-      console.log("✅ Lignes apres la ligne 11 effacees (lignes 12 à " + lastRow + ")");
+      console.log("✅ Rows after row 11 cleared (rows 12 to " + lastRow + ")");
     }
     
-    // Ajouter les nouvelles regles à partir de la ligne 12
+    // Add new rules starting from row 12
     let rowIndex = 12;
     formData.rules.forEach(rule => {
       // Handle multiple IPs by splitting and creating separate rows for each combination
@@ -611,24 +611,24 @@ function saveNES(formData) {
       });
     });
     
-    console.log("✅ Nouvelles regles ajoutees:", formData.rules.length, "regles, lignes creees:", rowIndex - 12);
+    console.log("✅ New rules added:", formData.rules.length, "rules, rows created:", rowIndex - 12);
     
     const spreadsheetUrl = spreadsheet.getUrl();
     
-    console.log("✅ NES mis à jour avec succes dans le Google Sheets permanent - URL:", spreadsheetUrl);
+    console.log("✅ NES successfully updated in permanent Google Sheets - URL:", spreadsheetUrl);
     
-    // Retourner l'URL pour ouvrir le Google Sheets
+    // Return URL to open Google Sheets
     return {
       success: true,
       url: spreadsheetUrl,
       spreadsheetId: permanentSheetId,
-      message: "NES mis à jour avec succes dans le Google Sheets permanent"
+      message: "NES successfully updated in permanent Google Sheets"
     };
   } catch (e) {
-    console.error("Erreur saveNES:", e.toString());
+    console.error("Error saveNES:", e.toString());
     return {
       success: false,
-      message: "Erreur lors de la mise à jour du NES: " + e.toString()
+      message: "Error updating NES: " + e.toString()
     };
   }
 }
@@ -647,13 +647,13 @@ function deleteForm() {
     
     return {
       success: true,
-      message: "Formulaire supprime avec succes"
+      message: "Form deleted successfully"
     };
   } catch (e) {
     console.error("Error deleting form:", e.toString());
     return {
       success: false,
-      message: "Erreur lors de la suppression du formulaire: " + e.toString()
+      message: "Error deleting form: " + e.toString()
     };
   }
 }
