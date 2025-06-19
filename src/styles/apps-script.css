@@ -103,13 +103,17 @@ select:focus,
 }
 
 .btn {
-  padding: 12px 24px;
+  padding: 4px 8px;
   border: none;
   border-radius: 8px;
   font-size: 0.95em;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-primary {
@@ -166,6 +170,51 @@ select:focus,
 .add-button:hover {
   background: #219A52;
   transform: scale(1.05);
+}
+
+/* Styles pour les boutons "manage line" - dimensions homogènes */
+.btn-add-line,
+.btn-duplicate-line {
+  padding: 4px 8px;
+  min-width: 70px;
+  height: 32px;
+  font-size: 0.85em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.btn-add-line {
+  background: #27AE60;
+  color: white;
+}
+
+.btn-add-line:hover {
+  background: #219A52;
+}
+
+.btn-duplicate-line {
+  background: #3498DB;
+  color: white;
+}
+
+.btn-duplicate-line:hover {
+  background: #2980B9;
+}
+
+.manage-line-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 10px 0;
+}
+
+.manage-line-buttons .btn {
+  height: 32px;
+  min-width: 70px;
+  font-size: 0.85em;
 }
 
 /* Styles pour les lignes dupliquées */
