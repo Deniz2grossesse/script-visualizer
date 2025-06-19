@@ -1736,7 +1736,7 @@
     
     // Fonction pour copier le script de test NES
     function copyNESTestScript(base64Script) {
-      const script = atob(base64Script);
+      const script = decodeURIComponent(escape(atob(base64Script)));
       navigator.clipboard.writeText(script)
         .then(() => {
           alert('Script de test NES copié dans le presse-papier');
@@ -1749,7 +1749,7 @@
     
     // Fonction pour télécharger le script de test NES
     function downloadNESTestScript(base64Script) {
-      const script = atob(base64Script);
+      const script = decodeURIComponent(escape(atob(base64Script)));
       const blob = new Blob([script], { type: 'text/plain' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
