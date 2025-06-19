@@ -80,7 +80,7 @@ function handleXLSXFileSelect(base64Data, fileName) {
   if (!base64Data) {
     return { 
       success: false, 
-      message: "Aucun fichier sélectionné" 
+      message: "Aucun fichier selectionne" 
     };
   }
   
@@ -90,13 +90,13 @@ function handleXLSXFileSelect(base64Data, fileName) {
 function importXLSX(base64Data, fileName) {
   console.log("importXLSX called with file:", fileName);
   try {
-    console.log("Début de l'import XLSX");
+    console.log("Debut de l'import XLSX");
     
     // Validation format .xlsx uniquement
     if (!fileName.toLowerCase().endsWith('.xlsx')) {
       return { 
         success: false, 
-        message: "❌ ERREUR: Seuls les fichiers .xlsx sont acceptés." 
+        message: "❌ ERREUR: Seuls les fichiers .xlsx sont acceptes." 
       };
     }
 
@@ -105,7 +105,7 @@ function importXLSX(base64Data, fileName) {
     const binaryData = Utilities.base64Decode(base64Content);
     const fileBlob = Utilities.newBlob(binaryData, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', fileName);
     
-    // Créer le Google Sheets PERMANENT (pas temporaire)
+    // Creer le Google Sheets PERMANENT (pas temporaire)
     const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
     const convertedFile = Drive.Files.insert({
       title: `XLSX_Import_${timestamp}`,
@@ -113,17 +113,17 @@ function importXLSX(base64Data, fileName) {
     }, fileBlob);
     
     const permanentSheetId = convertedFile.id;
-    console.log("✅ Google Sheets PERMANENT créé - ID:", permanentSheetId);
+    console.log("✅ Google Sheets PERMANENT cree - ID:", permanentSheetId);
     
     // Stocker l'ID du Google Sheets permanent
     setPermanentSheetId(permanentSheetId);
     
-    // Ouvrir et lire les données
+    // Ouvrir et lire les donnees
     const spreadsheet = SpreadsheetApp.openById(permanentSheetId);
     const sheet = spreadsheet.getSheets()[0];
     
     if (!sheet) {
-      throw new Error("Aucune feuille trouvée dans le fichier XLSX");
+      throw new Error("Aucune feuille trouvee dans le fichier XLSX");
     }
     
     const data = sheet.getDataRange().getValues();
@@ -145,26 +145,26 @@ function importXLSX(base64Data, fileName) {
     console.log("Extracted projectCode:", projectCode);
     console.log("Extracted requesterEmail:", requesterEmail);
 
-    // Sauvegarder les 11 premières lignes avec PropertiesService
+    // Sauvegarder les 11 premieres lignes avec PropertiesService
     const headerLines = sanitizedData.slice(0, 11);
     setHeaderLinesCache(headerLines);
     
-    // Compteurs pour les lignes valides et ignorées
+    // Compteurs pour les lignes valides et ignorees
     var validRows = 0;
     var skippedRows = 0;
     
-    // Traitement TOUTES les lignes après la ligne 11 (pas d'arrêt)
+    // Traitement TOUTES les lignes apres la ligne 11 (pas d'arret)
     var processedData = [];
     
     for (let i = 11; i < sanitizedData.length; i++) {
       const row = sanitizedData[i];
       console.log("Traitement ligne", i + 1, ":", row);
       
-      // Vérifie si A à L sont vides ou espaces
+      // Verifie si A à L sont vides ou espaces
       const isEmpty = row.slice(0, 12).every(cell => !cell || cell.toString().trim() === '');
       
       if (isEmpty) {
-        console.log("Ligne ignorée (colonnes A-L vides) :", row);
+        console.log("Ligne ignoree (colonnes A-L vides) :", row);
         skippedRows++;
         // Continue à traiter les lignes suivantes (pas de break)
         continue;
@@ -173,12 +173,12 @@ function importXLSX(base64Data, fileName) {
       if (row.length >= 14) {
         // Champs requis dans une ligne
         if (!row[3] || !row[6] || !row[7] || !row[8] || !row[9] || !row[10] || !row[11] || !row[12] || !row[13]) {
-          console.log("Ligne ignorée car un champ est vide :", row);
+          console.log("Ligne ignoree car un champ est vide :", row);
           skippedRows++;
           continue; // Continue au lieu de return null
         }
         
-        // Amélioration du parsing des IPs pour gérer virgules ET retours à la ligne
+        // Amelioration du parsing des IPs pour gerer virgules ET retours à la ligne
         var sourceIPs = (row[3] || '')
           .split(/[\n,]+/)
           .map(ip => ip.trim())
@@ -212,26 +212,26 @@ function importXLSX(base64Data, fileName) {
           });
         });
 
-        console.log("Nombre de combinaisons générées:", combinations.length);
+        console.log("Nombre de combinaisons generees:", combinations.length);
         validRows += combinations.length;
         processedData.push(...combinations);
       } else {
-        console.log("Ligne ignorée - pas assez de colonnes");
+        console.log("Ligne ignoree - pas assez de colonnes");
         skippedRows++;
       }
     }
 
-    console.log("Nombre total de lignes après traitement:", processedData.length);
+    console.log("Nombre total de lignes apres traitement:", processedData.length);
     
     if (processedData.length === 0) {
-      throw new Error("Aucune donnée valide trouvée dans le XLSX");
+      throw new Error("Aucune donnee valide trouvee dans le XLSX");
     }
 
     return { 
       success: true, 
       data: processedData,
       headerLines: headerLines,
-      message: validRows + " lignes valides importées, " + skippedRows + " lignes ignorées (champs manquants ou colonnes A-L vides)",
+      message: validRows + " lignes valides importees, " + skippedRows + " lignes ignorees (champs manquants ou colonnes A-L vides)",
       department: department,
       projectCode: projectCode,
       requesterEmail: requesterEmail,
@@ -259,7 +259,7 @@ function generatePythonScripts(data) {
     if (csvRows.length === 0) {
       return {
         success: false,
-        message: "Aucune donnée à traiter"
+        message: "Aucune donnee à traiter"
       };
     }
     
@@ -294,7 +294,7 @@ PASSWORD = "${password}"
 
 def search_tickets(params):
     """
-    Envoie une requête à l'API et retourne le contenu de la réponse.
+    Envoie une requete à l'API et retourne le contenu de la reponse.
     """
     try:
         response = requests.get(API_URL, params=params, verify=False, auth=(USERNAME, PASSWORD))
@@ -302,12 +302,12 @@ def search_tickets(params):
         content = response.content
         return content
     except requests.exceptions.RequestException as e:
-        print(f"Erreur lors de la requête : {e}")
+        print(f"Erreur lors de la requete : {e}")
         return None
 
 def is_traffic_allowed(xml_content):
     """
-    Parse le contenu XML et vérifie si le trafic est autorisé.
+    Parse le contenu XML et verifie si le trafic est autorise.
     Retourne True si 'traffic_allowed' est 'true', False sinon, ou None en cas d'erreur.
     """
     if xml_content is None:
@@ -327,7 +327,7 @@ def is_traffic_allowed(xml_content):
         return None
 
 def main():
-    # Définition des paramètres de la requête
+    # Definition des parametres de la requete
     src_ip = "${srcIP.trim()}"
     dst_ip = "${dstIP.trim()}"
     service_port = "${servicePort}"
@@ -336,13 +336,13 @@ def main():
     xml_response_content = search_tickets(params)
     allowed = is_traffic_allowed(xml_response_content)
     
-    print("\\n--- Résultat du Trafic ---")
+    print("\\n--- Resultat du Trafic ---")
     if allowed is True:
-        print(f"Trafic AUTORISÉ de {src_ip} vers {dst_ip} avec le service {service_port}.")
+        print(f"Trafic AUTORISe de {src_ip} vers {dst_ip} avec le service {service_port}.")
     elif allowed is False:
-        print(f"Trafic REFUSÉ de {src_ip} vers {dst_ip} avec le service {service_port}.")
+        print(f"Trafic REFUSe de {src_ip} vers {dst_ip} avec le service {service_port}.")
     else:
-        print(f"Impossible de déterminer si le trafic est autorisé pour {src_ip} vers {dst_ip} avec le service {service_port} (erreur ou information manquante).")
+        print(f"Impossible de determiner si le trafic est autorise pour {src_ip} vers {dst_ip} avec le service {service_port} (erreur ou information manquante).")
 
 if __name__ == "__main__":
     main()`;
@@ -360,13 +360,13 @@ if __name__ == "__main__":
     return {
       success: true,
       data: scripts,
-      message: scripts.length + " script(s) Python généré(s) avec succès"
+      message: scripts.length + " script(s) Python genere(s) avec succes"
     };
   } catch (e) {
     console.error("Erreur generatePythonScripts:", e.toString());
     return {
       success: false,
-      message: "Erreur lors de la génération des scripts: " + e.toString()
+      message: "Erreur lors de la generation des scripts: " + e.toString()
     };
   }
 }
@@ -383,7 +383,7 @@ function generateNESTestScript(data) {
     if (csvRows.length === 0) {
       return {
         success: false,
-        message: "Aucune donnée à traiter"
+        message: "Aucune donnee à traiter"
       };
     }
     
@@ -433,20 +433,20 @@ PASSWORD = "${password}"
 
 def search_tickets(params):
     """
-    Envoie une requête à l'API et retourne le contenu de la réponse.
+    Envoie une requete à l'API et retourne le contenu de la reponse.
     """
     try:
         response = requests.get(API_URL, params=params, verify=False, auth=(USERNAME, PASSWORD))
-        response.raise_for_status()  # Lève une exception pour les codes d'état HTTP d'erreur (4xx ou 5xx)
+        response.raise_for_status()  # Leve une exception pour les codes d'etat HTTP d'erreur (4xx ou 5xx)
         content = response.content
         return content
     except requests.exceptions.RequestException as e:
-        print(f"Erreur lors de la requête pour {params.get('src')} -> {params.get('dst')} sur {params.get('service')} : {e}")
+        print(f"Erreur lors de la requete pour {params.get('src')} -> {params.get('dst')} sur {params.get('service')} : {e}")
         return None
 
 def is_traffic_allowed(xml_content):
     """
-    Parse le contenu XML et vérifie si le trafic est autorisé.
+    Parse le contenu XML et verifie si le trafic est autorise.
     Retourne True si 'traffic_allowed' est 'true', False sinon, ou None en cas d'erreur.
     """
     if xml_content is None:
@@ -466,13 +466,13 @@ def is_traffic_allowed(xml_content):
         return None
 
 def main():
-    # Définition des différentes combinaisons de trafic à tester
-    # Chaque dictionnaire représente un jeu de paramètres pour une requête
+    # Definition des differentes combinaisons de trafic à tester
+    # Chaque dictionnaire represente un jeu de parametres pour une requete
     test_cases = [
 ${testCasesString}
     ]
     
-    print("--- Début des tests de trafic NES ---")
+    print("--- Debut des tests de trafic NES ---")
     print(f"Nombre total de tests à effectuer: {len(test_cases)}")
     
     # Compteurs pour les statistiques
@@ -480,7 +480,7 @@ ${testCasesString}
     refused_count = 0
     error_count = 0
     
-    # Boucle sur chaque cas de test défini
+    # Boucle sur chaque cas de test defini
     for i, test_case in enumerate(test_cases):
         src_ip = test_case['src']
         dst_ip = test_case['dst']
@@ -488,31 +488,31 @@ ${testCasesString}
         
         print(f"\\n--- Test #{i+1}/{len(test_cases)}: {src_ip} -> {dst_ip} sur {service_port} ---")
         
-        # Exécute la requête pour le cas de test actuel
+        # Execute la requete pour le cas de test actuel
         xml_response_content = search_tickets(test_case)
         
-        # Vérifie si le trafic est autorisé
+        # Verifie si le trafic est autorise
         allowed = is_traffic_allowed(xml_response_content)
         
-        # Affiche le résultat et met à jour les compteurs
+        # Affiche le resultat et met à jour les compteurs
         if allowed is True:
-            print(f"✅ Trafic AUTORISÉ de {src_ip} vers {dst_ip} avec le service {service_port}.")
+            print(f"✅ Trafic AUTORISe de {src_ip} vers {dst_ip} avec le service {service_port}.")
             allowed_count += 1
         elif allowed is False:
-            print(f"❌ Trafic REFUSÉ de {src_ip} vers {dst_ip} avec le service {service_port}.")
+            print(f"❌ Trafic REFUSe de {src_ip} vers {dst_ip} avec le service {service_port}.")
             refused_count += 1
         else:
-            print(f"⚠️  Impossible de déterminer si le trafic est autorisé pour {src_ip} vers {dst_ip} avec le service {service_port} (erreur ou information manquante).")
+            print(f"⚠️  Impossible de determiner si le trafic est autorise pour {src_ip} vers {dst_ip} avec le service {service_port} (erreur ou information manquante).")
             error_count += 1
     
-    # Affiche le résumé des tests
+    # Affiche le resume des tests
     print("\\n" + "="*60)
-    print("=== RÉSUMÉ DES TESTS NES ===")
+    print("=== ReSUMe DES TESTS NES ===")
     print("="*60)
-    print(f"Total des tests effectués : {len(test_cases)}")
-    print(f"✅ Trafics autorisés      : {allowed_count}")
-    print(f"❌ Trafics refusés        : {refused_count}")
-    print(f"⚠️  Erreurs/Indéterminés  : {error_count}")
+    print(f"Total des tests effectues : {len(test_cases)}")
+    print(f"✅ Trafics autorises      : {allowed_count}")
+    print(f"❌ Trafics refuses        : {refused_count}")
+    print(f"⚠️  Erreurs/Indetermines  : {error_count}")
     print("="*60)
 
 if __name__ == "__main__":
@@ -522,13 +522,13 @@ if __name__ == "__main__":
       success: true,
       script: testScript,
       testCasesCount: testCases.length,
-      message: `Script de test NES généré avec succès (${testCases.length} cas de test)`
+      message: `Script de test NES genere avec succes (${testCases.length} cas de test)`
     };
   } catch (e) {
     console.error("Erreur generateNESTestScript:", e.toString());
     return {
       success: false,
-      message: "Erreur lors de la génération du script de test NES: " + e.toString()
+      message: "Erreur lors de la generation du script de test NES: " + e.toString()
     };
   }
 }
@@ -541,17 +541,17 @@ function saveNES(formData) {
     if (!formData.department || !formData.projectCode || !formData.email || !formData.rules || formData.rules.length === 0) {
       return {
         success: false,
-        message: "Données incomplètes"
+        message: "Donnees incompletes"
       };
     }
     
-    // Récupérer l'ID du Google Sheets permanent
+    // Recuperer l'ID du Google Sheets permanent
     const permanentSheetId = getPermanentSheetId();
     
     if (!permanentSheetId) {
       return {
         success: false,
-        message: "Aucun Google Sheets permanent trouvé. Veuillez d'abord importer un fichier XLSX."
+        message: "Aucun Google Sheets permanent trouve. Veuillez d'abord importer un fichier XLSX."
       };
     }
     
@@ -565,32 +565,32 @@ function saveNES(formData) {
       console.error("Erreur lors de l'ouverture du Google Sheets permanent:", e.toString());
       return {
         success: false,
-        message: "Impossible d'ouvrir le Google Sheets permanent. Il a peut-être été supprimé."
+        message: "Impossible d'ouvrir le Google Sheets permanent. Il a peut-etre ete supprime."
       };
     }
     
     const sheet = spreadsheet.getActiveSheet();
     
-    // Mettre à jour les métadonnées dans les en-têtes (C5, J5, J6)
+    // Mettre à jour les metadonnees dans les en-tetes (C5, J5, J6)
     sheet.getRange(5, 3).setValue(formData.department);  // C5
     sheet.getRange(5, 10).setValue(formData.projectCode); // J5
     sheet.getRange(6, 10).setValue(formData.email);       // J6
     
-    console.log("✅ Métadonnées mises à jour:", {
+    console.log("✅ Metadonnees mises à jour:", {
       department: formData.department,
       projectCode: formData.projectCode,
       email: formData.email
     });
     
-    // Effacer toutes les lignes après la ligne 11
+    // Effacer toutes les lignes apres la ligne 11
     const lastRow = sheet.getLastRow();
     if (lastRow > 11) {
       const rangeToDelete = sheet.getRange(12, 1, lastRow - 11, sheet.getLastColumn());
       rangeToDelete.clear();
-      console.log("✅ Lignes après la ligne 11 effacées (lignes 12 à " + lastRow + ")");
+      console.log("✅ Lignes apres la ligne 11 effacees (lignes 12 à " + lastRow + ")");
     }
     
-    // Ajouter les nouvelles règles à partir de la ligne 12
+    // Ajouter les nouvelles regles à partir de la ligne 12
     let rowIndex = 12;
     formData.rules.forEach(rule => {
       // Handle multiple IPs by splitting and creating separate rows for each combination
@@ -611,18 +611,18 @@ function saveNES(formData) {
       });
     });
     
-    console.log("✅ Nouvelles règles ajoutées:", formData.rules.length, "règles, lignes créées:", rowIndex - 12);
+    console.log("✅ Nouvelles regles ajoutees:", formData.rules.length, "regles, lignes creees:", rowIndex - 12);
     
     const spreadsheetUrl = spreadsheet.getUrl();
     
-    console.log("✅ NES mis à jour avec succès dans le Google Sheets permanent - URL:", spreadsheetUrl);
+    console.log("✅ NES mis à jour avec succes dans le Google Sheets permanent - URL:", spreadsheetUrl);
     
     // Retourner l'URL pour ouvrir le Google Sheets
     return {
       success: true,
       url: spreadsheetUrl,
       spreadsheetId: permanentSheetId,
-      message: "NES mis à jour avec succès dans le Google Sheets permanent"
+      message: "NES mis à jour avec succes dans le Google Sheets permanent"
     };
   } catch (e) {
     console.error("Erreur saveNES:", e.toString());
@@ -647,7 +647,7 @@ function deleteForm() {
     
     return {
       success: true,
-      message: "Formulaire supprimé avec succès"
+      message: "Formulaire supprime avec succes"
     };
   } catch (e) {
     console.error("Error deleting form:", e.toString());
